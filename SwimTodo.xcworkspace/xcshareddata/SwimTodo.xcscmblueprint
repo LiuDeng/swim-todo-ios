@@ -1,14 +1,17 @@
 {
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "987020F3E9CA3ECBB5C5ABDE86759412D764CA42",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
 
   },
   "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
     "2872389DB2409EB4A2A96E4C7921582385C65D76" : 0,
+    "987020F3E9CA3ECBB5C5ABDE86759412D764CA42" : 0,
     "1F0EAC8ABACE0594AD3D07E8D115A1A82A2C36E0" : 0
   },
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "0AC2A582-002F-409D-924B-B04155DC4E00",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
     "2872389DB2409EB4A2A96E4C7921582385C65D76" : "swim-swift\/",
+    "987020F3E9CA3ECBB5C5ABDE86759412D764CA42" : "swim-todo-ios\/",
     "1F0EAC8ABACE0594AD3D07E8D115A1A82A2C36E0" : "recon-swift\/"
   },
   "DVTSourceControlWorkspaceBlueprintNameKey" : "SwimTodo",
@@ -24,6 +27,11 @@
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:swimit\/swim-swift.git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "2872389DB2409EB4A2A96E4C7921582385C65D76"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:swimit\/swim-todo-ios.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "987020F3E9CA3ECBB5C5ABDE86759412D764CA42"
     }
   ]
 }

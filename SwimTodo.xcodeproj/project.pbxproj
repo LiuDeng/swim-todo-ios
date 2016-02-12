@@ -57,6 +57,8 @@
 		85553D4B1C6B31C2005D613B /* SwimTodoTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimTodoTests.swift; sourceTree = "<group>"; };
 		85553D661C6B3A4A005D613B /* Swim.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Swim.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		85553D991C6B3D6C005D613B /* Recon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Recon.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		855AA97F1C6DB2EF0087347E /* todo-service.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "todo-service.js"; sourceTree = "<group>"; };
+		855AA9801C6DB3250087347E /* swim.recon */ = {isa = PBXFileReference; lastKnownFileType = text; path = swim.recon; sourceTree = "<group>"; };
 		85674A371C68CA0100F299D7 /* SwimTodo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwimTodo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		85674A4D1C68CA0100F299D7 /* SwimTodo-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "SwimTodo-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -104,13 +106,23 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
+		855AA97E1C6DB2CA0087347E /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				855AA97F1C6DB2EF0087347E /* todo-service.js */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 		85674A2E1C68CA0100F299D7 = {
 			isa = PBXGroup;
 			children = (
+				855AA9801C6DB3250087347E /* swim.recon */,
 				85553D371C6B31BA005D613B /* Sources */,
 				85553D491C6B31C2005D613B /* Tests */,
 				85674A601C68CAD200F299D7 /* Frameworks */,
 				85674A381C68CA0100F299D7 /* Products */,
+				855AA97E1C6DB2CA0087347E /* Services */,
 			);
 			sourceTree = "<group>";
 		};

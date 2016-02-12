@@ -1,0 +1,7 @@
+@service {
+  name: "todo"
+  version: "1.0"
+  host: "todo.swim.services"
+  language: "javascript"
+  @source "Services/todo-service.js"
+}

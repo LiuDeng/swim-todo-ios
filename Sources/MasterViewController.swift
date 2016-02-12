@@ -4,7 +4,7 @@ import Swim
 
 class MasterViewController: UITableViewController {
   let swim = SwimClient()
-  var chat: HostScope? = nil
+  var todo: HostScope? = nil
 
   var detailViewController: DetailViewController? = nil
   var objects = [NodeScope]()
@@ -22,9 +22,9 @@ class MasterViewController: UITableViewController {
         self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
     }
 
-    chat = swim.scope(host: "ws://messenger.swim.services")
-    let groceryList = chat!.scope(node: "/todo/grocery")
-    let elementsList = chat!.scope(node: "/todo/elements")
+    todo = swim.scope(host: "ws://todo.swim.services")
+    let groceryList = todo!.scope(node: "/todo/grocery")
+    let elementsList = todo!.scope(node: "/todo/elements")
     objects = [groceryList, elementsList]
   }
 
