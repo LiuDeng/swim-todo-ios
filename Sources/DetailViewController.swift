@@ -37,17 +37,17 @@ class DetailViewController: SwimListTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        navigationItem.rightBarButtonItem = editButtonItem()
 
-        self.configureView()
+        configureView()
     }
 
     override func swimDidStartSynching() {
-        self.configureView()
+        configureView()
     }
 
     func configureView() {
-        self.detailDescriptionLabel?.text = detailItem?.nodeUri.path.description ?? ""
+        detailDescriptionLabel?.text = detailItem?.nodeUri.path.description ?? ""
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
