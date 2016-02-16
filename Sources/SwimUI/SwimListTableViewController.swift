@@ -1,0 +1,189 @@
+//
+//  SwimListTableViewController.swift
+//  SwimTodo
+//
+//  Created by Ewan Mellor on 2/15/16.
+//  Copyright © 2016 swim.it. All rights reserved.
+//
+
+import UIKit
+
+import Recon
+import Swim
+
+
+public class SwimListTableViewController : UITableViewController {
+    let listManager : SwimListManagerProtocol
+    private let listManagerDelegate = SwimListTVCListManagerDelegate()
+
+    /**
+     The Swim objects in this list.
+
+     Equivalent to listManager.objects (this is just an alias for convenience).
+     */
+    public var objects: [Any] {
+        get {
+            return listManager.objects
+        }
+    }
+
+    /**
+     The section in the UITableView where objects from the Swim list will appear.
+
+     This defaults to 0.  You may set it from your subclass if you want to use
+     section 0 for something else.  In that case, you must also override
+     all the UITableViewDataSource methods and call SwimListTableViewController's
+     implementation of those if and only if the given section is equal to objectSection.
+     */
+    var objectSection = 0
+
+
+    // MARK: Lifecycle
+
+    init?(listManager: SwimListManagerProtocol, coder aDecoder: NSCoder) {
+        self.listManager = listManager
+
+        super.init(coder: aDecoder)
+
+        self.listManager.delegate = self.listManagerDelegate
+        self.listManagerDelegate.vc = self
+    }
+
+    required public init?(coder aDecoder: NSCoder) {
+        fatalError("Use init(listManager:coder:)")
+    }
+
+    override public func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        listManager.startSynching()
+    }
+
+    override public func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
+        listManager.stopSynching()
+    }
+
+
+    // MARK: UITableViewDataSource / UITableViewDelegate
+
+    override public func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        return objectSection + 1
+    }
+
+    override public func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        assert(section == objectSection)
+        return objects.count
+    }
+
+    override public func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return true
+    }
+
+    override public func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        super.tableView(tableView, commitEditingStyle: editingStyle, forRowAtIndexPath: indexPath)
+
+        if editingStyle == .Delete {
+            listManager.removeObjectAtIndex(indexPath.row)
+        }
+        else if editingStyle == .Insert {
+            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
+        }
+    }
+
+    override public func tableView(tableView: UITableView, didHighlightRowAtIndexPath indexPath: NSIndexPath) {
+        assert(indexPath.section == objectSection)
+        listManager.setHighlightAtIndex(indexPath.row, isHighlighted: true)
+    }
+
+    override public func tableView(tableView: UITableView, didUnhighlightRowAtIndexPath indexPath: NSIndexPath) {
+        assert(indexPath.section == objectSection)
+        listManager.setHighlightAtIndex(indexPath.row, isHighlighted: false)
+    }
+
+    override public func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
+        assert(fromIndexPath.section == objectSection && toIndexPath.section == objectSection)
+
+        listManager.moveObjectAtIndex(fromIndexPath.row, toIndex: toIndexPath.row)
+    }
+
+    override public func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return true
+    }
+
+
+    // MARK: Hooks for subclasses
+
+    /**
+     Override this if you want to know when Swim starts synching this list.
+
+     You probably want to refresh your view when this happens.
+     */
+    func swimDidStartSynching() {
+    }
+
+    /**
+     Override this if you want to know when Swim stops synching this list.
+
+     You may want to refresh something at this point, though your view is
+     probably being hidden anyway.
+     */
+    func swimDidStopSynching() {
+    }
+}
+
+
+private class SwimListTVCListManagerDelegate: SwimListManagerDelegate {
+    weak var vc : SwimListTableViewController? = nil
+
+    func swimDidAppend(item : Any) {
+        guard let count = vc?.objects.count, let objectSection = vc?.objectSection else {
+            return
+        }
+        let indexPath = NSIndexPath(forRow: count - 1, inSection: objectSection)
+        vc?.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+    }
+
+    func swimDidMove(fromIndex: Int, toIndex: Int) {
+        guard let objectSection = vc?.objectSection else {
+            return
+        }
+        let fromIndexPath = NSIndexPath(forRow: fromIndex, inSection: objectSection)
+        let toIndexPath = NSIndexPath(forRow: toIndex, inSection: objectSection)
+        vc?.tableView.moveRowAtIndexPath(fromIndexPath, toIndexPath: toIndexPath)
+    }
+
+    func swimDidRemove(index: Int, object: Any) {
+        guard let objectSection = vc?.objectSection else {
+            return
+        }
+        let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
+        vc?.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+    }
+
+    func swimDidReplace(index: Int, object: Any) {
+    }
+
+    func swimDidSetHighlight(index: Int, isHighlighted: Bool) {
+        guard let objectSection = vc?.objectSection else {
+            return
+        }
+        let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
+        guard let cell = vc?.tableView.cellForRowAtIndexPath(indexPath) else {
+            return
+        }
+
+        if isHighlighted == cell.highlighted {
+            return
+        }
+
+        cell.setHighlighted(isHighlighted, animated: true)
+    }
+
+    func swimDidStartSynching() {
+        vc?.swimDidStartSynching()
+    }
+
+    func swimDidStopSynching() {
+        vc?.swimDidStopSynching()
+    }
+}

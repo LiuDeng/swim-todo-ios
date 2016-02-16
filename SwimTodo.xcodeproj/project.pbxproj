@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		400648EB1C726BEF00701533 /* SwimListTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400648EA1C726BEF00701533 /* SwimListTableViewController.swift */; };
+		400648ED1C72973700701533 /* SwimModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400648EC1C72973700701533 /* SwimModel.swift */; };
+		400648EF1C729C6300701533 /* SwimListManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400648EE1C729C6300701533 /* SwimListManager.swift */; };
+		4048D7AE1C739FA3002B490C /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7AD1C739FA3002B490C /* Logging.swift */; };
 		85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D381C6B31BA005D613B /* AppDelegate.swift */; };
 		85553D431C6B31BA005D613B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85553D391C6B31BA005D613B /* Assets.xcassets */; };
 		85553D441C6B31BA005D613B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 85553D3A1C6B31BA005D613B /* LaunchScreen.storyboard */; };
@@ -46,6 +50,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		400648EA1C726BEF00701533 /* SwimListTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimListTableViewController.swift; sourceTree = "<group>"; };
+		400648EC1C72973700701533 /* SwimModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimModel.swift; sourceTree = "<group>"; };
+		400648EE1C729C6300701533 /* SwimListManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimListManager.swift; sourceTree = "<group>"; };
+		4048D7AD1C739FA3002B490C /* Logging.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		85553D381C6B31BA005D613B /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		85553D391C6B31BA005D613B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		85553D3B1C6B31BA005D613B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -83,16 +91,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		400648E91C726B9B00701533 /* SwimUI */ = {
+			isa = PBXGroup;
+			children = (
+				400648EE1C729C6300701533 /* SwimListManager.swift */,
+				400648EA1C726BEF00701533 /* SwimListTableViewController.swift */,
+				400648EC1C72973700701533 /* SwimModel.swift */,
+			);
+			path = SwimUI;
+			sourceTree = "<group>";
+		};
 		85553D371C6B31BA005D613B /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				400648E91C726B9B00701533 /* SwimUI */,
 				85553D381C6B31BA005D613B /* AppDelegate.swift */,
 				85553D391C6B31BA005D613B /* Assets.xcassets */,
-				85553D3A1C6B31BA005D613B /* LaunchScreen.storyboard */,
-				85553D3C1C6B31BA005D613B /* Main.storyboard */,
 				85553D3E1C6B31BA005D613B /* DetailViewController.swift */,
-				85553D401C6B31BA005D613B /* MasterViewController.swift */,
 				85553D3F1C6B31BA005D613B /* Info.plist */,
+				85553D3A1C6B31BA005D613B /* LaunchScreen.storyboard */,
+				4048D7AD1C739FA3002B490C /* Logging.swift */,
+				85553D3C1C6B31BA005D613B /* Main.storyboard */,
+				85553D401C6B31BA005D613B /* MasterViewController.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -249,7 +269,11 @@
 			files = (
 				85553D481C6B31BA005D613B /* MasterViewController.swift in Sources */,
 				85553D461C6B31BA005D613B /* DetailViewController.swift in Sources */,
+				400648ED1C72973700701533 /* SwimModel.swift in Sources */,
 				85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */,
+				400648EB1C726BEF00701533 /* SwimListTableViewController.swift in Sources */,
+				4048D7AE1C739FA3002B490C /* Logging.swift in Sources */,
+				400648EF1C729C6300701533 /* SwimListManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
