@@ -47,7 +47,7 @@ class DetailViewController: SwimListTableViewController {
     }
 
     func configureView() {
-        self.detailDescriptionLabel?.text = listManager.nodeScope?.nodeUri.path.description ?? ""
+        self.detailDescriptionLabel?.text = detailItem?.nodeUri.path.description ?? ""
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
