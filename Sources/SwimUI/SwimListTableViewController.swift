@@ -12,9 +12,8 @@ import Recon
 import Swim
 
 
-public class SwimListTableViewController : UITableViewController {
-    let listManager : SwimListManagerProtocol
-    private let listManagerDelegate = SwimListTVCListManagerDelegate()
+public class SwimListTableViewController : UITableViewController, SwimListTableViewHelperDelegate {
+    private let tableViewHelper : SwimListTableViewHelper
 
     /**
      The Swim objects in this list.
@@ -24,6 +23,15 @@ public class SwimListTableViewController : UITableViewController {
     public var objects: [Any] {
         get {
             return listManager.objects
+        }
+    }
+
+    /**
+     The SwimListManager instance that was given to us in the init.
+     */
+    var listManager: SwimListManagerProtocol {
+        get {
+            return tableViewHelper.listManager
         }
     }
 
@@ -41,16 +49,19 @@ public class SwimListTableViewController : UITableViewController {
     // MARK: Lifecycle
 
     init?(listManager: SwimListManagerProtocol, coder aDecoder: NSCoder) {
-        self.listManager = listManager
+        self.tableViewHelper = SwimListTableViewHelper(listManager: listManager)
 
         super.init(coder: aDecoder)
 
-        self.listManager.delegate = self.listManagerDelegate
-        self.listManagerDelegate.vc = self
+        self.tableViewHelper.delegate = self
     }
 
     required public init?(coder aDecoder: NSCoder) {
         fatalError("Use init(listManager:coder:)")
+    }
+
+    public override func viewDidLoad() {
+        tableViewHelper.tableView = tableView
     }
 
     override public func viewWillAppear(animated: Bool) {
@@ -102,7 +113,6 @@ public class SwimListTableViewController : UITableViewController {
 
     override public func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
         assert(fromIndexPath.section == objectSection && toIndexPath.section == objectSection)
-
         listManager.moveObjectAtIndex(fromIndexPath.row, toIndex: toIndexPath.row)
     }
 
@@ -128,62 +138,5 @@ public class SwimListTableViewController : UITableViewController {
      probably being hidden anyway.
      */
     func swimDidStopSynching() {
-    }
-}
-
-
-private class SwimListTVCListManagerDelegate: SwimListManagerDelegate {
-    weak var vc : SwimListTableViewController? = nil
-
-    func swimDidAppend(item : Any) {
-        guard let count = vc?.objects.count, let objectSection = vc?.objectSection else {
-            return
-        }
-        let indexPath = NSIndexPath(forRow: count - 1, inSection: objectSection)
-        vc?.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
-    }
-
-    func swimDidMove(fromIndex: Int, toIndex: Int) {
-        guard let objectSection = vc?.objectSection else {
-            return
-        }
-        let fromIndexPath = NSIndexPath(forRow: fromIndex, inSection: objectSection)
-        let toIndexPath = NSIndexPath(forRow: toIndex, inSection: objectSection)
-        vc?.tableView.moveRowAtIndexPath(fromIndexPath, toIndexPath: toIndexPath)
-    }
-
-    func swimDidRemove(index: Int, object: Any) {
-        guard let objectSection = vc?.objectSection else {
-            return
-        }
-        let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
-        vc?.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-    }
-
-    func swimDidReplace(index: Int, object: Any) {
-    }
-
-    func swimDidSetHighlight(index: Int, isHighlighted: Bool) {
-        guard let objectSection = vc?.objectSection else {
-            return
-        }
-        let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
-        guard let cell = vc?.tableView.cellForRowAtIndexPath(indexPath) else {
-            return
-        }
-
-        if isHighlighted == cell.highlighted {
-            return
-        }
-
-        cell.setHighlighted(isHighlighted, animated: true)
-    }
-
-    func swimDidStartSynching() {
-        vc?.swimDidStartSynching()
-    }
-
-    func swimDidStopSynching() {
-        vc?.swimDidStopSynching()
     }
 }

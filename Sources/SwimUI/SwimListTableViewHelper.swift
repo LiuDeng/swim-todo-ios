@@ -1,0 +1,81 @@
+//
+//  SwimListTableViewHelper.swift
+//  SwimTodo
+//
+//  Created by Ewan Mellor on 2/16/16.
+//  Copyright © 2016 swim.it. All rights reserved.
+//
+
+import UIKit
+
+protocol SwimListTableViewHelperDelegate: class {
+    var objects: [Any] { get }
+    var objectSection: Int { get }
+
+    func swimDidStartSynching()
+    func swimDidStopSynching()
+}
+
+class SwimListTableViewHelper: SwimListManagerDelegate {
+    let listManager: SwimListManagerProtocol
+
+    weak var delegate: SwimListTableViewHelperDelegate?
+    weak var tableView: UITableView?
+
+    init(listManager: SwimListManagerProtocol) {
+        self.listManager = listManager
+        self.listManager.delegate = self
+    }
+
+    func swimDidAppend(item: Any) {
+        guard let count = delegate?.objects.count, let objectSection = delegate?.objectSection else {
+            return
+        }
+        let indexPath = NSIndexPath(forRow: count - 1, inSection: objectSection)
+        tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+    }
+
+    func swimDidMove(fromIndex: Int, toIndex: Int) {
+        guard let objectSection = delegate?.objectSection else {
+            return
+        }
+        let fromIndexPath = NSIndexPath(forRow: fromIndex, inSection: objectSection)
+        let toIndexPath = NSIndexPath(forRow: toIndex, inSection: objectSection)
+        tableView?.moveRowAtIndexPath(fromIndexPath, toIndexPath: toIndexPath)
+    }
+
+    func swimDidRemove(index: Int, object: Any) {
+        guard let objectSection = delegate?.objectSection else {
+            return
+        }
+        let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
+        tableView?.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+    }
+
+    func swimDidReplace(index: Int, object: Any) {
+    }
+
+    func swimDidSetHighlight(index: Int, isHighlighted: Bool) {
+        guard let objectSection = delegate?.objectSection else {
+            return
+        }
+        let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
+        guard let cell = tableView?.cellForRowAtIndexPath(indexPath) else {
+            return
+        }
+
+        if isHighlighted == cell.highlighted {
+            return
+        }
+
+        cell.setHighlighted(isHighlighted, animated: true)
+    }
+
+    func swimDidStartSynching() {
+        delegate?.swimDidStartSynching()
+    }
+
+    func swimDidStopSynching() {
+        delegate?.swimDidStopSynching()
+    }
+}
