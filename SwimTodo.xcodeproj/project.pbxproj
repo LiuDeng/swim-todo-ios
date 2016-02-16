@@ -11,6 +11,10 @@
 		400648ED1C72973700701533 /* SwimModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400648EC1C72973700701533 /* SwimModel.swift */; };
 		400648EF1C729C6300701533 /* SwimListManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400648EE1C729C6300701533 /* SwimListManager.swift */; };
 		4048D7AE1C739FA3002B490C /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7AD1C739FA3002B490C /* Logging.swift */; };
+		4048D7B31C73BF91002B490C /* TableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7B01C73BF91002B490C /* TableViewCell.swift */; };
+		4048D7B41C73BF91002B490C /* StrikeThroughText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7B11C73BF91002B490C /* StrikeThroughText.swift */; };
+		4048D7B51C73BF91002B490C /* ToDoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7B21C73BF91002B490C /* ToDoItem.swift */; };
+		4048D7B71C73BFAA002B490C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7B61C73BFAA002B490C /* ViewController.swift */; };
 		85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D381C6B31BA005D613B /* AppDelegate.swift */; };
 		85553D431C6B31BA005D613B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85553D391C6B31BA005D613B /* Assets.xcassets */; };
 		85553D441C6B31BA005D613B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 85553D3A1C6B31BA005D613B /* LaunchScreen.storyboard */; };
@@ -54,6 +58,10 @@
 		400648EC1C72973700701533 /* SwimModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimModel.swift; sourceTree = "<group>"; };
 		400648EE1C729C6300701533 /* SwimListManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimListManager.swift; sourceTree = "<group>"; };
 		4048D7AD1C739FA3002B490C /* Logging.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
+		4048D7B01C73BF91002B490C /* TableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableViewCell.swift; sourceTree = "<group>"; };
+		4048D7B11C73BF91002B490C /* StrikeThroughText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StrikeThroughText.swift; sourceTree = "<group>"; };
+		4048D7B21C73BF91002B490C /* ToDoItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ToDoItem.swift; sourceTree = "<group>"; };
+		4048D7B61C73BFAA002B490C /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		85553D381C6B31BA005D613B /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		85553D391C6B31BA005D613B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		85553D3B1C6B31BA005D613B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -101,9 +109,22 @@
 			path = SwimUI;
 			sourceTree = "<group>";
 		};
+		4048D7AF1C73BF4D002B490C /* ClearStyle */ = {
+			isa = PBXGroup;
+			children = (
+				4048D7B11C73BF91002B490C /* StrikeThroughText.swift */,
+				4048D7B01C73BF91002B490C /* TableViewCell.swift */,
+				4048D7B21C73BF91002B490C /* ToDoItem.swift */,
+				4048D7B61C73BFAA002B490C /* ViewController.swift */,
+			);
+			name = ClearStyle;
+			path = ../ClearStyle;
+			sourceTree = "<group>";
+		};
 		85553D371C6B31BA005D613B /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				4048D7AF1C73BF4D002B490C /* ClearStyle */,
 				400648E91C726B9B00701533 /* SwimUI */,
 				85553D381C6B31BA005D613B /* AppDelegate.swift */,
 				85553D391C6B31BA005D613B /* Assets.xcassets */,
@@ -268,6 +289,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				85553D481C6B31BA005D613B /* MasterViewController.swift in Sources */,
+				4048D7B31C73BF91002B490C /* TableViewCell.swift in Sources */,
+				4048D7B51C73BF91002B490C /* ToDoItem.swift in Sources */,
+				4048D7B41C73BF91002B490C /* StrikeThroughText.swift in Sources */,
+				4048D7B71C73BFAA002B490C /* ViewController.swift in Sources */,
 				85553D461C6B31BA005D613B /* DetailViewController.swift in Sources */,
 				400648ED1C72973700701533 /* SwimModel.swift in Sources */,
 				85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */,
