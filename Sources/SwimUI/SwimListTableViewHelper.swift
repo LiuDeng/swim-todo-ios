@@ -27,7 +27,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         self.listManager.delegate = self
     }
 
-    func swimDidAppend(item: AnyObject) {
+    @objc func swimDidAppend(item: AnyObject) {
         guard let count = delegate?.objects.count, let objectSection = delegate?.objectSection else {
             return
         }
@@ -35,7 +35,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
     }
 
-    func swimDidMove(fromIndex: Int, toIndex: Int) {
+    @objc func swimDidMove(fromIndex: Int, toIndex: Int) {
         guard let objectSection = delegate?.objectSection else {
             return
         }
@@ -44,7 +44,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.moveRowAtIndexPath(fromIndexPath, toIndexPath: toIndexPath)
     }
 
-    func swimDidRemove(index: Int, object: AnyObject) {
+    @objc func swimDidRemove(index: Int, object: AnyObject) {
         guard let objectSection = delegate?.objectSection else {
             return
         }
@@ -52,10 +52,10 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
     }
 
-    func swimDidReplace(index: Int, object: AnyObject) {
+    @objc func swimDidReplace(index: Int, object: AnyObject) {
     }
 
-    func swimDidSetHighlight(index: Int, isHighlighted: Bool) {
+    @objc func swimDidSetHighlight(index: Int, isHighlighted: Bool) {
         guard let objectSection = delegate?.objectSection else {
             return
         }
@@ -71,11 +71,11 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         cell.setHighlighted(isHighlighted, animated: true)
     }
 
-    func swimDidStartSynching() {
+    @objc func swimDidStartSynching() {
         delegate?.swimDidStartSynching()
     }
 
-    func swimDidStopSynching() {
+    @objc func swimDidStopSynching() {
         delegate?.swimDidStopSynching()
     }
 }

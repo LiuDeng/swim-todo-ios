@@ -23,14 +23,14 @@ public protocol SwimListManagerProtocol: class {
     func setHighlightAtIndex(index: Int, isHighlighted: Bool)
 }
 
-public protocol SwimListManagerDelegate: class {
-    func swimDidAppend(object: AnyObject)
-    func swimDidMove(fromIndex: Int, toIndex: Int)
-    func swimDidRemove(index: Int, object: AnyObject)
-    func swimDidReplace(index: Int, object: AnyObject)
-    func swimDidSetHighlight(index: Int, isHighlighted: Bool)
-    func swimDidStartSynching()
-    func swimDidStopSynching()
+@objc public protocol SwimListManagerDelegate: class {
+    optional func swimDidAppend(object: AnyObject)
+    optional func swimDidMove(fromIndex: Int, toIndex: Int)
+    optional func swimDidRemove(index: Int, object: AnyObject)
+    optional func swimDidReplace(index: Int, object: AnyObject)
+    optional func swimDidSetHighlight(index: Int, isHighlighted: Bool)
+    optional func swimDidStartSynching()
+    optional func swimDidStopSynching()
 }
 
 
@@ -63,7 +63,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         dl.keepAlive = true
         dl.event = didReceiveEvent
 
-        delegate?.swimDidStartSynching()
+        delegate?.swimDidStartSynching?()
     }
 
     public func stopSynching() {
@@ -73,7 +73,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         ns.close()
         nodeScope = nil
 
-        delegate?.swimDidStopSynching()
+        delegate?.swimDidStopSynching?()
     }
 
     public func moveObjectAtIndex(fromIndex: Int, toIndex: Int) {
@@ -146,7 +146,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }
 
         objects.append(object)
-        delegate?.swimDidAppend(object)
+        delegate?.swimDidAppend?(object)
     }
 
     func didReceiveUpdate(message: EventMessage) {
@@ -162,7 +162,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         if let object = objectOrNil {
             if idx == objects.count {
                 objects.append(object)
-                delegate?.swimDidAppend(object)
+                delegate?.swimDidAppend?(object)
             }
             else if idx > objects.count {
                 DLog("Ignoring update referring to rows beyond our list! \(heading.value)")
@@ -171,13 +171,13 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
             else {
                 DLog("Replacing item at \(idx): \(object)")
                 objects[idx] = object
-                delegate?.swimDidReplace(idx, object: object)
+                delegate?.swimDidReplace?(idx, object: object)
             }
         }
 
         let isHighlighted = (message.body["highlight"] == Value.True)
         DLog("Highlight \(idx) = \(isHighlighted)")
-        delegate?.swimDidSetHighlight(idx, isHighlighted: isHighlighted)
+        delegate?.swimDidSetHighlight?(idx, isHighlighted: isHighlighted)
     }
 
     func didReceiveMove(message: EventMessage) {
@@ -205,7 +205,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
         let object = objects.removeAtIndex(fromIndex)
         objects.insert(object, atIndex: toIndex)
-        delegate?.swimDidMove(fromIndex, toIndex: toIndex)
+        delegate?.swimDidMove?(fromIndex, toIndex: toIndex)
     }
 
     func didReceiveRemove(message: EventMessage) {
@@ -217,6 +217,6 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
         let idx = Int(index)
         let object = objects.removeAtIndex(idx)
-        delegate?.swimDidRemove(idx, object: object)
+        delegate?.swimDidRemove?(idx, object: object)
     }
 }
