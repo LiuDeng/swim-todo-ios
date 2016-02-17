@@ -2,7 +2,8 @@ import UIKit
 import Recon
 import Swim
 
-let LANE_URI : Uri = "todo/list"
+let LANE_URI: Uri = "todo/list"
+
 
 public class TodoItem: SwimModel {
     let label: String
