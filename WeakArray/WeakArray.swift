@@ -75,13 +75,14 @@ private class Weak<T: AnyObject> {
 
 // MARK:-
 
-public struct WeakArray<T: AnyObject>: SequenceType, Printable, DebugPrintable, ArrayLiteralConvertible {
+public struct WeakArray<T: AnyObject>: SequenceType, CustomStringConvertible, CustomDebugStringConvertible, ArrayLiteralConvertible {
     // MARK: Private
     private typealias WeakObject = Weak<T>
-    private typealias GeneratorType = WeakGenerator<T>
     private var items = [WeakObject]()
 
     // MARK: Public
+    public typealias GeneratorType = WeakGenerator<T>
+
     public var description: String {
         return items.description
     }
@@ -112,9 +113,8 @@ public struct WeakArray<T: AnyObject>: SequenceType, Printable, DebugPrintable, 
     }
 
     public func generate() -> GeneratorType {
-        let weakSlice: ArraySlice<WeakObject> = items[0..<items.count]
-        let slice: ArraySlice<T?> = weakSlice.map { $0.value }
-        return GeneratorType(items: slice)
+        let objects = items.map { $0.value }
+        return GeneratorType(items: objects[0..<objects.count])
     }
 
     // MARK: - Slice-like Implementation
@@ -132,15 +132,13 @@ public struct WeakArray<T: AnyObject>: SequenceType, Printable, DebugPrintable, 
 
     public subscript(range: Range<Int>) -> ArraySlice<T?> {
         get {
-            let weakSlice: ArraySlice<WeakObject> = items[range]
-			let slice : ArraySlice<T?> = weakSlice.map { $0.value }
-            return slice
+            let weakSlice = items[range]
+            let slice = weakSlice.map { $0.value }
+            return slice[range]
         }
-        set(value) {
-            items[range] = value.map {
-                (value: T?) -> WeakObject in
-                return Weak(value: value)
-            }
+        set {
+            let newWeakSlice = newValue.map { Weak(value: $0) }
+            items[range] = newWeakSlice[0..<newWeakSlice.count]
         }
     }
 
@@ -179,12 +177,12 @@ public struct WeakArray<T: AnyObject>: SequenceType, Printable, DebugPrintable, 
 
     mutating public func splice(newElements: ArraySlice<T?>, atIndex i: Int) {
         let weakElements = newElements.map { Weak(value: $0) }
-        items.splice(weakElements, atIndex: i)
+        items.insertContentsOf(weakElements, at: i)
     }
 
     mutating public func extend(newElements: ArraySlice<T?>) {
         let weakElements = newElements.map { Weak(value: $0) }
-        items.extend(weakElements)
+        items.appendContentsOf(weakElements)
     }
 
     public func filter(includeElement: (T?) -> Bool) -> WeakArray<T> {
@@ -210,12 +208,12 @@ public struct WeakArray<T: AnyObject>: SequenceType, Printable, DebugPrintable, 
 // MARK:-
 
 public struct WeakGenerator<T>: GeneratorType {
-    typealias Element = T
+    public typealias Element = T
     private var items: ArraySlice<T?>
 
     mutating public func next() -> T? {
         while !items.isEmpty {
-            let next = items[0]
+            let next = items.first!
             items = items[1..<items.count]
             if next != nil {
                 return next
