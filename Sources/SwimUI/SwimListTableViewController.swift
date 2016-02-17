@@ -20,7 +20,7 @@ public class SwimListTableViewController : UITableViewController, SwimListTableV
 
      Equivalent to listManager.objects (this is just an alias for convenience).
      */
-    public var objects: [Any] {
+    public var objects: [AnyObject] {
         get {
             return listManager.objects
         }

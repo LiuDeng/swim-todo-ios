@@ -9,7 +9,7 @@
 import Foundation
 import Recon
 
-public protocol SwimModelProtocol: Equatable {
+public protocol SwimModelProtocol: class, Equatable {
     init?(reconValue: ReconValue)
     func toReconValue() -> ReconValue
 }

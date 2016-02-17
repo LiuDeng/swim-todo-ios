@@ -9,7 +9,7 @@
 import UIKit
 
 protocol SwimListTableViewHelperDelegate: class {
-    var objects: [Any] { get }
+    var objects: [AnyObject] { get }
     var objectSection: Int { get }
 
     func swimDidStartSynching()
@@ -27,7 +27,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         self.listManager.delegate = self
     }
 
-    func swimDidAppend(item: Any) {
+    func swimDidAppend(item: AnyObject) {
         guard let count = delegate?.objects.count, let objectSection = delegate?.objectSection else {
             return
         }
@@ -44,7 +44,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.moveRowAtIndexPath(fromIndexPath, toIndexPath: toIndexPath)
     }
 
-    func swimDidRemove(index: Int, object: Any) {
+    func swimDidRemove(index: Int, object: AnyObject) {
         guard let objectSection = delegate?.objectSection else {
             return
         }
@@ -52,7 +52,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
     }
 
-    func swimDidReplace(index: Int, object: Any) {
+    func swimDidReplace(index: Int, object: AnyObject) {
     }
 
     func swimDidSetHighlight(index: Int, isHighlighted: Bool) {

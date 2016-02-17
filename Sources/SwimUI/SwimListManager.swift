@@ -13,7 +13,7 @@ import Swim
 
 public protocol SwimListManagerProtocol: class {
     var delegate: SwimListManagerDelegate? { get set }
-    var objects: [Any] { get }
+    var objects: [AnyObject] { get }
     var nodeScope: NodeScope? { get set }
 
     func startSynching()
@@ -24,10 +24,10 @@ public protocol SwimListManagerProtocol: class {
 }
 
 public protocol SwimListManagerDelegate: class {
-    func swimDidAppend(object: Any)
+    func swimDidAppend(object: AnyObject)
     func swimDidMove(fromIndex: Int, toIndex: Int)
-    func swimDidRemove(index: Int, object: Any)
-    func swimDidReplace(index: Int, object: Any)
+    func swimDidRemove(index: Int, object: AnyObject)
+    func swimDidReplace(index: Int, object: AnyObject)
     func swimDidSetHighlight(index: Int, isHighlighted: Bool)
     func swimDidStartSynching()
     func swimDidStopSynching()
@@ -37,7 +37,7 @@ public protocol SwimListManagerDelegate: class {
 public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProtocol {
     public weak var delegate: SwimListManagerDelegate? = nil
 
-    public var objects: [Any] = []
+    public var objects: [AnyObject] = []
 
     public var nodeScope: NodeScope? = nil
 
