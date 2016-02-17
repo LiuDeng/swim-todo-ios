@@ -12,7 +12,7 @@ import Swim
 
 
 public protocol SwimListManagerProtocol: class {
-    var delegate: SwimListManagerDelegate? { get set }
+    var delegates: WeakArray<SwimListManagerDelegate> { get set }
     var objects: [AnyObject] { get }
     var nodeScope: NodeScope? { get set }
 
@@ -43,7 +43,7 @@ public protocol SwimListManagerProtocol: class {
 
 
 public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProtocol {
-    public weak var delegate: SwimListManagerDelegate? = nil
+    public var delegates = WeakArray<SwimListManagerDelegate>()
 
     public var objects: [AnyObject] = []
 
@@ -71,7 +71,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         dl.keepAlive = true
         dl.event = didReceiveEvent
 
-        delegate?.swimDidStartSynching?()
+        delegates.forEach({ $0.swimDidStartSynching?() })
     }
 
     public func stopSynching() {
@@ -81,7 +81,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         ns.close()
         nodeScope = nil
 
-        delegate?.swimDidStopSynching?()
+        delegates.forEach({ $0.swimDidStopSynching?() })
     }
 
     public func insertNewObjectAtIndex(index: Int) -> Any? {
@@ -184,7 +184,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         let idx = Int(index)
         objects.insert(object, atIndex: idx)
 
-        delegate?.swimDidInsert?(object, atIndex: idx)
+        delegates.forEach({ $0.swimDidInsert?(object, atIndex: idx) })
     }
 
     func didReceiveAppend(message: EventMessage) {
@@ -194,7 +194,8 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }
 
         objects.append(object)
-        delegate?.swimDidAppend?(object)
+
+        delegates.forEach({ $0.swimDidAppend?(object) })
     }
 
     func didReceiveUpdate(message: EventMessage) {
@@ -211,7 +212,8 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         if let object = objectOrNil {
             if idx == objects.count {
                 objects.append(object)
-                delegate?.swimDidAppend?(object)
+
+                delegates.forEach({ $0.swimDidAppend?(object) })
             }
             else if idx > objects.count {
                 DLog("Ignoring update referring to rows beyond our list! \(heading.value)")
@@ -222,13 +224,14 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
                 let oldObject = objects[idx] as! ObjectType
                 oldObject.update(item)
 
-                delegate?.swimDidReplace?(idx, object: object)
+                delegates.forEach({ $0.swimDidReplace?(idx, object: object) })
             }
         }
 
         let isHighlighted = (message.body["highlight"] == Value.True)
         DLog("Highlight \(idx) = \(isHighlighted)")
-        delegate?.swimDidSetHighlight?(idx, isHighlighted: isHighlighted)
+
+        delegates.forEach({ $0.swimDidSetHighlight?(idx, isHighlighted: isHighlighted) })
     }
 
     func didReceiveMove(message: EventMessage) {
@@ -256,7 +259,8 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
         let object = objects.removeAtIndex(fromIndex)
         objects.insert(object, atIndex: toIndex)
-        delegate?.swimDidMove?(fromIndex, toIndex: toIndex)
+
+        delegates.forEach({ $0.swimDidMove?(fromIndex, toIndex: toIndex) })
     }
 
     func didReceiveRemove(message: EventMessage) {
@@ -280,6 +284,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
         let object = objects.removeAtIndex(idx)
         assert(oldObject === object)
-        delegate?.swimDidRemove?(idx, object: object)
+
+        delegates.forEach({ $0.swimDidRemove?(idx, object: object) })
     }
 }

@@ -26,7 +26,7 @@ public class TodoItem: SwimModel {
     }
 }
 
-class DetailViewController: SwimListTableViewController {
+class DetailViewController: SwimListTableViewController, SwimListManagerDelegate {
     @IBOutlet weak var detailDescriptionLabel: UILabel!
 
     var detailItem : NodeScope? {
@@ -41,6 +41,8 @@ class DetailViewController: SwimListTableViewController {
     required init?(coder aDecoder: NSCoder) {
         let listManager = SwimListManager<TodoItem>(laneUri: LANE_URI)
         super.init(listManager: listManager, coder: aDecoder)
+
+        listManager.delegates.append(self)
     }
 
     override func viewDidLoad() {
@@ -51,7 +53,8 @@ class DetailViewController: SwimListTableViewController {
         configureView()
     }
 
-    override func swimDidStartSynching() {
+
+    func swimDidStartSynching() {
         configureView()
     }
 

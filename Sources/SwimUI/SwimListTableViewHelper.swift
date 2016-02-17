@@ -11,9 +11,6 @@ import UIKit
 protocol SwimListTableViewHelperDelegate: class {
     var objects: [AnyObject] { get }
     var objectSection: Int { get }
-
-    func swimDidStartSynching()
-    func swimDidStopSynching()
 }
 
 class SwimListTableViewHelper: SwimListManagerDelegate {
@@ -24,7 +21,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
 
     init(listManager: SwimListManagerProtocol) {
         self.listManager = listManager
-        self.listManager.delegate = self
+        self.listManager.delegates.append(self)
     }
 
     func commitEdit(editingStyle: UITableViewCellEditingStyle, indexPath: NSIndexPath) {
@@ -69,9 +66,6 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
     }
 
-    @objc func swimDidReplace(index: Int, object: AnyObject) {
-    }
-
     @objc func swimDidSetHighlight(index: Int, isHighlighted: Bool) {
         guard let objectSection = delegate?.objectSection else {
             return
@@ -86,13 +80,5 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         }
 
         cell.setHighlighted(isHighlighted, animated: true)
-    }
-
-    @objc func swimDidStartSynching() {
-        delegate?.swimDidStartSynching()
-    }
-
-    @objc func swimDidStopSynching() {
-        delegate?.swimDidStopSynching()
     }
 }

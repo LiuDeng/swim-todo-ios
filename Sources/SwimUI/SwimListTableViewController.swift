@@ -112,24 +112,4 @@ public class SwimListTableViewController : UITableViewController, SwimListTableV
     override public func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
         return true
     }
-
-
-    // MARK: Hooks for subclasses
-
-    /**
-     Override this if you want to know when Swim starts synching this list.
-
-     You probably want to refresh your view when this happens.
-     */
-    func swimDidStartSynching() {
-    }
-
-    /**
-     Override this if you want to know when Swim stops synching this list.
-
-     You may want to refresh something at this point, though your view is
-     probably being hidden anyway.
-     */
-    func swimDidStopSynching() {
-    }
 }
