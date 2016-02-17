@@ -27,6 +27,7 @@ public protocol SwimListManagerProtocol: class {
     func moveObjectAtIndex(fromIndex: Int, toIndex: Int)
     func removeObjectAtIndex(index: Int)
     func setHighlightAtIndex(index: Int, isHighlighted: Bool)
+    func updateObjectAtIndex(index: Int)
 }
 
 @objc public protocol SwimListManagerDelegate: class {
@@ -138,6 +139,12 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         else {
             ns.command(lane: laneUri, body: Value(Attr("update", Value(Slot("index", Value(index)))), Slot("item", item)))
         }
+    }
+
+    public func updateObjectAtIndex(index: Int) {
+        // TODO: It's a complete fluke that setHighlightAtIndex:isHighlighted=false happens
+        // to do exactly what we want.  Tidy this up.
+        setHighlightAtIndex(index, isHighlighted: false)
     }
 
     func didReceiveEvent(message: EventMessage) {
