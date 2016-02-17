@@ -37,6 +37,7 @@ public protocol SwimListManagerProtocol: class {
     optional func swimDidRemove(index: Int, object: AnyObject)
     optional func swimDidReplace(index: Int, object: AnyObject)
     optional func swimDidSetHighlight(index: Int, isHighlighted: Bool)
+    optional func swimDidChangeObjects()
     optional func swimDidStartSynching()
     optional func swimDidStopSynching()
 }
@@ -185,6 +186,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         objects.insert(object, atIndex: idx)
 
         delegates.forEach({ $0.swimDidInsert?(object, atIndex: idx) })
+        sendDidChangeObjects()
     }
 
     func didReceiveAppend(message: EventMessage) {
@@ -196,6 +198,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         objects.append(object)
 
         delegates.forEach({ $0.swimDidAppend?(object) })
+        sendDidChangeObjects()
     }
 
     func didReceiveUpdate(message: EventMessage) {
@@ -214,6 +217,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
                 objects.append(object)
 
                 delegates.forEach({ $0.swimDidAppend?(object) })
+                sendDidChangeObjects()
             }
             else if idx > objects.count {
                 DLog("Ignoring update referring to rows beyond our list! \(heading.value)")
@@ -225,6 +229,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
                 oldObject.update(item)
 
                 delegates.forEach({ $0.swimDidReplace?(idx, object: object) })
+                sendDidChangeObjects()
             }
         }
 
@@ -261,6 +266,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         objects.insert(object, atIndex: toIndex)
 
         delegates.forEach({ $0.swimDidMove?(fromIndex, toIndex: toIndex) })
+        sendDidChangeObjects()
     }
 
     func didReceiveRemove(message: EventMessage) {
@@ -286,5 +292,10 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         assert(oldObject === object)
 
         delegates.forEach({ $0.swimDidRemove?(idx, object: object) })
+        sendDidChangeObjects()
+    }
+
+    func sendDidChangeObjects() {
+        delegates.forEach({ $0.swimDidChangeObjects?() })
     }
 }
