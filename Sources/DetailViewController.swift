@@ -6,15 +6,19 @@ let LANE_URI: Uri = "todo/list"
 
 
 public class TodoItem: SwimModel {
-    let label: String
+    var label: String = ""
 
     required public init?(reconValue: ReconValue) {
-        label = reconValue.text ?? ""
         super.init(reconValue: reconValue)
+        update(reconValue)
     }
 
     override public func toReconValue() -> ReconValue {
         return Value(label)
+    }
+
+    override public func update(reconValue: ReconValue) {
+        label = reconValue.text ?? ""
     }
 }
 

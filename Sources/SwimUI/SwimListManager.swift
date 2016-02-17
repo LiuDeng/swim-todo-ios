@@ -151,13 +151,14 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
     func didReceiveUpdate(message: EventMessage) {
         let heading = message.body.first
+        let item = message.body["item"]
         guard let index = heading.value["index"].number else {
             DLog("Received update with no index!")
             return
         }
 
         let idx = Int(index)
-        let objectOrNil = ObjectType(reconValue: message.body["item"])
+        let objectOrNil = ObjectType(reconValue: item)
 
         if let object = objectOrNil {
             if idx == objects.count {
@@ -170,7 +171,9 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
             }
             else {
                 DLog("Replacing item at \(idx): \(object)")
-                objects[idx] = object
+                let oldObject = objects[idx] as! ObjectType
+                oldObject.update(item)
+
                 delegate?.swimDidReplace?(idx, object: object)
             }
         }

@@ -12,6 +12,7 @@ import Recon
 public protocol SwimModelProtocol: class, Equatable {
     init?(reconValue: ReconValue)
     func toReconValue() -> ReconValue
+    func update(reconValue: ReconValue)
 }
 
 public class SwimModel: SwimModelProtocol {
@@ -20,6 +21,10 @@ public class SwimModel: SwimModelProtocol {
 
     public func toReconValue() -> ReconValue {
         return Value(String(self))
+    }
+
+    public func update(reconValue: ReconValue) {
+        assertionFailure("Must be implemented by a subclass")
     }
 }
 
