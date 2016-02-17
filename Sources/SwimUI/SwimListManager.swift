@@ -93,7 +93,10 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
         let object = ObjectType()
         let item = object.toReconValue()
-        objects.insert(object, atIndex: index)
+        // We're not inserting into objects right now -- we're waiting for it to come back from the server instead.
+        // TODO: This is a dirty hack and needs fixing properly.  We need a sessionId on messages so that we don't
+        // respond to our own.
+//        objects.insert(object, atIndex: index)
         DLog("Inserted new object at \(index)")
 
         ns.command(lane: laneUri, body: Value(Attr("insert", Value(Slot("index", Value(index)), Slot("item", item)))))
