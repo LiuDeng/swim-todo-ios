@@ -18,11 +18,11 @@ class MasterViewController: UITableViewController {
     //let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "insertNewObject:")
     //self.navigationItem.rightBarButtonItem = addButton
     if let split = self.splitViewController {
-        let controllers = split.viewControllers
-        self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
+      let controllers = split.viewControllers
+      self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
     }
 
-    todo = swim.scope(host: "ws://todo.swim.services")
+    todo = swim.scope(host: "ws://messenger.swim.services")
     let groceryList = todo!.scope(node: "/todo/grocery")
     let elementsList = todo!.scope(node: "/todo/elements")
     objects = [groceryList, elementsList]
@@ -48,13 +48,13 @@ class MasterViewController: UITableViewController {
 
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
     if segue.identifier == "showDetail" {
-        if let indexPath = self.tableView.indexPathForSelectedRow {
-            let object = objects[indexPath.row]
-            let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-            controller.detailItem = object
-            controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
-            controller.navigationItem.leftItemsSupplementBackButton = true
-        }
+      if let indexPath = self.tableView.indexPathForSelectedRow {
+        let object = objects[indexPath.row]
+        let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
+        controller.detailItem = object
+        controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
+        controller.navigationItem.leftItemsSupplementBackButton = true
+      }
     }
   }
 
@@ -83,10 +83,10 @@ class MasterViewController: UITableViewController {
 
   override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
     if editingStyle == .Delete {
-        objects.removeAtIndex(indexPath.row)
-        tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+      objects.removeAtIndex(indexPath.row)
+      tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
     } else if editingStyle == .Insert {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
+      // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
     }
   }
 
