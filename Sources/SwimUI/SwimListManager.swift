@@ -216,7 +216,19 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }
 
         let idx = Int(index)
+        let oldObject = objects[idx] as! ObjectType
+        guard let removedObject = ObjectType(reconValue: message.body["item"]) else {
+            DLog("Ignoring remove with invalid object! \(heading.value)")
+            return
+        }
+
+        if oldObject != removedObject {
+            DLog("Ignoring remove, presumably this was a local change")
+            return
+        }
+
         let object = objects.removeAtIndex(idx)
+        assert(oldObject === object)
         delegate?.swimDidRemove?(idx, object: object)
     }
 }
