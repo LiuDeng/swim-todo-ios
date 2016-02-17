@@ -190,7 +190,8 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
     }
 
     func didReceiveAppend(message: EventMessage) {
-        guard let object = ObjectType(reconValue: message.body["item"]) else {
+        let item = message.body["item"]
+        guard let object = ObjectType(reconValue: item) else {
             DLog("Received append with unparseable item!")
             return
         }

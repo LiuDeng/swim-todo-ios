@@ -12,8 +12,8 @@ import Recon
 import Swim
 
 
-public class SwimListTableViewController : UITableViewController, SwimListTableViewHelperDelegate {
-    private let tableViewHelper : SwimListTableViewHelper
+public class SwimListTableViewController: UITableViewController, SwimListTableViewHelperDelegate {
+    private let tableViewHelper: SwimListTableViewHelper
 
     /**
      The Swim objects in this list.
