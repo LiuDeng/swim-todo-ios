@@ -12,7 +12,7 @@ import QuartzCore
 // A protocol that the TableViewCell uses to inform its delegate of state change
 protocol TableViewCellDelegate {
     // indicates that the given item has been deleted
-    func toDoItemDeleted(todoItem: ToDoItem)
+    func toDoItemDeleted(todoItem: TodoItem)
     // Indicates that the edit process has begun for the given cell
     func cellDidBeginEditing(editingCell: TableViewCell)
     // Indicates that the edit process has committed for the given cell
@@ -30,9 +30,9 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
     // The object that acts as delegate for this cell.
     var delegate: TableViewCellDelegate?
     // The item that this cell renders.
-    var toDoItem: ToDoItem? {
+    var toDoItem: TodoItem? {
         didSet {
-            label.text = toDoItem!.text
+            label.text = toDoItem!.label
             label.strikeThrough = toDoItem!.completed
             itemCompleteLayer.hidden = !label.strikeThrough
         }
@@ -188,7 +188,7 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
     
     func textFieldDidEndEditing(textField: UITextField) {
         if toDoItem != nil {
-            toDoItem!.text = textField.text ?? ""
+            toDoItem!.label = textField.text ?? ""
         }
         if delegate != nil {
             delegate!.cellDidEndEditing(self)

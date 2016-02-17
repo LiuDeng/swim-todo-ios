@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="H1p-Uh-vWS">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9532" systemVersion="14F1605" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="H1p-Uh-vWS">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
         <!--Master-->
@@ -24,37 +25,32 @@
         <scene sceneID="yUG-lL-AsK">
             <objects>
                 <viewController title="Detail" id="JEX-9P-axG" customClass="DetailViewController" customModule="SwimTodo" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="UEj-Sv-u4S">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="Wo2-os-EaI"/>
+                        <viewControllerLayoutGuide type="bottom" id="kS1-7A-ajj"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="egU-3C-hu7">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                        <prototypes>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="blue" showsReorderControl="YES" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" textLabel="fef-nX-X4J" style="IBUITableViewCellStyleDefault" id="RO8-SI-bU6">
-                                <rect key="frame" x="0.0" y="92" width="600" height="44"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="RO8-SI-bU6" id="QkX-ov-4za">
-                                    <rect key="frame" x="0.0" y="0.0" width="600" height="43.5"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="fef-nX-X4J">
-                                            <rect key="frame" x="15" y="0.0" width="570" height="43.5"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                            <nil key="highlightedColor"/>
-                                        </label>
-                                    </subviews>
-                                </tableViewCellContentView>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="AJK-NQ-McY">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            </tableViewCell>
-                        </prototypes>
-                        <connections>
-                            <outlet property="dataSource" destination="JEX-9P-axG" id="Gic-gn-nRZ"/>
-                            <outlet property="delegate" destination="JEX-9P-axG" id="qqw-uN-EtZ"/>
-                        </connections>
-                    </tableView>
+                            </tableView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="bottomMargin" secondItem="AJK-NQ-McY" secondAttribute="bottom" id="6Tr-MM-aaW"/>
+                            <constraint firstAttribute="topMargin" secondItem="AJK-NQ-McY" secondAttribute="top" id="Szt-HW-ahk"/>
+                            <constraint firstAttribute="trailing" secondItem="AJK-NQ-McY" secondAttribute="trailing" id="bmp-Co-UMD"/>
+                            <constraint firstItem="AJK-NQ-McY" firstAttribute="leading" secondItem="egU-3C-hu7" secondAttribute="leading" id="eMh-ZC-AyE"/>
+                        </constraints>
+                    </view>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="Detail" id="mOI-FS-AaM"/>
+                    <connections>
+                        <outlet property="tableView" destination="AJK-NQ-McY" id="NQV-h3-GCk"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="FJe-Yq-33r" sceneMemberID="firstResponder"/>
             </objects>
