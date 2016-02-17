@@ -10,12 +10,16 @@ import Foundation
 import Recon
 
 public protocol SwimModelProtocol: class, Equatable {
+    init()
     init?(reconValue: ReconValue)
     func toReconValue() -> ReconValue
     func update(reconValue: ReconValue)
 }
 
 public class SwimModel: SwimModelProtocol {
+    required public init() {
+    }
+
     required public init?(reconValue: ReconValue) {
     }
 

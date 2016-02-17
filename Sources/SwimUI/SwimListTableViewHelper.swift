@@ -27,11 +27,28 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         self.listManager.delegate = self
     }
 
+    func commitEdit(editingStyle: UITableViewCellEditingStyle, indexPath: NSIndexPath) {
+        if editingStyle == .Delete {
+            listManager.removeObjectAtIndex(indexPath.row)
+        }
+        else if editingStyle == .Insert {
+            listManager.insertNewObjectAtIndex(indexPath.row)
+        }
+    }
+
     @objc func swimDidAppend(item: AnyObject) {
         guard let count = delegate?.objects.count, let objectSection = delegate?.objectSection else {
             return
         }
         let indexPath = NSIndexPath(forRow: count - 1, inSection: objectSection)
+        tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+    }
+
+    @objc func swimDidInsert(object: AnyObject, atIndex index: Int) {
+        guard let objectSection = delegate?.objectSection else {
+            return
+        }
+        let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
         tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
     }
 

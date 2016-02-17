@@ -91,14 +91,7 @@ public class SwimListTableViewController : UITableViewController, SwimListTableV
     }
 
     override public func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        super.tableView(tableView, commitEditingStyle: editingStyle, forRowAtIndexPath: indexPath)
-
-        if editingStyle == .Delete {
-            listManager.removeObjectAtIndex(indexPath.row)
-        }
-        else if editingStyle == .Insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
-        }
+        tableViewHelper.commitEdit(editingStyle, indexPath: indexPath)
     }
 
     override public func tableView(tableView: UITableView, didHighlightRowAtIndexPath indexPath: NSIndexPath) {

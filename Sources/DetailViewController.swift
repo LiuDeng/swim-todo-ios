@@ -8,6 +8,10 @@ let LANE_URI: Uri = "todo/list"
 public class TodoItem: SwimModel {
     var label: String = ""
 
+    required public init() {
+        super.init()
+    }
+
     required public init?(reconValue: ReconValue) {
         super.init(reconValue: reconValue)
         update(reconValue)

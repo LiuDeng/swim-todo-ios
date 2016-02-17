@@ -18,6 +18,12 @@ public protocol SwimListManagerProtocol: class {
 
     func startSynching()
     func stopSynching()
+
+    /**
+     This will fail, and return nil, if the server connection is not open.
+     */
+    func insertNewObjectAtIndex(index: Int) -> Any?
+
     func moveObjectAtIndex(fromIndex: Int, toIndex: Int)
     func removeObjectAtIndex(index: Int)
     func setHighlightAtIndex(index: Int, isHighlighted: Bool)
@@ -25,6 +31,7 @@ public protocol SwimListManagerProtocol: class {
 
 @objc public protocol SwimListManagerDelegate: class {
     optional func swimDidAppend(object: AnyObject)
+    optional func swimDidInsert(object: AnyObject, atIndex: Int)
     optional func swimDidMove(fromIndex: Int, toIndex: Int)
     optional func swimDidRemove(index: Int, object: AnyObject)
     optional func swimDidReplace(index: Int, object: AnyObject)
@@ -76,6 +83,22 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         delegate?.swimDidStopSynching?()
     }
 
+    public func insertNewObjectAtIndex(index: Int) -> Any? {
+        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
+        guard let ns = nodeScope else {
+            return nil
+        }
+
+        let object = ObjectType()
+        let item = object.toReconValue()
+        objects.insert(object, atIndex: index)
+        DLog("Inserted new object at \(index)")
+
+        ns.command(lane: laneUri, body: Value(Attr("insert", Value(Slot("index", Value(index)), Slot("item", item)))))
+
+        return object
+    }
+
     public func moveObjectAtIndex(fromIndex: Int, toIndex: Int) {
         guard let ns = nodeScope else {
             return
@@ -123,7 +146,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         let heading = message.body.first
         switch heading.key?.text {
         case "insert"?:
-            break
+            didReceiveInsert(message)
 
         case "update"?:
             didReceiveUpdate(message)
@@ -134,9 +157,27 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         case "remove"?:
             didReceiveRemove(message)
 
-        default:
+        default:  // TODO: Check for "append" as a command here?
             didReceiveAppend(message)
         }
+    }
+
+    func didReceiveInsert(message: EventMessage) {
+        let heading = message.body.first
+        let item = message.body["item"]
+        guard let index = heading.value["index"].number else {
+            DLog("Received insert with no index!")
+            return
+        }
+        guard let object = ObjectType(reconValue: item) else {
+            DLog("Received insert with unparseable item!")
+            return
+        }
+
+        let idx = Int(index)
+        objects.insert(object, atIndex: idx)
+
+        delegate?.swimDidInsert?(object, atIndex: idx)
     }
 
     func didReceiveAppend(message: EventMessage) {
