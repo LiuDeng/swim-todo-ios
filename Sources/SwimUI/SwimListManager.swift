@@ -52,7 +52,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
     let laneUri: Uri
 
-    var downLink: DownlinkRef? = nil
+    var downLink: Downlink? = nil
 
     public init(laneUri: Uri) {
         self.laneUri = laneUri
