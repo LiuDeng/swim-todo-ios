@@ -1,8 +1,7 @@
 import UIKit
-import Recon
-import Swim
+import SwimSwift
 
-let LANE_URI: Uri = "todo/list"
+let LANE_URI: SwimUri = "todo/list"
 
 let kCellIdentifier = "Cell"
 let kRowHeight = CGFloat(50)
@@ -17,16 +16,16 @@ public class TodoItem: SwimModel {
         super.init()
     }
 
-    required public init?(reconValue: ReconValue) {
+    required public init?(reconValue: SwimValue) {
         super.init(reconValue: reconValue)
         update(reconValue)
     }
 
-    override public func toReconValue() -> ReconValue {
-        return Value(label)
+    override public func toReconValue() -> SwimValue {
+        return SwimValue(label)
     }
 
-    override public func update(reconValue: ReconValue) {
+    override public func update(reconValue: SwimValue) {
         label = reconValue.text ?? ""
         completed = false   // TODO: Put the completed flag on the wire
     }

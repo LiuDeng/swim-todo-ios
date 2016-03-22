@@ -8,7 +8,7 @@
 
 import Foundation
 import Recon
-import Swim
+import SwimSwift
 
 
 public protocol SwimListManagerProtocol: class {
@@ -50,11 +50,11 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
     public var nodeScope: NodeScope? = nil
 
-    let laneUri: Uri
+    let laneUri: SwimUri
 
     var downLink: Downlink? = nil
 
-    public init(laneUri: Uri) {
+    public init(laneUri: SwimUri) {
         self.laneUri = laneUri
     }
 

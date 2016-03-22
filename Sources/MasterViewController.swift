@@ -1,10 +1,10 @@
+import Google
+import SwimSwift
 import UIKit
-import Recon
-import Swim
 
 class MasterViewController: UITableViewController {
   let swim = SwimClient()
-  var todo: HostScope? = nil
+  var todo: HostScope! = nil
 
   var detailViewController: DetailViewController? = nil
   var objects = [NodeScope]()
