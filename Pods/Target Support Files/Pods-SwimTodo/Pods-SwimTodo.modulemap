@@ -1,0 +1,6 @@
+framework module Pods_SwimTodo {
+  umbrella header "Pods-SwimTodo-umbrella.h"
+
+  export *
+  module * { export * }
+}

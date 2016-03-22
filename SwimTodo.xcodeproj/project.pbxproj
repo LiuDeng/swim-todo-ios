@@ -31,6 +31,7 @@
 		85553D9C1C6B3D9D005D613B /* Recon.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 85553D991C6B3D6C005D613B /* Recon.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		85553D9E1C6B3D9F005D613B /* Swim.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85553D661C6B3A4A005D613B /* Swim.framework */; };
 		85553D9F1C6B3D9F005D613B /* Swim.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 85553D661C6B3A4A005D613B /* Swim.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EBC8AAF5EE35853873846E1C /* Pods_SwimTodo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CC21386D97264852988DB6 /* Pods_SwimTodo.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		30CC21386D97264852988DB6 /* Pods_SwimTodo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SwimTodo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		400648E01C72680000701533 /* TodoEntryTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TodoEntryTableViewCell.swift; sourceTree = "<group>"; };
 		400648E11C72680000701533 /* TodoEntryTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TodoEntryTableViewCell.xib; sourceTree = "<group>"; };
 		400648E41C7268DB00701533 /* TodoEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TodoEntry.swift; sourceTree = "<group>"; };
@@ -72,6 +74,7 @@
 		4048D7BA1C73C7C3002B490C /* SwimListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimListViewController.swift; sourceTree = "<group>"; };
 		4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CollectionType+Misc.swift"; sourceTree = "<group>"; };
 		4048D7BF1C7436E7002B490C /* WeakArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WeakArray.swift; sourceTree = "<group>"; };
+		84508E0E112F7E6A77F1CF05 /* Pods-SwimTodo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwimTodo.release.xcconfig"; path = "Pods/Target Support Files/Pods-SwimTodo/Pods-SwimTodo.release.xcconfig"; sourceTree = "<group>"; };
 		85553D381C6B31BA005D613B /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		85553D391C6B31BA005D613B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		85553D3B1C6B31BA005D613B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -87,6 +90,7 @@
 		855AA9801C6DB3250087347E /* swim.recon */ = {isa = PBXFileReference; lastKnownFileType = text; path = swim.recon; sourceTree = "<group>"; };
 		85674A371C68CA0100F299D7 /* SwimTodo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwimTodo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		85674A4D1C68CA0100F299D7 /* SwimTodo-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "SwimTodo-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E72C3CBB1736824CC3B9E128 /* Pods-SwimTodo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwimTodo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-SwimTodo/Pods-SwimTodo.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +100,7 @@
 			files = (
 				85553D9E1C6B3D9F005D613B /* Swim.framework in Frameworks */,
 				85553D9B1C6B3D9D005D613B /* Recon.framework in Frameworks */,
+				EBC8AAF5EE35853873846E1C /* Pods_SwimTodo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -196,6 +201,7 @@
 				85674A601C68CAD200F299D7 /* Frameworks */,
 				85674A381C68CA0100F299D7 /* Products */,
 				855AA97E1C6DB2CA0087347E /* Services */,
+				EB0ADF2B2E9812CF42EEE85D /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -213,8 +219,18 @@
 			children = (
 				85553D991C6B3D6C005D613B /* Recon.framework */,
 				85553D661C6B3A4A005D613B /* Swim.framework */,
+				30CC21386D97264852988DB6 /* Pods_SwimTodo.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		EB0ADF2B2E9812CF42EEE85D /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				E72C3CBB1736824CC3B9E128 /* Pods-SwimTodo.debug.xcconfig */,
+				84508E0E112F7E6A77F1CF05 /* Pods-SwimTodo.release.xcconfig */,
+			);
+			name = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -224,10 +240,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 85674A561C68CA0100F299D7 /* Build configuration list for PBXNativeTarget "SwimTodo" */;
 			buildPhases = (
+				E014E748291D47231207F3E6 /* 📦 Check Pods Manifest.lock */,
 				85674A331C68CA0100F299D7 /* Sources */,
 				85674A341C68CA0100F299D7 /* Frameworks */,
 				85674A351C68CA0100F299D7 /* Resources */,
 				85553D9D1C6B3D9D005D613B /* Embed Frameworks */,
+				4501B68623B074D9BA4C18CE /* 📦 Embed Pods Frameworks */,
+				E394C705249348D3F434C555 /* 📦 Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -315,6 +334,54 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4501B68623B074D9BA4C18CE /* 📦 Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "📦 Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-SwimTodo/Pods-SwimTodo-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		E014E748291D47231207F3E6 /* 📦 Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "📦 Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		E394C705249348D3F434C555 /* 📦 Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "📦 Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-SwimTodo/Pods-SwimTodo-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		85674A331C68CA0100F299D7 /* Sources */ = {
@@ -472,6 +539,7 @@
 		};
 		85674A571C68CA0100F299D7 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E72C3CBB1736824CC3B9E128 /* Pods-SwimTodo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -484,6 +552,7 @@
 		};
 		85674A581C68CA0100F299D7 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 84508E0E112F7E6A77F1CF05 /* Pods-SwimTodo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";

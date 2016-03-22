@@ -5,9 +5,6 @@
       location = "group:SwimTodo.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../swim-swift/Swim.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:../recon-swift/Recon.xcodeproj">
+      location = "group:Pods/Pods.xcodeproj">
    </FileRef>
 </Workspace>

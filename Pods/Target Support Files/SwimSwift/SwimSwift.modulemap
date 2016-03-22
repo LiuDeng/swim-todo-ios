@@ -1,0 +1,6 @@
+framework module SwimSwift {
+  umbrella header "SwimSwift-umbrella.h"
+
+  export *
+  module * { export * }
+}
