@@ -1,6 +1,10 @@
 import Google
+import SwiftyBeaver
 import SwimSwift
 import UIKit
+
+let log = SwiftyBeaver.self
+
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
@@ -9,12 +13,49 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         SwimLoggingSwiftyBeaver.enableConsoleDestination()
 
-        let splitViewController = self.window!.rootViewController as! UISplitViewController
-        let navigationController = splitViewController.viewControllers[splitViewController.viewControllers.count-1] as! UINavigationController
-        navigationController.topViewController!.navigationItem.leftBarButtonItem = splitViewController.displayModeButtonItem()
-        splitViewController.delegate = self
+        let loginManager = LoginManager()
+
+        let globals = SwimTodoGlobals()
+        globals.loginManager = loginManager
+        SwimTodoGlobals.instance = globals
+
+        configureSplitVC()
+
+        if loginManager.isUserSignedIn {
+            loginManager.signInSilently()
+            userSignedIn()
+        }
+        else {
+            showLogin()
+        }
+
         return true
     }
+
+    private func configureSplitVC() {
+        let splitVC = window!.rootViewController as! UISplitViewController
+        let nav = splitVC.viewControllers.last as! UINavigationController
+        nav.topViewController!.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
+        splitVC.delegate = self
+    }
+
+    private func userSignedIn() {
+        if window!.rootViewController is UISplitViewController {
+            log.verbose("User signed in already")
+        }
+        else {
+            log.verbose("User signed in, transitioning to main view")
+
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let mainVC = storyboard.instantiateInitialViewController()!
+            window!.fadeToVC(mainVC)
+        }
+    }
+
+    private func showLogin() {
+        window?.rootViewController = LoginViewController()
+    }
+
 
     /**
      For iOS 9 and above.
@@ -46,6 +87,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         return false
     }
 
+
     // MARK: - Split view
 
     func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController:UIViewController, ontoPrimaryViewController primaryViewController:UIViewController) -> Bool {
@@ -59,3 +101,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     }
 }
 
+
+extension UIWindow {
+    func fadeToVC(vc: UIViewController) {
+        UIView.animateWithDuration(0.3, delay: 0.0, options: .CurveEaseInOut, animations: {
+            self.alpha = 0.0
+        }, completion: { _ in
+            self.rootViewController = vc
+            UIView.animateWithDuration(0.3, delay: 0.15, options: .CurveEaseInOut, animations: {
+                self.alpha = 1.0
+            }, completion: nil)
+        })
+    }
+}
