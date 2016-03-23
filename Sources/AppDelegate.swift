@@ -65,6 +65,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         let sourceApplication = options[UIApplicationOpenURLOptionsSourceApplicationKey] as! String
         let annotation = options[UIApplicationOpenURLOptionsAnnotationKey]
 
+        // URL handler for Google Sign-in.
         if GIDSignIn.sharedInstance().handleURL(url, sourceApplication: sourceApplication, annotation: annotation) {
             return true
         }
@@ -78,6 +79,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
      For iOS 8 and below.
      */
     func application(application: UIApplication, openURL url: NSURL, sourceApplication: String?, annotation: AnyObject) -> Bool {
+
+        // URL handler for Google Sign-in.
         if GIDSignIn.sharedInstance().handleURL(url, sourceApplication: sourceApplication, annotation: annotation) {
             return true
         }
