@@ -24,7 +24,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>it.swim.swimtodo</string>
+			<string></string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>it.swim.swimtodo</string>
