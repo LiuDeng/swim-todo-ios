@@ -1,39 +1,39 @@
 PODS:
-  - Google/Core (1.3.2):
+  - Google/Core (2.0.3):
     - GoogleInterchangeUtilities (~> 1.0)
     - GoogleNetworkingUtilities (~> 1.0)
     - GoogleSymbolUtilities (~> 1.0)
     - GoogleUtilities (~> 1.1)
-  - Google/SignIn (1.3.2):
+  - Google/SignIn (2.0.3):
     - Google/Core
-    - GoogleSignIn (~> 2.0)
-  - GoogleAppUtilities (1.0.0):
+    - GoogleSignIn (~> 3.0)
+  - GoogleAppUtilities (1.1.0):
     - GoogleSymbolUtilities (~> 1.0)
-  - GoogleAuthUtilities (1.0.1):
+  - GoogleAuthUtilities (2.0.0):
     - GoogleNetworkingUtilities (~> 1.0)
     - GoogleSymbolUtilities (~> 1.0)
-  - GoogleInterchangeUtilities (1.1.0):
+  - GoogleInterchangeUtilities (1.2.0):
     - GoogleSymbolUtilities (~> 1.0)
-  - GoogleNetworkingUtilities (1.0.0):
+  - GoogleNetworkingUtilities (1.2.0):
     - GoogleSymbolUtilities (~> 1.0)
-  - GoogleSignIn (2.4.0):
+  - GoogleSignIn (3.0.0):
     - GoogleAppUtilities (~> 1.0)
-    - GoogleAuthUtilities (~> 1.0)
+    - GoogleAuthUtilities (~> 2.0)
     - GoogleNetworkingUtilities (~> 1.0)
     - GoogleUtilities (~> 1.0)
-  - GoogleSymbolUtilities (1.0.3)
-  - GoogleUtilities (1.1.0):
-    - GoogleSymbolUtilities (~> 1.0.0)
+  - GoogleSymbolUtilities (1.1.0)
+  - GoogleUtilities (1.2.0):
+    - GoogleSymbolUtilities (~> 1.0)
   - Recon (0.1.8)
   - SwiftyBeaver (0.4.1)
-  - SwimSwift (0.1.9):
+  - SwimSwift (0.1.10):
     - Recon
-    - SwimSwift/Core (= 0.1.9)
-  - SwimSwift/Core (0.1.9):
+    - SwimSwift/Core (= 0.1.10)
+  - SwimSwift/Core (0.1.10):
     - Recon
-  - SwimSwift/GoogleSignIn (0.1.9):
+  - SwimSwift/GoogleSignIn (0.1.10):
     - Recon
-  - SwimSwift/SwiftyBeaver (0.1.9):
+  - SwimSwift/SwiftyBeaver (0.1.10):
     - Recon
     - SwiftyBeaver (= 0.4.1)
 
@@ -44,17 +44,17 @@ DEPENDENCIES:
   - SwimSwift/SwiftyBeaver
 
 SPEC CHECKSUMS:
-  Google: 97618e118111b998cce1d8dd1bd98b82301d72db
-  GoogleAppUtilities: c01c6a5671e9da8b9d690fdaec5959d6c2aac699
-  GoogleAuthUtilities: 049ffd3a297cdffd271451b82fd4e75304f15ef3
-  GoogleInterchangeUtilities: d7f7174176fbcf9710f696f1acebad4dbd98ac03
-  GoogleNetworkingUtilities: 292992ab31b7b4ba32809a0e8b40e324cdfb2c0c
-  GoogleSignIn: 79929b51e6299c69f1197bbd9c7a1367d523ecd8
-  GoogleSymbolUtilities: 82ad9f93d3615244b3f4ce440f5ab2515e8b4f56
-  GoogleUtilities: 8ed9134debe11719097881711464752900668f10
+  Google: 61379f0072bc561a7e174d23a6cbe41bd6d8599c
+  GoogleAppUtilities: 974598e8ed618c74ead33541d9caffbc3d144266
+  GoogleAuthUtilities: 79e4143c77a08081a480b08df27a066cc8944f43
+  GoogleInterchangeUtilities: 427382e42d8a340038bec37c6fdfd316e14b5fa2
+  GoogleNetworkingUtilities: ec1e9911aca811eb18b7144394fee6168b607785
+  GoogleSignIn: 3d571172b8603be39dcb1705d8217146bb76fe62
+  GoogleSymbolUtilities: eb3965ea12710569c7b80db198a39e39b18613f7
+  GoogleUtilities: 85f8ad6b251544286a97163133d042ec95f889c5
   Recon: e98dfb8fdc4f694f5222dd620887cefbc23f2f06
   SwiftyBeaver: 9b812ea0488ada996aca9df6deea851b0f3af226
-  SwimSwift: 758410a10f57a6e9499c4aef2bf65e525ae799b7
+  SwimSwift: 5ae4b07e6bcad558c11a3a1580d354b1fe589833
 
 PODFILE CHECKSUM: c4450464167ca8851e348322bbea7e9799ba20d5
 

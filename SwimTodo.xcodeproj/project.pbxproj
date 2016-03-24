@@ -32,10 +32,6 @@
 		85553D461C6B31BA005D613B /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D3E1C6B31BA005D613B /* DetailViewController.swift */; };
 		85553D481C6B31BA005D613B /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D401C6B31BA005D613B /* MasterViewController.swift */; };
 		85553D4D1C6B31C2005D613B /* SwimTodoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D4B1C6B31C2005D613B /* SwimTodoTests.swift */; };
-		85553D9B1C6B3D9D005D613B /* Recon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85553D991C6B3D6C005D613B /* Recon.framework */; };
-		85553D9C1C6B3D9D005D613B /* Recon.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 85553D991C6B3D6C005D613B /* Recon.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		85553D9E1C6B3D9F005D613B /* Swim.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85553D661C6B3A4A005D613B /* Swim.framework */; };
-		85553D9F1C6B3D9F005D613B /* Swim.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 85553D661C6B3A4A005D613B /* Swim.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EBC8AAF5EE35853873846E1C /* Pods_SwimTodo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CC21386D97264852988DB6 /* Pods_SwimTodo.framework */; };
 /* End PBXBuildFile section */
 
@@ -56,8 +52,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				85553D9F1C6B3D9F005D613B /* Swim.framework in Embed Frameworks */,
-				85553D9C1C6B3D9D005D613B /* Recon.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -108,8 +102,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				85553D9E1C6B3D9F005D613B /* Swim.framework in Frameworks */,
-				85553D9B1C6B3D9D005D613B /* Recon.framework in Frameworks */,
 				EBC8AAF5EE35853873846E1C /* Pods_SwimTodo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

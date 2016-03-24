@@ -18,7 +18,7 @@ class LoginManager {
         // Google's sign-in events from then on.
         let gidSignIn = GIDSignIn.sharedInstance()
         let swimClient = SwimClient.sharedInstance
-        swimClient.connectAfterGoogleSignIn(gidSignIn, host: "ws://todo.swim.services")
+        swimClient.registerGoogleSignIn(gidSignIn)
     }
 
     /**

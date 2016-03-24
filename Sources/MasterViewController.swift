@@ -3,7 +3,6 @@ import SwimSwift
 import UIKit
 
 class MasterViewController: UITableViewController {
-  let swim = SwimClient()
   var todo: HostScope! = nil
 
   var detailViewController: DetailViewController? = nil
@@ -22,9 +21,9 @@ class MasterViewController: UITableViewController {
         self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
     }
 
-    todo = swim.scope(host: "ws://todo.swim.services")
-    let groceryList = todo!.scope(node: "/todo/grocery")
-    let elementsList = todo!.scope(node: "/todo/elements")
+    let swim = SwimClient.sharedInstance
+    let groceryList = swim.scope(node: "/todo/grocery")
+    let elementsList = swim.scope(node: "/todo/elements")
     objects = [groceryList, elementsList]
   }
 

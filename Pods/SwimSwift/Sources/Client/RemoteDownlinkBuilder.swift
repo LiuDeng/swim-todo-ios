@@ -1,6 +1,4 @@
 struct RemoteDownlinkBuilder: DownlinkBuilder {
-    weak var client: SwimClient? = nil
-
     weak var channel: Channel? = nil
 
     weak var scope: RemoteScope? = nil
@@ -48,10 +46,6 @@ struct RemoteDownlinkBuilder: DownlinkBuilder {
 
     init(channel: Channel) {
         self.channel = channel
-    }
-
-    init(client: SwimClient) {
-        self.client =  client
     }
 
     init(channel: Channel, scope: RemoteScope, host: SwimUri) {
@@ -183,23 +177,19 @@ struct RemoteDownlinkBuilder: DownlinkBuilder {
         return builder
     }
 
-    func normalize() -> RemoteDownlinkBuilder {
+    private func normalize() -> RemoteDownlinkBuilder {
         var builder = self
         if let hostUri = builder.hostUri, let nodeUri = builder.nodeUri {
             builder.nodeUri = hostUri.resolve(nodeUri)
         } else if let nodeUri = builder.nodeUri {
-            builder.hostUri = SwimClient.getHostUri(node: nodeUri)
+            builder.hostUri = nodeUri.hostUri
         } else {
             fatalError("DownlinkBuilder has no nodeUri")
-        }
-        if builder.channel == nil {
-            builder.channel = builder.client!.getOrCreateChannel(builder.hostUri!)
-            builder.client = nil
         }
         return builder
     }
 
-    func registerDownlink(downlink: RemoteDownlink) {
+    private func registerDownlink(downlink: RemoteDownlink) {
         downlink.keepAlive = keepalive
         downlink.event = event
         downlink.command = command

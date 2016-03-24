@@ -9,7 +9,7 @@
 import UIKit
 
 import Recon
-import Swim
+import SwimSwift
 
 
 public class SwimListTableViewController: UITableViewController, SwimListTableViewHelperDelegate {

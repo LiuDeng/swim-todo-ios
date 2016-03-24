@@ -13,6 +13,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         SwimLoggingSwiftyBeaver.enableConsoleDestination()
 
+        let swim = SwimClient.sharedInstance
+        swim.hostUri = SwimUri(stringLiteral: "ws://todo.swim.services")
+
         let loginManager = LoginManager()
 
         let globals = SwimTodoGlobals()

@@ -3,9 +3,6 @@
  */
 public protocol HostScope {
 
-    /// The URI of the network endpoint to which the scope is bound.
-    var hostUri: SwimUri { get }
-
     /**
      - returns: A new `NodeScope` bound to the service at the given `node` URI on the network endpoint to which this scope is bound.
 

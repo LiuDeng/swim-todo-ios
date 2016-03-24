@@ -12,21 +12,33 @@ import Google
 import ObjectiveC
 import Recon
 
+private let log = SwimLogging.log
+
 
 public extension SwimClient {
-    public func connectAfterGoogleSignIn(gidSignIn: GIDSignIn, host: String) {
-        connectAfterGoogleSignIn(gidSignIn, hostUri: Uri(stringLiteral: host))
-    }
-
-    public func connectAfterGoogleSignIn(gidSignIn: GIDSignIn, hostUri: Uri) {
+    public func registerGoogleSignIn(gidSignIn: GIDSignIn) {
         var configureError: NSError?
         GGLContext.sharedInstance().configureWithError(&configureError)
-        assert(configureError == nil, "Error configuring Google services: \(configureError)")
+        precondition(configureError == nil, "Error configuring Google services: \(configureError)")
 
-        swimGoogleSignInDelegate = SwimGoogleSignInDelegate(self, hostUri)
-        gidSignIn.delegate = swimGoogleSignInDelegate
+        var delegate: SwimGoogleSignInDelegate
+        if gidSignIn.swimGoogleSignInDelegate == nil {
+            delegate = SwimGoogleSignInDelegate()
+            gidSignIn.swimGoogleSignInDelegate = delegate
+            gidSignIn.delegate = delegate
+        }
+        else {
+            precondition(gidSignIn.delegate is SwimGoogleSignInDelegate,
+                ("connectAfterGoogleSignIn needs GIDSignIn.delegate for itself. " +
+                    "You cannot set GIDSignIn.delegate and use connectAfterGoogleSignIn"))
+            preconditionFailure("Using multiple SwimClient instances with connectAfterGoogleSignIn is not implemented")
+        }
+        delegate.swimClient = self
     }
+}
 
+
+private extension GIDSignIn {
     private var swimGoogleSignInDelegate: SwimGoogleSignInDelegate? {
         get {
             return objc_getAssociatedObject(self, &AssociatedKeys.swimGoogleSignInDelegate) as? SwimGoogleSignInDelegate
@@ -44,32 +56,29 @@ public extension SwimClient {
 
 private class SwimGoogleSignInDelegate: NSObject, GIDSignInDelegate {
     private weak var swimClient: SwimClient?
-    private let hostUri: Uri
-
-    init(_ swimClient: SwimClient, _ hostUri: Uri) {
-        self.swimClient = swimClient
-        self.hostUri = hostUri
-        super.init()
-    }
-
 
     // MARK: GIDSignInDelegate
 
     @objc func signIn(signIn: GIDSignIn!, didSignInForUser user: GIDGoogleUser!, withError error: NSError!) {
+        guard let swimClient = swimClient else {
+            log.warning("Got sign-in response but SwimClient instance has been deallocated.  Doing nothing.")
+            return
+        }
+
         if (error == nil) {
             let idToken = user.authentication.idToken
             var credentials = ReconRecord()
-            credentials["googleIdToken"] = Value(idToken)
-            NSLog("Signing in as \(user.userID)")
-            swimClient?.auth(host: hostUri, credentials: Value(credentials))
+            credentials["googleIdToken"] = SwimValue(idToken)
+            log.verbose("Signing in as \(user.userID)")
+            swimClient.auth(credentials: SwimValue(credentials))
         }
         else {
-            NSLog("\(error)")
+            log.warning("\(error)")
         }
     }
 
     @objc func signIn(signIn: GIDSignIn!, didDisconnectWithUser user:GIDGoogleUser!, withError error: NSError!) {
-        NSLog("\(error)")
+        log.info("\(error)")
     }
 }
 
