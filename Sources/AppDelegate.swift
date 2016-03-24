@@ -24,13 +24,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 
         configureSplitVC()
 
-        if loginManager.isUserSignedIn {
-            loginManager.signInSilently()
+//        if loginManager.isUserSignedIn {
+//            loginManager.signInSilently()
             userSignedIn()
-        }
-        else {
-            showLogin()
-        }
+//        }
+//        else {
+//            showLogin()
+//        }
 
         return true
     }
