@@ -11,7 +11,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     var window: UIWindow?
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+
+        // Configure the SwiftyBeaver logging to use the Xcode console.
+        // You can optionally add a log level.  Use .Verbose to see every
+        // transaction through Swim.  Use .Info or .Warn to reduce the
+        // noise.
+        //
+        // This is optional, and is only making calls into SwiftyBeaver.
+        // If you want to configure SwiftyBeaver directly, then you can.
         SwimLoggingSwiftyBeaver.enableConsoleDestination()
+//        SwimLoggingSwiftyBeaver.enableConsoleDestination(.Verbose)
 
         let swim = SwimClient.sharedInstance
         swim.hostUri = SwimUri(stringLiteral: "ws://todo.swim.services")
