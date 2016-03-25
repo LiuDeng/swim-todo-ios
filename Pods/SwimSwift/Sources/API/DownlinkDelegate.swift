@@ -1,7 +1,7 @@
 public protocol DownlinkDelegate {
-    func downlink(downlink: Downlink, event message: EventMessage)
+    func downlink(downlink: Downlink, events: [EventMessage])
 
-    func downlink(downlink: Downlink, command message: CommandMessage)
+    func downlink(downlink: Downlink, commands: [CommandMessage])
 
     func downlink(downlink: Downlink, willLink request: LinkRequest)
 
@@ -23,9 +23,9 @@ public protocol DownlinkDelegate {
 }
 
 public extension DownlinkDelegate {
-    public func downlink(downlink: Downlink, event message: EventMessage) {}
+    public func downlink(downlink: Downlink, events: [EventMessage]) {}
 
-    public func downlink(downlink: Downlink, command message: CommandMessage) {}
+    public func downlink(downlink: Downlink, commands: [CommandMessage]) {}
 
     public func downlink(downlink: Downlink, willLink request: LinkRequest) {}
 

@@ -11,28 +11,6 @@ public protocol DownlinkBuilder {
 
     func delegate(delegate: DownlinkDelegate) -> Self
 
-    func event(callback: EventMessage -> Void) -> Self
-
-    func command(callback: CommandMessage -> Void) -> Self
-
-    func willLink(callback: LinkRequest -> Void) -> Self
-
-    func didLink(callback: LinkedResponse -> Void) -> Self
-
-    func willSync(callback: SyncRequest -> Void) -> Self
-
-    func didSync(callback: SyncedResponse -> Void) -> Self
-
-    func willUnlink(callback: UnlinkRequest -> Void) -> Self
-
-    func didUnlink(callback: UnlinkedResponse -> Void) -> Self
-
-    func didConnect(callback: () -> Void) -> Self
-
-    func didDisconnect(callback: () -> Void) -> Self
-
-    func didClose(callback: () -> Void) -> Self
-
     /// Sets the `primaryKey` function used to extract unique keys from message bodies received over a `MapDownlink`.
     func primaryKey(primaryKey: SwimValue -> SwimValue) -> Self
 

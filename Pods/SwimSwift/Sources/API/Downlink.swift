@@ -20,28 +20,6 @@ public protocol Downlink {
 
     var delegate: DownlinkDelegate? { get set }
 
-    var event: (EventMessage -> Void)? { get set }
-
-    var command: (CommandMessage -> Void)? { get set }
-
-    var willLink: (LinkRequest -> Void)? { get set }
-
-    var didLink: (LinkedResponse -> Void)? { get set }
-
-    var willSync: (SyncRequest -> Void)? { get set }
-
-    var didSync: (SyncedResponse -> Void)? { get set }
-
-    var willUnlink: (UnlinkRequest -> Void)? { get set }
-
-    var didUnlink: (UnlinkedResponse -> Void)? { get set }
-
-    var didConnect: (() -> Void)? { get set }
-
-    var didDisconnect: (() -> Void)? { get set }
-
-    var didClose: (() -> Void)? { get set }
-
     /// Send a command to the remote lane to which this `Downlink` is connected.
     func command(body body: SwimValue)
 

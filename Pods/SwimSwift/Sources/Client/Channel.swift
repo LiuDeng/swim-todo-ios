@@ -26,6 +26,9 @@ class Channel: HostScope, WebSocketDelegate {
     private let sendBufferSize: Int = 1024 // TODO: make configurable
 
     private var socket: WebSocket?
+    private let socketQueue = dispatch_queue_create("it.swim.Channel", DISPATCH_QUEUE_SERIAL)
+
+    private var pendingMessages: Batcher<Envelope>!
 
     private var credentials: Value = Value.Absent
 
@@ -33,6 +36,10 @@ class Channel: HostScope, WebSocketDelegate {
         self.hostUri = host
         self.protocols = protocols
         self.uriCache = UriCache(baseUri: host)
+
+        pendingMessages = Batcher<Envelope>(minDelay: 0.01, maxDelay: 0.1, dispatchQueue: dispatch_get_main_queue(), onBatch: { [weak self] messages in
+            self?.handlePendingMessages(messages)
+        })
     }
 
     var isConnected: Bool {
@@ -154,45 +161,32 @@ class Channel: HostScope, WebSocketDelegate {
     }
 
 
-    private func onEnvelope(envelope: Envelope) {
-        log.verbose("\(envelope)")
+    private func onEventMessages(messages: [EventMessage]) {
+        var resolvedMessages = [SwimUri: [SwimUri: [EventMessage]]]()
+        for message in messages {
+            let node = resolve(message.node)
+            let lane = message.lane
+            let resolvedMessage = message.withNode(node)
 
-        switch envelope {
-        case let message as EventMessage:
-            onEventMessage(message)
-        case let message as CommandMessage:
-            onCommandMessage(message)
-        case let request as LinkRequest:
-            onLinkRequest(request)
-        case let response as LinkedResponse:
-            onLinkedResponse(response)
-        case let request as SyncRequest:
-            onSyncRequest(request)
-        case let response as SyncedResponse:
-            onSyncedResponse(response)
-        case let request as UnlinkRequest:
-            onUnlinkRequest(request)
-        case let response as UnlinkedResponse:
-            onUnlinkedResponse(response)
-        default:
-            log.warning("Unknown envelope \(envelope)")
+            var nodeMessages = resolvedMessages[node] ?? [SwimUri: [EventMessage]]()
+            var laneMessages = nodeMessages[lane] ?? [EventMessage]()
+            laneMessages.append(resolvedMessage)
+            nodeMessages[lane] = laneMessages
+            resolvedMessages[node] = nodeMessages
         }
-    }
 
-    private func onEventMessage(message: EventMessage) {
-        let node = resolve(message.node)
-        let lane = message.lane
-        if let nodeDownlinks = downlinks[node] {
-            if let laneDownlinks = nodeDownlinks[lane] {
-                let resolvedMessage = message.withNode(node)
-                for downlink in laneDownlinks {
-                    downlink.onEventMessage(resolvedMessage)
+        for (node, nodeMessages) in resolvedMessages {
+            for (lane, laneMessages) in nodeMessages {
+                if let nodeDownlinks = downlinks[node], let laneDownlinks = nodeDownlinks[lane] {
+                    for downlink in laneDownlinks {
+                        downlink.onEventMessages(laneMessages)
+                    }
                 }
             }
         }
     }
 
-    private func onCommandMessage(message: CommandMessage) {
+    private func onCommandMessages(messages: [CommandMessage]) {
         // TODO: Support client services.
     }
 
@@ -294,8 +288,10 @@ class Channel: HostScope, WebSocketDelegate {
             reconnectTimeout = 0.0
         }
         if socket == nil {
-            socket = WebSocket(hostUri.uri, subProtocols: protocols)
-            socket!.delegate = self
+            let s = WebSocket(hostUri.uri, subProtocols: protocols)
+            s.eventQueue = socketQueue
+            s.delegate = self
+            socket = s
         }
     }
 
@@ -373,8 +369,75 @@ class Channel: HostScope, WebSocketDelegate {
     }
 
 
-    // MARK: WebSocketDelegate
+    private func handlePendingMessages(messages: [Envelope]) {
+        var commandBatch = [CommandMessage]()
+        var eventBatch = [EventMessage]()
 
+        func flushCommandBatch() {
+            if commandBatch.count > 0 {
+                onCommandMessages(commandBatch)
+                commandBatch = []
+            }
+        }
+
+        func flushEventBatch() {
+            if eventBatch.count > 0 {
+                onEventMessages(eventBatch)
+                eventBatch = []
+            }
+        }
+
+        func flushAllBatches() {
+            flushCommandBatch()
+            flushEventBatch()
+        }
+
+        for envelope in messages {
+            log.verbose("\(envelope)")
+
+            switch envelope {
+            case let message as EventMessage:
+                flushCommandBatch()
+                eventBatch.append(message)
+
+            case let message as CommandMessage:
+                flushEventBatch()
+                commandBatch.append(message)
+
+            case let request as LinkRequest:
+                flushAllBatches()
+                onLinkRequest(request)
+
+            case let response as LinkedResponse:
+                flushAllBatches()
+                onLinkedResponse(response)
+
+            case let request as SyncRequest:
+                flushAllBatches()
+                onSyncRequest(request)
+
+            case let response as SyncedResponse:
+                flushAllBatches()
+                onSyncedResponse(response)
+
+            case let request as UnlinkRequest:
+                flushAllBatches()
+                onUnlinkRequest(request)
+
+            case let response as UnlinkedResponse:
+                flushAllBatches()
+                onUnlinkedResponse(response)
+
+            default:
+                log.warning("Unknown envelope \(envelope)")
+            }
+        }
+
+        flushAllBatches()
+    }
+
+
+    // MARK: WebSocketDelegate
 
     @objc func webSocketOpen() {
         if credentials.isDefined {
@@ -391,9 +454,12 @@ class Channel: HostScope, WebSocketDelegate {
     }
 
     @objc func webSocketMessageText(text: String) {
-        if let envelope = Proto.parse(recon: text) {
-            onEnvelope(envelope)
+        guard let envelope = Proto.parse(recon: text) else {
+            log.warning("Received unparsable message \(text)")
+            return
         }
+
+        pendingMessages.addObject(envelope)
     }
 
     @objc func webSocketError(error: NSError) {

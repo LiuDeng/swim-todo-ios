@@ -8,6 +8,9 @@
 
 import UIKit
 
+private let log = SwimLogging.log
+
+
 protocol SwimListTableViewHelperDelegate: class {
     var objects: [AnyObject] { get }
     var objectSection: Int { get }
@@ -15,6 +18,7 @@ protocol SwimListTableViewHelperDelegate: class {
 
 class SwimListTableViewHelper: SwimListManagerDelegate {
     let listManager: SwimListManagerProtocol
+    var firstSync = true
 
     weak var delegate: SwimListTableViewHelperDelegate?
     weak var tableView: UITableView?
@@ -33,12 +37,28 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         }
     }
 
+    @objc func swimWillChangeObjects() {
+        if !firstSync {
+            tableView?.beginUpdates()
+        }
+    }
+
+    @objc func swimDidChangeObjects() {
+        if firstSync {
+            log.debug("First sync added \(delegate?.objects.count ?? 0) objects")
+            firstSync = false
+        }
+        else {
+            tableView?.endUpdates()
+        }
+    }
+
     @objc func swimDidAppend(item: AnyObject) {
         guard let count = delegate?.objects.count, let objectSection = delegate?.objectSection else {
             return
         }
         let indexPath = NSIndexPath(forRow: count - 1, inSection: objectSection)
-        tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+        tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: (firstSync ? .None : .Fade))
     }
 
     @objc func swimDidInsert(object: AnyObject, atIndex index: Int) {
@@ -46,7 +66,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
             return
         }
         let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
-        tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+        tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: (firstSync ? .None : .Fade))
     }
 
     @objc func swimDidMove(fromIndex: Int, toIndex: Int) {

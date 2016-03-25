@@ -17,28 +17,6 @@ class RemoteDownlink: Downlink, Hashable {
 
     var delegate: DownlinkDelegate? = nil
 
-    var event: (EventMessage -> Void)? = nil
-
-    var command: (CommandMessage -> Void)? = nil
-
-    var willLink: (LinkRequest -> Void)? = nil
-
-    var didLink: (LinkedResponse -> Void)? = nil
-
-    var willSync: (SyncRequest -> Void)? = nil
-
-    var didSync: (SyncedResponse -> Void)? = nil
-
-    var willUnlink: (UnlinkRequest -> Void)? = nil
-
-    var didUnlink: (UnlinkedResponse -> Void)? = nil
-
-    var didConnect: (() -> Void)? = nil
-
-    var didDisconnect: (() -> Void)? = nil
-
-    var didClose: (() -> Void)? = nil
-
     init(channel: Channel, scope: RemoteScope?, host: SwimUri, node: SwimUri, lane: SwimUri, prio: Double) {
         self.channel = channel
         self.scope = scope
@@ -52,53 +30,47 @@ class RemoteDownlink: Downlink, Hashable {
         return channel.isConnected
     }
 
-    func onEventMessage(message: EventMessage) {
-        event?(message)
-        delegate?.downlink(self, event: message)
+    func onEventMessages(messages: [EventMessage]) {
+        delegate?.downlink(self, events: messages)
     }
 
     func onCommandMessage(message: CommandMessage) {
-        command?(message)
-        delegate?.downlink(self, command: message)
+        onCommandMessages([message])
+    }
+
+    func onCommandMessages(messages: [CommandMessage]) {
+        delegate?.downlink(self, commands: messages)
     }
 
     func onLinkRequest(request: LinkRequest) {
-        willLink?(request)
         delegate?.downlink(self, willLink: request)
     }
 
     func onLinkedResponse(response: LinkedResponse) {
-        didLink?(response)
         delegate?.downlink(self, didLink: response)
     }
 
     func onSyncRequest(request: SyncRequest) {
-        willSync?(request)
         delegate?.downlink(self, willSync: request)
     }
 
     func onSyncedResponse(response: SyncedResponse) {
-        didSync?(response)
         delegate?.downlink(self, didSync: response)
     }
 
     func onUnlinkRequest(request: UnlinkRequest) {
-        willUnlink?(request)
         delegate?.downlink(self, willUnlink: request)
     }
 
     func onUnlinkedResponse(response: UnlinkedResponse) {
-        didUnlink?(response)
         delegate?.downlink(self, didUnlink: response)
     }
 
     func onConnect() {
-        didConnect?()
         delegate?.downlinkDidConnect(self)
     }
 
     func onDisconnect() {
-        didDisconnect?()
         delegate?.downlinkDidDisconnect(self)
         if !keepAlive {
             close()
@@ -108,7 +80,6 @@ class RemoteDownlink: Downlink, Hashable {
     func onError(error: NSError) {}
 
     func onClose() {
-        didClose?()
         delegate?.downlinkDidClose(self)
     }
 

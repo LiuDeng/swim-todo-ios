@@ -15,29 +15,7 @@ struct RemoteDownlinkBuilder: DownlinkBuilder {
 
     var delegate: DownlinkDelegate? = nil
 
-    var event: (EventMessage -> Void)? = nil
-
-    var command: (CommandMessage -> Void)? = nil
-
-    var willLink: (LinkRequest -> Void)? = nil
-
-    var didLink: (LinkedResponse -> Void)? = nil
-
-    var willSync: (SyncRequest -> Void)? = nil
-
-    var didSync: (SyncedResponse -> Void)? = nil
-
-    var willUnlink: (UnlinkRequest -> Void)? = nil
-
-    var didUnlink: (UnlinkedResponse -> Void)? = nil
-
     var primaryKey: (SwimValue -> SwimValue)? = nil
-
-    var didConnect: (() -> Void)? = nil
-
-    var didDisconnect: (() -> Void)? = nil
-
-    var didClose: (() -> Void)? = nil
 
     init(channel: Channel, scope: RemoteScope) {
         self.channel = channel
@@ -105,72 +83,6 @@ struct RemoteDownlinkBuilder: DownlinkBuilder {
         return builder
     }
 
-    func event(callback: EventMessage -> Void) -> RemoteDownlinkBuilder {
-        var builder = self
-        builder.event = callback
-        return builder
-    }
-
-    func command(callback: CommandMessage -> Void) -> RemoteDownlinkBuilder {
-        var builder = self
-        builder.command = callback
-        return builder
-    }
-
-    func willLink(callback: LinkRequest -> Void) -> RemoteDownlinkBuilder {
-        var builder = self
-        builder.willLink = callback
-        return builder
-    }
-
-    func didLink(callback: LinkedResponse -> Void) -> RemoteDownlinkBuilder {
-        var builder = self
-        builder.didLink = callback
-        return builder
-    }
-
-    func willSync(callback: SyncRequest -> Void) -> RemoteDownlinkBuilder {
-        var builder = self
-        builder.willSync = callback
-        return builder
-    }
-
-    func didSync(callback: SyncedResponse -> Void) -> RemoteDownlinkBuilder {
-        var builder = self
-        builder.didSync = callback
-        return builder
-    }
-
-    func willUnlink(callback: UnlinkRequest -> Void) -> RemoteDownlinkBuilder {
-        var builder = self
-        builder.willUnlink = callback
-        return builder
-    }
-
-    func didUnlink(callback: UnlinkedResponse -> Void) -> RemoteDownlinkBuilder {
-        var builder = self
-        builder.didUnlink = callback
-        return builder
-    }
-
-    func didConnect(callback: () -> Void) -> RemoteDownlinkBuilder {
-        var builder = self
-        builder.didConnect = callback
-        return builder
-    }
-
-    func didDisconnect(callback: () -> Void) -> RemoteDownlinkBuilder {
-        var builder = self
-        builder.didDisconnect = callback
-        return builder
-    }
-
-    func didClose(callback: () -> Void) -> RemoteDownlinkBuilder {
-        var builder = self
-        builder.didClose = callback
-        return builder
-    }
-
     func primaryKey(primaryKey: SwimValue -> SwimValue) -> RemoteDownlinkBuilder {
         var builder = self
         builder.primaryKey = primaryKey
@@ -190,18 +102,8 @@ struct RemoteDownlinkBuilder: DownlinkBuilder {
     }
 
     private func registerDownlink(downlink: RemoteDownlink) {
+        downlink.delegate = delegate
         downlink.keepAlive = keepalive
-        downlink.event = event
-        downlink.command = command
-        downlink.willLink = willLink
-        downlink.didLink = didLink
-        downlink.willSync = willSync
-        downlink.didSync = didSync
-        downlink.willUnlink = willUnlink
-        downlink.didUnlink = didUnlink
-        downlink.didConnect = didConnect
-        downlink.didDisconnect = didDisconnect
-        downlink.didClose = didClose
         channel!.registerDownlink(downlink)
         if let scope = self.scope {
             scope.registerDownlink(downlink)

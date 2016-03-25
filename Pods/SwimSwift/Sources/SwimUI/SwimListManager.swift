@@ -32,19 +32,35 @@ public protocol SwimListManagerProtocol: class {
 }
 
 @objc public protocol SwimListManagerDelegate: class {
+    /**
+     Will be called whenever commands are received that will change SwimListManagerProtocol.objects,
+     and before those commands are processed.
+
+    In other words, this indicates the start of a batch of calls to swimDid{Append,Insert,Move,Remove,Replace}.
+     */
+    optional func swimWillChangeObjects()
+
+    /**
+     Will be called after a batch of changes to SwimListManagerProtocol.objects has been processed.
+
+     In other words, this indicates the end of a batch of calls to swimDid{Append,Insert,Move,Remove,Replace}.
+     */
+    optional func swimDidChangeObjects()
+
     optional func swimDidAppend(object: AnyObject)
     optional func swimDidInsert(object: AnyObject, atIndex: Int)
     optional func swimDidMove(fromIndex: Int, toIndex: Int)
     optional func swimDidRemove(index: Int, object: AnyObject)
     optional func swimDidReplace(index: Int, object: AnyObject)
+
     optional func swimDidSetHighlight(index: Int, isHighlighted: Bool)
-    optional func swimDidChangeObjects()
+
     optional func swimDidStartSynching()
     optional func swimDidStopSynching()
 }
 
 
-public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProtocol {
+public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProtocol, DownlinkDelegate {
     public var delegates = WeakArray<SwimListManagerDelegate>()
 
     public var objects: [AnyObject] = []
@@ -71,7 +87,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }
 
         dl.keepAlive = true
-        dl.event = didReceiveEvent
+        dl.delegate = self
 
         delegates.forEach({ $0.swimDidStartSynching?() })
     }
@@ -152,26 +168,32 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         setHighlightAtIndex(index, isHighlighted: false)
     }
 
-    func didReceiveEvent(message: EventMessage) {
-        log.verbose("Did receive \(message)")
+    public func downlink(downlink: Downlink, events: [EventMessage]) {
+        log.verbose("Did receive \(events)")
 
-        let heading = message.body.first
-        switch heading.key?.text {
-        case "insert"?:
-            didReceiveInsert(message)
+        sendWillChangeObjects()
 
-        case "update"?:
-            didReceiveUpdate(message)
+        for message in events {
+            let heading = message.body.first
+            switch heading.key?.text {
+            case "insert"?:
+                didReceiveInsert(message)
 
-        case "move"?:
-            didReceiveMove(message)
+            case "update"?:
+                didReceiveUpdate(message)
 
-        case "remove"?:
-            didReceiveRemove(message)
+            case "move"?:
+                didReceiveMove(message)
 
-        default:  // TODO: Check for "append" as a command here?
-            didReceiveAppend(message)
+            case "remove"?:
+                didReceiveRemove(message)
+
+            default:  // TODO: Check for "append" as a command here?
+                didReceiveAppend(message)
+            }
         }
+
+        sendDidChangeObjects()
     }
 
     func didReceiveInsert(message: EventMessage) {
@@ -190,7 +212,6 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         objects.insert(object, atIndex: idx)
 
         delegates.forEach({ $0.swimDidInsert?(object, atIndex: idx) })
-        sendDidChangeObjects()
     }
 
     func didReceiveAppend(message: EventMessage) {
@@ -203,7 +224,6 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         objects.append(object)
 
         delegates.forEach({ $0.swimDidAppend?(object) })
-        sendDidChangeObjects()
     }
 
     func didReceiveUpdate(message: EventMessage) {
@@ -224,7 +244,6 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
                 delegates.forEach {
                     $0.swimDidAppend?(object)
                 }
-                sendDidChangeObjects()
             }
             else if idx > objects.count {
                 log.warning("Ignoring update referring to rows beyond our list! \(heading.value)")
@@ -238,7 +257,6 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
                 delegates.forEach {
                     $0.swimDidReplace?(idx, object: object)
                 }
-                sendDidChangeObjects()
             }
         }
 
@@ -275,7 +293,6 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         objects.insert(object, atIndex: toIndex)
 
         delegates.forEach({ $0.swimDidMove?(fromIndex, toIndex: toIndex) })
-        sendDidChangeObjects()
     }
 
     func didReceiveRemove(message: EventMessage) {
@@ -301,7 +318,10 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         assert(oldObject === object)
 
         delegates.forEach({ $0.swimDidRemove?(idx, object: object) })
-        sendDidChangeObjects()
+    }
+
+    func sendWillChangeObjects() {
+        delegates.forEach({ $0.swimWillChangeObjects?() })
     }
 
     func sendDidChangeObjects() {

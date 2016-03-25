@@ -13,8 +13,9 @@ import SwiftyBeaver
 
 
 public class SwimLoggingSwiftyBeaver: SwimLogging {
-    public static func enableConsoleDestination() {
+    public static func enableConsoleDestination(minLevel: SwiftyBeaver.Level = .Debug) {
         let console = ConsoleDestination()
+        console.minLevel = minLevel
         SwiftyBeaver.self.addDestination(console)
     }
 

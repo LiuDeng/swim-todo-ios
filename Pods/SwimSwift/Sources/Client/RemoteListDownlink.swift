@@ -3,38 +3,40 @@ import Recon
 class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
     var state: [Value] = [Value]()
 
-    override func onEventMessage(message: EventMessage) {
-        switch message.body.tag {
-        case "update"?:
-            let header = message.body.first.value
-            if let index = header["index"].integer {
-                let body = message.body.dropFirst()
-                remoteUpdate(body, atIndex: index)
+    override func onEventMessages(messages: [EventMessage]) {
+        for message in messages {
+            switch message.body.tag {
+            case "update"?:
+                let header = message.body.first.value
+                if let index = header["index"].integer {
+                    let body = message.body.dropFirst()
+                    remoteUpdate(body, atIndex: index)
+                }
+            case "insert"?:
+                let header = message.body.first.value
+                if let index = header["index"].integer {
+                    let body = message.body.dropFirst()
+                    remoteInsert(body, atIndex: index)
+                }
+            case "move"?:
+                let header = message.body.first.value
+                if let from = header["from"].integer, let to = header["to"].integer {
+                    let body = message.body.dropFirst()
+                    remoteMove(body, fromIndex: from, toIndex: to)
+                }
+            case "remove"?, "delete"?:
+                let header = message.body.first.value
+                if let index = header["index"].integer {
+                    let body = message.body.dropFirst()
+                    remoteRemove(body, atIndex: index)
+                }
+            case "clear"? where message.body.record?.count == 1:
+                remoteRemoveAll()
+            default:
+                remoteAppend(message.body)
             }
-        case "insert"?:
-            let header = message.body.first.value
-            if let index = header["index"].integer {
-                let body = message.body.dropFirst()
-                remoteInsert(body, atIndex: index)
-            }
-        case "move"?:
-            let header = message.body.first.value
-            if let from = header["from"].integer, let to = header["to"].integer {
-                let body = message.body.dropFirst()
-                remoteMove(body, fromIndex: from, toIndex: to)
-            }
-        case "remove"?, "delete"?:
-            let header = message.body.first.value
-            if let index = header["index"].integer {
-                let body = message.body.dropFirst()
-                remoteRemove(body, atIndex: index)
-            }
-        case "clear"? where message.body.record?.count == 1:
-            remoteRemoveAll()
-        default:
-            remoteAppend(message.body)
         }
-        super.onEventMessage(message)
+        super.onEventMessages(messages)
     }
 
     func remoteAppend(value: Value) {

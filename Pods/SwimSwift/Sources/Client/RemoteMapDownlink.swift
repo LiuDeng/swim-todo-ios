@@ -10,23 +10,25 @@ class RemoteMapDownlink: RemoteSyncedDownlink, MapDownlink {
         super.init(channel: channel, scope: scope, host: host, node: node, lane: lane, prio: prio)
     }
 
-    override func onEventMessage(message: EventMessage) {
-        switch message.body.tag {
-        case "remove"?, "delete"?:
-            let body = message.body.dropFirst()
-            let key = primaryKey(body)
-            if key.isDefined {
-                remoteRemoveValueForKey(key)
-            }
-        case "clear"? where message.body.record?.count == 1:
-            remoteRemoveAll()
-        default:
-            let key = primaryKey(message.body)
-            if key.isDefined {
-                remoteUpdateValue(message.body, forKey: key)
+    override func onEventMessages(messages: [EventMessage]) {
+        for message in messages {
+            switch message.body.tag {
+            case "remove"?, "delete"?:
+                let body = message.body.dropFirst()
+                let key = primaryKey(body)
+                if key.isDefined {
+                    remoteRemoveValueForKey(key)
+                }
+            case "clear"? where message.body.record?.count == 1:
+                remoteRemoveAll()
+            default:
+                let key = primaryKey(message.body)
+                if key.isDefined {
+                    remoteUpdateValue(message.body, forKey: key)
+                }
             }
         }
-        super.onEventMessage(message)
+        super.onEventMessages(messages)
     }
 
     func remoteUpdateValue(value: SwimValue, forKey key: SwimValue) {
@@ -73,7 +75,7 @@ class RemoteMapDownlink: RemoteSyncedDownlink, MapDownlink {
         let oldValue = state.updateValue(value, forKey: key)
         let nodeUri = channel.unresolve(self.nodeUri)
         let message = CommandMessage(node: nodeUri, lane: laneUri, body: value)
-        onCommandMessage(message)
+        onCommandMessages([message])
         channel.push(envelope: message)
         return oldValue
     }
@@ -89,7 +91,7 @@ class RemoteMapDownlink: RemoteSyncedDownlink, MapDownlink {
                 body.append(Item.Value(oldValue))
             }
             let message = CommandMessage(node: nodeUri, lane: laneUri, body: SwimValue(body))
-            onCommandMessage(message)
+            onCommandMessages([message])
             channel.push(envelope: message)
             return oldValue
         } else {
@@ -102,7 +104,7 @@ class RemoteMapDownlink: RemoteSyncedDownlink, MapDownlink {
         let nodeUri = channel.unresolve(self.nodeUri)
         let body = SwimValue(Item.Attr("clear"))
         let message = CommandMessage(node: nodeUri, lane: laneUri, body: body)
-        onCommandMessage(message)
+        onCommandMessages([message])
         channel.push(envelope: message)
     }
 
