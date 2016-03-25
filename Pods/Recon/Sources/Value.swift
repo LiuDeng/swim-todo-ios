@@ -168,7 +168,7 @@ public enum Value: ArrayLiteralConvertible, StringLiteralConvertible, FloatLiter
 
   public var uri: Uri? {
     if let string = text {
-      return Uri.parse(string)
+      return Uri(string)
     } else {
       return nil
     }

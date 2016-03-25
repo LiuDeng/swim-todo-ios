@@ -13,16 +13,25 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
     self.fragment = fragment
   }
 
+  public init?(_ string: String) {
+    if let parsedUri = UriParser().parse(string).value as? Uri {
+      self = parsedUri
+    }
+    else {
+      return nil
+    }
+  }
+
   public init(stringLiteral string: String) {
-    self = Uri.parse(string)!
+    self.init(string)!
   }
 
   public init(extendedGraphemeClusterLiteral string: String) {
-    self = Uri.parse(string)!
+    self.init(string)!
   }
 
   public init(unicodeScalarLiteral string: String) {
-    self = Uri.parse(string)!
+    self.init(string)!
   }
 
   public func resolve(relative: Uri) -> Uri {
@@ -112,10 +121,6 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
 
   public static var Empty: Uri {
     return Uri(scheme: nil, authority: nil, path: Path.Empty, query: nil, fragment: nil)
-  }
-
-  public static func parse(string: String) -> Uri? {
-    return UriParser().parse(string).value as? Uri
   }
 
 

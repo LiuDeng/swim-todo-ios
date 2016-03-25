@@ -219,7 +219,7 @@ public enum Item: ArrayLiteralConvertible, StringLiteralConvertible, FloatLitera
 
   public var uri: Uri? {
     if let string = text {
-      return Uri.parse(string)
+      return Uri(string)
     } else {
       return nil
     }
