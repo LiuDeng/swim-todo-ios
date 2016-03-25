@@ -23,7 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 //        SwimLoggingSwiftyBeaver.enableConsoleDestination(.Verbose)
 
         let swim = SwimClient.sharedInstance
-        swim.hostUri = SwimUri(stringLiteral: "ws://todo.swim.services")
+        swim.hostUri = SwimUri("ws://todo.swim.services")
 
         let loginManager = LoginManager()
 
