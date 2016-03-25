@@ -24,16 +24,16 @@ PODS:
   - GoogleSymbolUtilities (1.1.0)
   - GoogleUtilities (1.2.0):
     - GoogleSymbolUtilities (~> 1.0)
-  - Recon (0.1.8)
+  - Recon (0.1.9)
   - SwiftyBeaver (0.4.1)
-  - SwimSwift (0.1.10):
+  - SwimSwift (0.1.12):
     - Recon
-    - SwimSwift/Core (= 0.1.10)
-  - SwimSwift/Core (0.1.10):
+    - SwimSwift/Core (= 0.1.12)
+  - SwimSwift/Core (0.1.12):
     - Recon
-  - SwimSwift/GoogleSignIn (0.1.10):
+  - SwimSwift/GoogleSignIn (0.1.12):
     - Recon
-  - SwimSwift/SwiftyBeaver (0.1.10):
+  - SwimSwift/SwiftyBeaver (0.1.12):
     - Recon
     - SwiftyBeaver (= 0.4.1)
 
@@ -52,9 +52,9 @@ SPEC CHECKSUMS:
   GoogleSignIn: 3d571172b8603be39dcb1705d8217146bb76fe62
   GoogleSymbolUtilities: eb3965ea12710569c7b80db198a39e39b18613f7
   GoogleUtilities: 85f8ad6b251544286a97163133d042ec95f889c5
-  Recon: e98dfb8fdc4f694f5222dd620887cefbc23f2f06
+  Recon: d8b7d949c97f66a9779cc35fc1ae2d1e5f79d5d5
   SwiftyBeaver: 9b812ea0488ada996aca9df6deea851b0f3af226
-  SwimSwift: 5ae4b07e6bcad558c11a3a1580d354b1fe589833
+  SwimSwift: f5160355e36996f7568177ec4efa512bbe9f1457
 
 PODFILE CHECKSUM: c4450464167ca8851e348322bbea7e9799ba20d5
 

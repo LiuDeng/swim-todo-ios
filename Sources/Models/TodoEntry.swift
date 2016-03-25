@@ -7,9 +7,9 @@
 //
 
 import Foundation
-import Recon
+import SwimSwift
 
-class TodoEntry : SwimModel {
+class TodoEntry : SwimModelBase {
     var name : String? = nil
     var notes : String? = nil
     var deadline : NSDate? = nil
@@ -19,16 +19,16 @@ class TodoEntry : SwimModel {
     var assignees : [String] = []
     var highlighters : [String] = []
 
-    required init?(reconValue: ReconValue) {
-        name = reconValue.text
-        super.init(reconValue: reconValue)
+    required init?(swimValue: SwimValue) {
+        name = swimValue.text
+        super.init(swimValue: swimValue)
     }
 
     required init() {
         super.init()
     }
 
-    override func toReconValue() -> ReconValue {
-        return Value(name ?? "")
+    override func swim_toSwimValue() -> SwimValue {
+        return SwimValue(name ?? "")
     }
 }

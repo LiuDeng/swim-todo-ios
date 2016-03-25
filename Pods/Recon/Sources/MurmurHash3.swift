@@ -39,7 +39,8 @@ struct MurmurHash3 {
   }
 
   static func mix(h: Int, _ k: Int) -> Int {
-    return Int(mix(UInt32(truncatingBitPattern: h), UInt32(truncatingBitPattern: k)))
+    let result = mix(UInt32(truncatingBitPattern: h), UInt32(truncatingBitPattern: k))
+    return Int(truncatingBitPattern: UInt64(result))
   }
 
   private static func mash(var h: UInt32) -> UInt32 {
@@ -53,6 +54,7 @@ struct MurmurHash3 {
   }
 
   static func mash(h: Int) -> Int {
-    return Int(mash(UInt32(truncatingBitPattern: h)))
+    let result = mash(UInt32(truncatingBitPattern: h))
+    return Int(truncatingBitPattern: UInt64(result))
   }
 }

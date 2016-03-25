@@ -8,7 +8,7 @@ let kRowHeight = CGFloat(50)
 let kTableBgColor = UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1.0)
 
 
-public class TodoItem: SwimModel {
+public class TodoItem: SwimModelBase {
     var label: String = ""
     var completed: Bool = false
 
@@ -16,17 +16,17 @@ public class TodoItem: SwimModel {
         super.init()
     }
 
-    required public init?(reconValue: SwimValue) {
-        super.init(reconValue: reconValue)
-        update(reconValue)
+    required public init?(swimValue: SwimValue) {
+        super.init(swimValue: swimValue)
+        swim_updateWithSwimValue(swimValue)
     }
 
-    override public func toReconValue() -> SwimValue {
+    override public func swim_toSwimValue() -> SwimValue {
         return SwimValue(label)
     }
 
-    override public func update(reconValue: SwimValue) {
-        label = reconValue.text ?? ""
+    override public func swim_updateWithSwimValue(swimValue: SwimValue) {
+        label = swimValue.text ?? ""
         completed = false   // TODO: Put the completed flag on the wire
     }
 }
