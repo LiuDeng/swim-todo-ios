@@ -60,7 +60,7 @@ class DetailViewController: SwimListViewController, SwimListManagerDelegate, Tab
 
         navigationItem.rightBarButtonItem = editButtonItem()
 
-        pinchRecognizer.addTarget(self, action: "handlePinch:")
+        pinchRecognizer.addTarget(self, action: #selector(DetailViewController.handlePinch(_:)))
         tableView.addGestureRecognizer(pinchRecognizer)
         tableView.registerClass(TableViewCell.self, forCellReuseIdentifier: kCellIdentifier)
         tableView.separatorStyle = .None
