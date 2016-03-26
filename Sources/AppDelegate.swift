@@ -3,7 +3,7 @@ import SwiftyBeaver
 import SwimSwift
 import UIKit
 
-let log = SwiftyBeaver.self
+private let log = SwiftyBeaver.self
 
 
 @UIApplicationMain
