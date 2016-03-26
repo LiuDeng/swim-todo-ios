@@ -152,6 +152,24 @@ public struct WeakArray<T: AnyObject>: SequenceType, CustomStringConvertible, Cu
         items.insert(weak, atIndex: i)
     }
 
+    /// Note that T is not Equatable, so this uses identity equality.
+    @warn_unused_result
+    public func indexOf(element: T) -> Int? {
+        return items.indexOf { item -> Bool in
+            guard let value = item.value else {
+                return false
+            }
+            return value === element
+        }
+    }
+
+    /// Note that T is not Equatable, so this uses identity equality.
+    mutating public func remove(value: T) {
+        if let idx = indexOf(value) {
+            items.removeAtIndex(idx)
+        }
+    }
+
     mutating public func removeAtIndex(index: Int) -> T? {
         let weak = items.removeAtIndex(index)
         return weak.value

@@ -53,7 +53,7 @@ class DetailViewController: SwimListViewController, SwimListManagerDelegate, Tab
         let listManager = SwimListManager<TodoItem>(laneUri: LANE_URI)
         super.init(listManager: listManager, coder: aDecoder)
 
-        listManager.delegates.append(self)
+        listManager.addDelegate(self)
     }
 
     override func viewDidLoad() {

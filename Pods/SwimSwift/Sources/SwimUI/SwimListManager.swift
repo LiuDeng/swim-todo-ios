@@ -13,9 +13,15 @@ private let log = SwimLogging.log
 
 
 public protocol SwimListManagerProtocol: class {
-    var delegates: WeakArray<SwimListManagerDelegate> { get set }
     var objects: [AnyObject] { get }
     var nodeScope: NodeScope? { get set }
+
+    /**
+     - parameter delegate: Will be weakly referenced by this SwimListManager.
+     */
+    func addDelegate(delegate: SwimListManagerDelegate)
+
+    func removeDelegate(delegate: SwimListManagerDelegate)
 
     func startSynching()
     func stopSynching()
@@ -31,37 +37,60 @@ public protocol SwimListManagerProtocol: class {
     func updateObjectAtIndex(index: Int)
 }
 
-@objc public protocol SwimListManagerDelegate: class {
+
+public protocol SwimListManagerDelegate: class {
     /**
      Will be called whenever commands are received that will change SwimListManagerProtocol.objects,
      and before those commands are processed.
 
     In other words, this indicates the start of a batch of calls to swimDid{Append,Insert,Move,Remove,Replace}.
      */
-    optional func swimWillChangeObjects()
+    func swimWillChangeObjects()
 
     /**
      Will be called after a batch of changes to SwimListManagerProtocol.objects has been processed.
 
      In other words, this indicates the end of a batch of calls to swimDid{Append,Insert,Move,Remove,Replace}.
      */
-    optional func swimDidChangeObjects()
+    func swimDidChangeObjects()
 
-    optional func swimDidAppend(object: AnyObject)
-    optional func swimDidInsert(object: AnyObject, atIndex: Int)
-    optional func swimDidMove(fromIndex: Int, toIndex: Int)
-    optional func swimDidRemove(index: Int, object: AnyObject)
-    optional func swimDidReplace(index: Int, object: AnyObject)
+    func swimDidAppend(object: AnyObject)
+    func swimDidInsert(object: AnyObject, atIndex: Int)
+    func swimDidMove(fromIndex: Int, toIndex: Int)
+    func swimDidRemove(index: Int, object: AnyObject)
+    func swimDidReplace(index: Int, object: AnyObject)
 
-    optional func swimDidSetHighlight(index: Int, isHighlighted: Bool)
+    func swimDidSetHighlight(index: Int, isHighlighted: Bool)
 
-    optional func swimDidStartSynching()
-    optional func swimDidStopSynching()
+    func swimDidStartSynching()
+    func swimDidStopSynching()
+
+    func swimDidLink()
+    func swimDidUnlink()
+}
+
+public extension SwimListManagerDelegate {
+    public func swimWillChangeObjects() {}
+    public func swimDidChangeObjects() {}
+
+    public func swimDidAppend(object: AnyObject) {}
+    public func swimDidInsert(object: AnyObject, atIndex: Int) {}
+    public func swimDidMove(fromIndex: Int, toIndex: Int) {}
+    public func swimDidRemove(index: Int, object: AnyObject) {}
+    public func swimDidReplace(index: Int, object: AnyObject) {}
+
+    public func swimDidSetHighlight(index: Int, isHighlighted: Bool) {}
+
+    public func swimDidStartSynching() {}
+    public func swimDidStopSynching() {}
+
+    public func swimDidLink() {}
+    public func swimDidUnlink() {}
 }
 
 
 public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProtocol, DownlinkDelegate {
-    public var delegates = WeakArray<SwimListManagerDelegate>()
+    private var delegates = WeakArray<AnyObject>()
 
     public var objects: [AnyObject] = []
 
@@ -73,6 +102,14 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
     public init(laneUri: SwimUri) {
         self.laneUri = laneUri
+    }
+
+    public func addDelegate(delegate: SwimListManagerDelegate) {
+        delegates.append(delegate)
+    }
+
+    public func removeDelegate(delegate: SwimListManagerDelegate) {
+        delegates.remove(delegate)
     }
 
     public func startSynching() {
@@ -89,7 +126,9 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         dl.keepAlive = true
         dl.delegate = self
 
-        delegates.forEach({ $0.swimDidStartSynching?() })
+        forEachDelegate {
+            $0.swimDidStartSynching()
+        }
     }
 
     public func stopSynching() {
@@ -99,7 +138,9 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         ns.close()
         nodeScope = nil
 
-        delegates.forEach({ $0.swimDidStopSynching?() })
+        forEachDelegate {
+            $0.swimDidStopSynching()
+        }
     }
 
     public func insertNewObjectAtIndex(index: Int) -> Any? {
@@ -211,7 +252,9 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         let idx = Int(index)
         objects.insert(object, atIndex: idx)
 
-        delegates.forEach({ $0.swimDidInsert?(object, atIndex: idx) })
+        forEachDelegate {
+            $0.swimDidInsert(object, atIndex: idx)
+        }
     }
 
     func didReceiveAppend(message: EventMessage) {
@@ -223,7 +266,9 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
         objects.append(object)
 
-        delegates.forEach({ $0.swimDidAppend?(object) })
+        forEachDelegate {
+            $0.swimDidAppend(object)
+        }
     }
 
     func didReceiveUpdate(message: EventMessage) {
@@ -241,8 +286,8 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
             if idx == objects.count {
                 objects.append(object)
 
-                delegates.forEach {
-                    $0.swimDidAppend?(object)
+                forEachDelegate {
+                    $0.swimDidAppend(object)
                 }
             }
             else if idx > objects.count {
@@ -254,8 +299,8 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
                 let oldObject = objects[idx] as! ObjectType
                 oldObject.swim_updateWithSwimValue(item)
 
-                delegates.forEach {
-                    $0.swimDidReplace?(idx, object: object)
+                forEachDelegate {
+                    $0.swimDidReplace(idx, object: object)
                 }
             }
         }
@@ -263,7 +308,9 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         let isHighlighted = (message.body["highlight"] == Value.True)
         log.verbose("Highlight \(idx) = \(isHighlighted)")
 
-        delegates.forEach({ $0.swimDidSetHighlight?(idx, isHighlighted: isHighlighted) })
+        forEachDelegate {
+            $0.swimDidSetHighlight(idx, isHighlighted: isHighlighted)
+        }
     }
 
     func didReceiveMove(message: EventMessage) {
@@ -292,7 +339,9 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         let object = objects.removeAtIndex(fromIndex)
         objects.insert(object, atIndex: toIndex)
 
-        delegates.forEach({ $0.swimDidMove?(fromIndex, toIndex: toIndex) })
+        forEachDelegate {
+            $0.swimDidMove(fromIndex, toIndex: toIndex)
+        }
     }
 
     func didReceiveRemove(message: EventMessage) {
@@ -317,14 +366,40 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         let object = objects.removeAtIndex(idx)
         assert(oldObject === object)
 
-        delegates.forEach({ $0.swimDidRemove?(idx, object: object) })
+        forEachDelegate {
+            $0.swimDidRemove(idx, object: object)
+        }
     }
 
     func sendWillChangeObjects() {
-        delegates.forEach({ $0.swimWillChangeObjects?() })
+        forEachDelegate {
+            $0.swimWillChangeObjects()
+        }
     }
 
     func sendDidChangeObjects() {
-        delegates.forEach({ $0.swimDidChangeObjects?() })
+        forEachDelegate {
+            $0.swimDidChangeObjects()
+        }
+    }
+
+
+    public func downlink(downlink: Downlink, didLink response: LinkedResponse) {
+        forEachDelegate {
+            $0.swimDidLink()
+        }
+    }
+
+    public func downlink(downlink: Downlink, didUnlink response: UnlinkedResponse) {
+        forEachDelegate {
+            $0.swimDidUnlink()
+        }
+    }
+
+
+    private func forEachDelegate(f: (SwimListManagerDelegate -> ())) {
+        delegates.forEach {
+            f($0 as! SwimListManagerDelegate)
+        }
     }
 }
