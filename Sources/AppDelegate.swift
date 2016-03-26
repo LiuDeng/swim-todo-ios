@@ -3,7 +3,13 @@ import SwiftyBeaver
 import SwimSwift
 import UIKit
 
+
+private let SWIM_USE_LOCALHOST = false
+
+
 private let log = SwiftyBeaver.self
+private let SwimHost = (SWIM_USE_LOCALHOST ? "localhost:5619" : "todo.swim.services")
+private let SwimHostURI = SwimUri("ws://\(SwimHost)")
 
 
 @UIApplicationMain
@@ -22,8 +28,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         SwimLoggingSwiftyBeaver.enableConsoleDestination()
 //        SwimLoggingSwiftyBeaver.enableConsoleDestination(.Verbose)
 
-        let swim = SwimClient.sharedInstance
-        swim.hostUri = SwimUri("ws://todo.swim.services")
+        // Configure Swim to connect to the host specified above.
+        //
+        // If your app connects to more than one Swim service, you can
+        // create separate instances of SwimClient rather than using
+        // SwimClient.sharedInstance.
+        SwimClient.sharedInstance.hostUri = SwimHostURI
 
         let loginManager = LoginManager()
 
