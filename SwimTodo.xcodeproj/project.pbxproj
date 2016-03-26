@@ -53,7 +53,7 @@
 
 /* Begin PBXFileReference section */
 		30CC21386D97264852988DB6 /* Pods_SwimTodo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SwimTodo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		400268231CA20F6200335AC7 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		400268231CA20F6200335AC7 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../GoogleService-Info.plist"; sourceTree = "<group>"; };
 		400648E01C72680000701533 /* TodoEntryTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TodoEntryTableViewCell.swift; sourceTree = "<group>"; };
 		400648E11C72680000701533 /* TodoEntryTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TodoEntryTableViewCell.xib; sourceTree = "<group>"; };
 		400648E41C7268DB00701533 /* TodoEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TodoEntry.swift; sourceTree = "<group>"; };
@@ -123,6 +123,7 @@
 			children = (
 				85553D391C6B31BA005D613B /* Assets.xcassets */,
 				85553D3F1C6B31BA005D613B /* Info.plist */,
+				400268231CA20F6200335AC7 /* GoogleService-Info.plist */,
 				85553D3A1C6B31BA005D613B /* LaunchScreen.storyboard */,
 				85553D3C1C6B31BA005D613B /* Main.storyboard */,
 			);
@@ -179,7 +180,6 @@
 		85674A2E1C68CA0100F299D7 = {
 			isa = PBXGroup;
 			children = (
-				400268231CA20F6200335AC7 /* GoogleService-Info.plist */,
 				855AA9801C6DB3250087347E /* swim.recon */,
 				85553D371C6B31BA005D613B /* Sources */,
 				85553D491C6B31C2005D613B /* Tests */,
