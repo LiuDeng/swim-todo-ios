@@ -61,7 +61,7 @@
 		402203111CA1FD1200D6B5E1 /* LoginViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LoginViewController.xib; sourceTree = "<group>"; };
 		4048D7B01C73BF91002B490C /* TableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableViewCell.swift; sourceTree = "<group>"; };
 		4048D7B11C73BF91002B490C /* StrikeThroughText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StrikeThroughText.swift; sourceTree = "<group>"; };
-		4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CollectionType+Misc.swift"; path = "../CollectionType+Misc.swift"; sourceTree = "<group>"; };
+		4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CollectionType+Misc.swift"; sourceTree = "<group>"; };
 		40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginManager.swift; sourceTree = "<group>"; };
 		40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimTodoGlobals.swift; sourceTree = "<group>"; };
 		84508E0E112F7E6A77F1CF05 /* Pods-SwimTodo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwimTodo.release.xcconfig"; path = "Pods/Target Support Files/Pods-SwimTodo/Pods-SwimTodo.release.xcconfig"; sourceTree = "<group>"; };
