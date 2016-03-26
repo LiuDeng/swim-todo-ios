@@ -13,7 +13,6 @@
 		400648E51C7268DB00701533 /* TodoEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400648E41C7268DB00701533 /* TodoEntry.swift */; };
 		402203101CA1FD0200D6B5E1 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */; };
 		402203121CA1FD1200D6B5E1 /* LoginViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 402203111CA1FD1200D6B5E1 /* LoginViewController.xib */; };
-		4048D7AE1C739FA3002B490C /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7AD1C739FA3002B490C /* Logging.swift */; };
 		4048D7B31C73BF91002B490C /* TableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7B01C73BF91002B490C /* TableViewCell.swift */; };
 		4048D7B41C73BF91002B490C /* StrikeThroughText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7B11C73BF91002B490C /* StrikeThroughText.swift */; };
 		4048D7BD1C73D844002B490C /* CollectionType+Misc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */; };
@@ -60,7 +59,6 @@
 		400648E41C7268DB00701533 /* TodoEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TodoEntry.swift; sourceTree = "<group>"; };
 		4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		402203111CA1FD1200D6B5E1 /* LoginViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LoginViewController.xib; sourceTree = "<group>"; };
-		4048D7AD1C739FA3002B490C /* Logging.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		4048D7B01C73BF91002B490C /* TableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableViewCell.swift; sourceTree = "<group>"; };
 		4048D7B11C73BF91002B490C /* StrikeThroughText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StrikeThroughText.swift; sourceTree = "<group>"; };
 		4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CollectionType+Misc.swift"; sourceTree = "<group>"; };
@@ -133,7 +131,6 @@
 				85553D3E1C6B31BA005D613B /* DetailViewController.swift */,
 				85553D3F1C6B31BA005D613B /* Info.plist */,
 				85553D3A1C6B31BA005D613B /* LaunchScreen.storyboard */,
-				4048D7AD1C739FA3002B490C /* Logging.swift */,
 				40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */,
 				4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */,
 				402203111CA1FD1200D6B5E1 /* LoginViewController.xib */,
@@ -373,7 +370,6 @@
 				400648E21C72680000701533 /* TodoEntryTableViewCell.swift in Sources */,
 				4048D7BD1C73D844002B490C /* CollectionType+Misc.swift in Sources */,
 				85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */,
-				4048D7AE1C739FA3002B490C /* Logging.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,11 +1,14 @@
 import UIKit
 import SwimSwift
+import SwiftyBeaver
 
 let LANE_URI: SwimUri = "todo/list"
 
 let kCellIdentifier = "Cell"
 let kRowHeight = CGFloat(50)
 let kTableBgColor = UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1.0)
+
+private let log = SwiftyBeaver.self
 
 
 public class TodoItem: SwimModelBase {
@@ -110,7 +113,7 @@ class DetailViewController: SwimListViewController, SwimListManagerDelegate, Tab
     func toDoItemDeleted(toDoItem: TodoItem) {
         let objs = objects as! [TodoItem]
         guard let index = objs.indexOf(toDoItem) else {
-            DLog("Couldn't find deleted item \(toDoItem)!")
+            log.warning("Couldn't find deleted item \(toDoItem)!")
             return
         }
         toDoItemDeleted(toDoItem, atIndex: index)
