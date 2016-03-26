@@ -16,21 +16,21 @@ public class SwimLogging {
     public static let log = SwimLogging()
 #endif
 
-    public func verbose(@autoclosure message: () -> Any, _ path: String = __FILE__, _ function: String = __FUNCTION__, line: Int = __LINE__) {
+    public func verbose(@autoclosure message: () -> Any, _ path: String = #file, _ function: String = #function, line: Int = #line) {
     }
 
-    public func debug(@autoclosure message: () -> Any, _ path: String = __FILE__, _ function: String = __FUNCTION__, line: Int = __LINE__) {
+    public func debug(@autoclosure message: () -> Any, _ path: String = #file, _ function: String = #function, line: Int = #line) {
     }
 
-    public func info(@autoclosure message: () -> Any, _ path: String = __FILE__, _ function: String = __FUNCTION__, line: Int = __LINE__) {
+    public func info(@autoclosure message: () -> Any, _ path: String = #file, _ function: String = #function, line: Int = #line) {
         NSLog("\(message())")
     }
 
-    public func warning(@autoclosure message: () -> Any, _ path: String = __FILE__, _ function: String = __FUNCTION__, line: Int = __LINE__) {
+    public func warning(@autoclosure message: () -> Any, _ path: String = #file, _ function: String = #function, line: Int = #line) {
         NSLog("\(message())")
     }
 
-    public func error(@autoclosure message: () -> Any, _ path: String = __FILE__, _ function: String = __FUNCTION__, line: Int = __LINE__) {
+    public func error(@autoclosure message: () -> Any, _ path: String = #file, _ function: String = #function, line: Int = #line) {
         NSLog("\(message())")
     }
 

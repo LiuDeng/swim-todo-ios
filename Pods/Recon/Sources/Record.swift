@@ -109,7 +109,7 @@ public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConve
     }
     set(value) {
       fields?[key] = value
-      for var i = 0; i < items.count; i += 1 {
+      for i in 0 ..< items.count {
         let item = items[i]
         if item.key == key {
           switch item {
@@ -159,7 +159,7 @@ public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConve
 
   public mutating func removeValueForKey(key: Value) {
     fields?.removeValueForKey(key)
-    for var i = 0; i < items.count; i += 1 {
+    for i in 0 ..< items.count {
       let item = items[i]
       if item.key == key {
         items.removeAtIndex(i)

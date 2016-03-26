@@ -1,5 +1,6 @@
 import Foundation
 import Recon
+import SwiftWebSocket
 
 private let log = SwimLogging.log
 
@@ -322,7 +323,7 @@ class Channel: HostScope, WebSocketDelegate {
         } else {
             reconnectTimeout = min(1.8 * reconnectTimeout, 30.0)
         }
-        reconnectTimer = NSTimer.scheduledTimerWithTimeInterval(reconnectTimeout, target: self, selector: "doReconnect:", userInfo: nil, repeats: false)
+        reconnectTimer = NSTimer.scheduledTimerWithTimeInterval(reconnectTimeout, target: self, selector: #selector(Channel.doReconnect(_:)), userInfo: nil, repeats: false)
     }
 
     @objc private func doReconnect(timer: NSTimer) {
@@ -338,7 +339,7 @@ class Channel: HostScope, WebSocketDelegate {
 
     private func watchIdle() {
         if socket?.readyState == .Open && sendBuffer.isEmpty && downlinks.isEmpty {
-            idleTimer = NSTimer.scheduledTimerWithTimeInterval(idleTimeout, target: self, selector: "checkIdle:", userInfo: nil, repeats: false)
+            idleTimer = NSTimer.scheduledTimerWithTimeInterval(idleTimeout, target: self, selector: #selector(Channel.checkIdle(_:)), userInfo: nil, repeats: false)
         }
     }
 

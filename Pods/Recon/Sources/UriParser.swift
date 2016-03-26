@@ -96,7 +96,8 @@ struct UriRestAuthorityPathParser: Iteratee {
     self.scheme = scheme
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     if let c = input.head {
       if c == "/" {
         input = input.tail
@@ -339,7 +340,8 @@ struct UriSchemeRestParser: Iteratee {
     self.scheme = scheme;
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var scheme = self.scheme
     while let c = input.head where isSchemeChar(c) {
       scheme.append(toLowerCase(c))
@@ -504,7 +506,8 @@ struct UriUserInfoParser: Iteratee {
     self.part = part
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var part = self.part
     while let c = input.head where isUserChar(c) {
       part.append(c)
@@ -573,7 +576,8 @@ struct UriUserInfoPasswordParser: Iteratee {
     self.password = password
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var password = self.password
     while let c = input.head where isUserInfoChar(c) {
       password.append(c)
@@ -657,7 +661,8 @@ struct UriHostAddressParser: Iteratee {
     self.i = i
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var address = self.address
     var x = self.x
     while let c = input.head where isDigit(c) {
@@ -692,7 +697,8 @@ struct UriHostNameParser: Iteratee {
     self.name = name
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var name = self.name
     while let c = input.head where isHostChar(c) {
       name.append(toLowerCase(c))
@@ -752,7 +758,8 @@ struct UriHostIPv6RestParser: Iteratee {
     self.address = address
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var address = self.address
     while let c = input.head where isHostChar(c) || c == ":" {
       address.append(c)
@@ -775,7 +782,8 @@ struct UriPortParser: Iteratee {
     self.port = port
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var port = self.port
     while let c = input.head where isDigit(c) {
       port = 10 * port + UInt16(decodeDigit(c))
@@ -802,7 +810,8 @@ struct UriPathParser: Iteratee {
     self.init([segment])
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var segments = self.segments
     var segment = self.segment
     while let c = input.head where isPathChar(c) {
@@ -883,7 +892,8 @@ struct UriQueryParser: Iteratee {
     self.part = part
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var params = self.params
     var part = self.part
     while let c = input.head where isParamChar(c) {
@@ -965,7 +975,8 @@ struct UriQueryValueParser: Iteratee {
     self.value = value
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var params = self.params
     var value = self.value
     while let c = input.head where isParamChar(c) || c == "=" {
@@ -1042,7 +1053,8 @@ struct UriFragmentParser: Iteratee {
     self.fragment = fragment
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var fragment = self.fragment
     while let c = input.head where isFragmentChar(c) {
       fragment.append(c)

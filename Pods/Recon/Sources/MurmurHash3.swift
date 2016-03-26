@@ -25,7 +25,9 @@ struct MurmurHash3 {
     return mash(mix(mix(mix(mix(mix(seed, _1.hashValue), _2.hashValue), _3.hashValue), _4.hashValue), _5.hashValue))
   }
 
-  private static func mix(var h: UInt32, var _ k: UInt32) -> UInt32 {
+  private static func mix(h_: UInt32, _ k_: UInt32) -> UInt32 {
+    var h = h_
+    var k = k_
     k = k &* 0xcc9e2d51
     k = rotl(k, 15)
     k = k &* 0x1b873593
@@ -43,7 +45,8 @@ struct MurmurHash3 {
     return Int(truncatingBitPattern: UInt64(result))
   }
 
-  private static func mash(var h: UInt32) -> UInt32 {
+  private static func mash(h_: UInt32) -> UInt32 {
+    var h = h_
     h ^= h >> 16
     h = h &* 0x85ebca6b
     h ^= h >> 13

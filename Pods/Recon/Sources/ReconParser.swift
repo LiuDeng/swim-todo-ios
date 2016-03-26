@@ -37,7 +37,8 @@ struct ReconBlockParser: Iteratee {
     self.init(ValueBuilder())
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isWhitespace(c) {
       input = input.tail
     }
@@ -98,7 +99,8 @@ struct ReconBlockKeyThenParser: Iteratee {
     self.builder = builder
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isSpace(c) {
       input = input.tail
     }
@@ -126,7 +128,8 @@ struct ReconBlockKeyThenValueParser: Iteratee {
     self.builder = builder
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isSpace(c) {
       input = input.tail
     }
@@ -181,7 +184,8 @@ struct ReconBlockSeparatorParser: Iteratee {
     self.builder = builder
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isSpace(c) {
       input = input.tail
     }
@@ -263,7 +267,8 @@ struct ReconAttrParamBlockParser: Iteratee {
     self.key = key
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isWhitespace(c) {
       input = input.tail
     }
@@ -316,7 +321,8 @@ struct ReconAttrParamRestParser: Iteratee {
     self.value = value
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isWhitespace(c) {
       input = input.tail
     }
@@ -416,7 +422,8 @@ struct ReconBlockItemFieldRestParser: Iteratee {
     self.builder = builder
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isSpace(c) {
       input = input.tail
     }
@@ -492,7 +499,8 @@ struct ReconBlockItemRestParser: Iteratee {
     self.builder = builder
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isSpace(c) {
       input = input.tail
     }
@@ -690,7 +698,8 @@ struct ReconRecordRestParser: Iteratee {
     self.builder = builder
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isWhitespace(c) {
       input = input.tail
     }
@@ -743,7 +752,8 @@ struct ReconRecordKeyThenParser: Iteratee {
     self.builder = builder
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isSpace(c) {
       input = input.tail
     }
@@ -769,7 +779,8 @@ struct ReconRecordKeyThenValueParser: Iteratee {
     self.builder = builder
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isSpace(c) {
       input = input.tail
     }
@@ -824,7 +835,8 @@ struct ReconRecordSeparatorParser: Iteratee {
     self.builder = builder
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     while let c = input.head where isSpace(c) {
       input = input.tail
     }
@@ -881,7 +893,8 @@ struct ReconMarkupRestParser: Iteratee {
     self.init("", builder)
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var text = self.text
     while let c = input.head where c != "@" && c != "[" && c != "\\" && c != "]" && c != "{" && c != "}" {
       text.append(c)
@@ -1034,7 +1047,8 @@ struct ReconIdentRestParser: Iteratee {
     self.ident = ident;
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var ident = self.ident
     while let c = input.head where isNameChar(c) {
       ident.append(c)
@@ -1072,7 +1086,8 @@ struct ReconStringRestParser: Iteratee {
     self.init("")
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var string = self.string
     while let c = input.head where c != "\"" && c != "\\" {
       string.append(c)
@@ -1178,7 +1193,8 @@ struct ReconNumberIntegralRestParser: Iteratee {
     self.string = string
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var string = self.string
     while let c = input.head where c >= "0" && c <= "9" {
       string.append(c)
@@ -1249,7 +1265,8 @@ struct ReconNumberFractionalRestParser: Iteratee {
     self.string = string
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var string = self.string
     while let c = input.head where c >= "0" && c <= "9" {
       string.append(c)
@@ -1292,7 +1309,8 @@ struct ReconNumberExponentialParser: Iteratee {
     self.string = string
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var string = self.string
     if let c = input.head {
       if c == "+" || c == "-" {
@@ -1335,7 +1353,8 @@ struct ReconNumberExponentialRestParser: Iteratee {
     self.string = string
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var string = self.string
     while let c = input.head where c >= "0" && c <= "9" {
       string.append(c)
@@ -1375,7 +1394,8 @@ struct ReconDataRestParser: Iteratee {
     self.init(Base64Decoder(), 0)
   }
 
-  func feed(var input: IterateeInput) -> IterateeOutput {
+  func feed(input_: IterateeInput) -> IterateeOutput {
+    var input = input_
     var data = self.data
     var state = self.state
     while let c = input.head where isBase64Char(c) {

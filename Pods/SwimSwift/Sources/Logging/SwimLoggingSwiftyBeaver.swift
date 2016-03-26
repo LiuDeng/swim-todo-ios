@@ -21,23 +21,23 @@ public class SwimLoggingSwiftyBeaver: SwimLogging {
 
     private let sb: SwiftyBeaver.Type = SwiftyBeaver.self
 
-    public override func verbose(@autoclosure message: () -> Any, _ path: String = __FILE__, _ function: String = __FUNCTION__, line: Int = __LINE__) {
+    public override func verbose(@autoclosure message: () -> Any, _ path: String = #file, _ function: String = #function, line: Int = #line) {
         sb.verbose(message, path, function, line: line)
     }
 
-    public override func debug(@autoclosure message: () -> Any, _ path: String = __FILE__, _ function: String = __FUNCTION__, line: Int = __LINE__) {
+    public override func debug(@autoclosure message: () -> Any, _ path: String = #file, _ function: String = #function, line: Int = #line) {
         sb.debug(message, path, function, line: line)
     }
 
-    public override func info(@autoclosure message: () -> Any, _ path: String = __FILE__, _ function: String = __FUNCTION__, line: Int = __LINE__) {
+    public override func info(@autoclosure message: () -> Any, _ path: String = #file, _ function: String = #function, line: Int = #line) {
         sb.info(message, path, function, line: line)
     }
 
-    public override func warning(@autoclosure message: () -> Any, _ path: String = __FILE__, _ function: String = __FUNCTION__, line: Int = __LINE__) {
+    public override func warning(@autoclosure message: () -> Any, _ path: String = #file, _ function: String = #function, line: Int = #line) {
         sb.warning(message, path, function, line: line)
     }
 
-    public override func error(@autoclosure message: () -> Any, _ path: String = __FILE__, _ function: String = __FUNCTION__, line: Int = __LINE__) {
+    public override func error(@autoclosure message: () -> Any, _ path: String = #file, _ function: String = #function, line: Int = #line) {
         sb.error(message, path, function, line: line)
     }
 

@@ -100,7 +100,7 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
         let state = self.state
         self.state.removeAll()
         if case let delegate as ListDownlinkDelegate = self.delegate {
-            for var index = state.count - 1; index >= 0; index -= 1 {
+            for index in (0 ..< state.count).reverse() {
                 delegate.downlink(self, didRemove: state[count], atIndex: index)
             }
         }

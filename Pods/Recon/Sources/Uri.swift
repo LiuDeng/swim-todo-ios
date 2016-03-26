@@ -517,7 +517,8 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       return Path(segments)
     }
 
-    func merge(var path: Path) -> Path {
+    func merge(path_: Path) -> Path {
+      var path = path_
       var segments = [String]()
       var head = self.head!
       var tail = self.tail
@@ -540,7 +541,9 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       return unmerge(self, relative: path, root: path)
     }
 
-    func unmerge(var base: Path, var relative: Path, root: Path) -> Path {
+    func unmerge(base_: Path, relative relative_: Path, root: Path) -> Path {
+      var base = base_
+      var relative = relative_
       while true {
         if base.isEmpty {
           if !relative.isEmpty && !relative.tail.isEmpty {
