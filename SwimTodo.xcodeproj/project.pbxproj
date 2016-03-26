@@ -61,7 +61,7 @@
 		402203111CA1FD1200D6B5E1 /* LoginViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LoginViewController.xib; sourceTree = "<group>"; };
 		4048D7B01C73BF91002B490C /* TableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableViewCell.swift; sourceTree = "<group>"; };
 		4048D7B11C73BF91002B490C /* StrikeThroughText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StrikeThroughText.swift; sourceTree = "<group>"; };
-		4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CollectionType+Misc.swift"; sourceTree = "<group>"; };
+		4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CollectionType+Misc.swift"; path = "../CollectionType+Misc.swift"; sourceTree = "<group>"; };
 		40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginManager.swift; sourceTree = "<group>"; };
 		40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimTodoGlobals.swift; sourceTree = "<group>"; };
 		84508E0E112F7E6A77F1CF05 /* Pods-SwimTodo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwimTodo.release.xcconfig"; path = "Pods/Target Support Files/Pods-SwimTodo/Pods-SwimTodo.release.xcconfig"; sourceTree = "<group>"; };
@@ -110,6 +110,25 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		403100CB1CA7308900C12F4E /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		403100CC1CA730BD00C12F4E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				85553D391C6B31BA005D613B /* Assets.xcassets */,
+				85553D3F1C6B31BA005D613B /* Info.plist */,
+				85553D3A1C6B31BA005D613B /* LaunchScreen.storyboard */,
+				85553D3C1C6B31BA005D613B /* Main.storyboard */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 		4048D7AF1C73BF4D002B490C /* ClearStyle */ = {
 			isa = PBXGroup;
 			children = (
@@ -125,16 +144,13 @@
 			children = (
 				4048D7AF1C73BF4D002B490C /* ClearStyle */,
 				400648E61C7268E500701533 /* Models */,
+				403100CC1CA730BD00C12F4E /* Resources */,
+				403100CB1CA7308900C12F4E /* Utils */,
 				85553D381C6B31BA005D613B /* AppDelegate.swift */,
-				85553D391C6B31BA005D613B /* Assets.xcassets */,
-				4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */,
 				85553D3E1C6B31BA005D613B /* DetailViewController.swift */,
-				85553D3F1C6B31BA005D613B /* Info.plist */,
-				85553D3A1C6B31BA005D613B /* LaunchScreen.storyboard */,
 				40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */,
 				4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */,
 				402203111CA1FD1200D6B5E1 /* LoginViewController.xib */,
-				85553D3C1C6B31BA005D613B /* Main.storyboard */,
 				85553D401C6B31BA005D613B /* MasterViewController.swift */,
 				40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */,
 				400648E01C72680000701533 /* TodoEntryTableViewCell.swift */,
