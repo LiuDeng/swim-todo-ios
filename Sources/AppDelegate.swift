@@ -79,6 +79,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
     }
 
 
+    func applicationDidBecomeActive(application: UIApplication) {
+        // This is required so that Swim can manage the offline sync.
+        SwimClient.applicationDidBecomeActive()
+    }
+
+
+    func applicationWillResignActive(application: UIApplication) {
+        // This is required so that Swim can manage the offline sync.
+        SwimClient.applicationWillResignActive()
+    }
+
+
     /**
      For iOS 9 and above.
      */
