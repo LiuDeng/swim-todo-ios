@@ -1,3 +1,6 @@
+private let log = SwimLogging.log
+
+
 public class SwimClient: HostScope {
     public static let sharedInstance = SwimClient()
 
@@ -111,4 +114,22 @@ public class SwimClient: HostScope {
         _channel = nil
         c.close()
     }
+
+
+    /**
+     Call this function from your AppDelegate.
+     */
+    public static func applicationDidBecomeActive() {
+        log.verbose("applicationDidBecomeActive")
+    }
+
+
+    /**
+     Call this function from your AppDelegate.
+     */
+    public static func applicationWillResignActive() {
+        log.verbose("applicationWillResignActive")
+    }
+
+
 }

@@ -33,6 +33,8 @@ class Channel: HostScope, WebSocketDelegate {
 
     private var credentials: Value = Value.Absent
 
+    private var networkMonitor: SwimNetworkConditionMonitor.ServerMonitor?
+
     init(host: SwimUri, protocols: [String] = []) {
         self.hostUri = host
         self.protocols = protocols
@@ -289,11 +291,21 @@ class Channel: HostScope, WebSocketDelegate {
             reconnectTimeout = 0.0
         }
         if socket == nil {
+            startNetworkMonitor(hostUri.authority!.host.description)
+
             let s = WebSocket(hostUri.uri, subProtocols: protocols)
             s.eventQueue = socketQueue
             s.delegate = self
             socket = s
         }
+    }
+
+    private func startNetworkMonitor(host: String) {
+        let globals = SwimGlobals.instance
+        if globals.networkConditionMonitor == nil {
+            globals.networkConditionMonitor = SwimNetworkConditionMonitor()
+        }
+        networkMonitor = globals.networkConditionMonitor.startMonitoring(host)
     }
 
     func close() {
@@ -310,6 +322,12 @@ class Channel: HostScope, WebSocketDelegate {
                     downlink.onClose()
                 }
             }
+        }
+
+        if let monitor = networkMonitor {
+            let ncm = SwimGlobals.instance.networkConditionMonitor
+            ncm.stopMonitoring(monitor)
+            networkMonitor = nil
         }
     }
 
@@ -455,6 +473,8 @@ class Channel: HostScope, WebSocketDelegate {
     }
 
     @objc func webSocketMessageText(text: String) {
+        networkMonitor?.networkResponseReceived()
+
         guard let envelope = Proto.parse(recon: text) else {
             log.warning("Received unparsable message \(text)")
             return
@@ -464,6 +484,8 @@ class Channel: HostScope, WebSocketDelegate {
     }
 
     @objc func webSocketError(error: NSError) {
+        networkMonitor?.networkErrorReceived()
+
         onError(error)
         clearIdle()
         socket?.delegate = nil
