@@ -75,8 +75,20 @@ public class SwimListViewController: UIViewController, UITableViewDataSource, UI
         self.tableViewHelper.delegate = self
     }
 
+    public init(listManager: SwimListManagerProtocol, nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
+        self.tableViewHelper = SwimListTableViewHelper(listManager: listManager)
+
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+
+        self.tableViewHelper.delegate = self
+    }
+
     required public init?(coder aDecoder: NSCoder) {
         fatalError("Use init(listManager:coder:)")
+    }
+
+    public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
+        fatalError("Use init(listManager:nibName:bundle:)")
     }
 
     override public func viewWillAppear(animated: Bool) {
