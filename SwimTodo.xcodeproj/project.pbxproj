@@ -20,11 +20,12 @@
 		40AE52EB1CA1FAD000A878F3 /* SwimTodoGlobals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */; };
 		40C975C51CAD94A900407B67 /* PersonImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C975C41CAD94A900407B67 /* PersonImageView.swift */; };
 		40C975C71CAD957A00407B67 /* PersonImageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40C975C61CAD957A00407B67 /* PersonImageView.xib */; };
+		40C975EE1CAD9F7200407B67 /* TodoListViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40C975ED1CAD9F7200407B67 /* TodoListViewController.xib */; };
 		85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D381C6B31BA005D613B /* AppDelegate.swift */; };
 		85553D431C6B31BA005D613B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85553D391C6B31BA005D613B /* Assets.xcassets */; };
 		85553D441C6B31BA005D613B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 85553D3A1C6B31BA005D613B /* LaunchScreen.storyboard */; };
 		85553D451C6B31BA005D613B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 85553D3C1C6B31BA005D613B /* Main.storyboard */; };
-		85553D461C6B31BA005D613B /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D3E1C6B31BA005D613B /* DetailViewController.swift */; };
+		85553D461C6B31BA005D613B /* TodoListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D3E1C6B31BA005D613B /* TodoListViewController.swift */; };
 		85553D481C6B31BA005D613B /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D401C6B31BA005D613B /* MasterViewController.swift */; };
 		85553D4D1C6B31C2005D613B /* SwimTodoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D4B1C6B31C2005D613B /* SwimTodoTests.swift */; };
 		EBC8AAF5EE35853873846E1C /* Pods_SwimTodo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30CC21386D97264852988DB6 /* Pods_SwimTodo.framework */; };
@@ -68,12 +69,13 @@
 		40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimTodoGlobals.swift; sourceTree = "<group>"; };
 		40C975C41CAD94A900407B67 /* PersonImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PersonImageView.swift; sourceTree = "<group>"; };
 		40C975C61CAD957A00407B67 /* PersonImageView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PersonImageView.xib; sourceTree = "<group>"; };
+		40C975ED1CAD9F7200407B67 /* TodoListViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TodoListViewController.xib; sourceTree = "<group>"; };
 		84508E0E112F7E6A77F1CF05 /* Pods-SwimTodo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwimTodo.release.xcconfig"; path = "Pods/Target Support Files/Pods-SwimTodo/Pods-SwimTodo.release.xcconfig"; sourceTree = "<group>"; };
 		85553D381C6B31BA005D613B /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		85553D391C6B31BA005D613B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		85553D3B1C6B31BA005D613B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		85553D3D1C6B31BA005D613B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		85553D3E1C6B31BA005D613B /* DetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
+		85553D3E1C6B31BA005D613B /* TodoListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.swift; path = TodoListViewController.swift; sourceTree = "<group>"; };
 		85553D3F1C6B31BA005D613B /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		85553D401C6B31BA005D613B /* MasterViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
 		85553D4A1C6B31C2005D613B /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -152,7 +154,6 @@
 				403100CC1CA730BD00C12F4E /* Resources */,
 				403100CB1CA7308900C12F4E /* Utils */,
 				85553D381C6B31BA005D613B /* AppDelegate.swift */,
-				85553D3E1C6B31BA005D613B /* DetailViewController.swift */,
 				40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */,
 				4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */,
 				402203111CA1FD1200D6B5E1 /* LoginViewController.xib */,
@@ -162,6 +163,8 @@
 				40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */,
 				400648E01C72680000701533 /* TodoEntryTableViewCell.swift */,
 				400648E11C72680000701533 /* TodoEntryTableViewCell.xib */,
+				85553D3E1C6B31BA005D613B /* TodoListViewController.swift */,
+				40C975ED1CAD9F7200407B67 /* TodoListViewController.xib */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -314,6 +317,7 @@
 				402203121CA1FD1200D6B5E1 /* LoginViewController.xib in Resources */,
 				85553D441C6B31BA005D613B /* LaunchScreen.storyboard in Resources */,
 				85553D431C6B31BA005D613B /* Assets.xcassets in Resources */,
+				40C975EE1CAD9F7200407B67 /* TodoListViewController.xib in Resources */,
 				400648E31C72680000701533 /* TodoEntryTableViewCell.xib in Resources */,
 				85553D451C6B31BA005D613B /* Main.storyboard in Resources */,
 				400268241CA20F6200335AC7 /* GoogleService-Info.plist in Resources */,
@@ -390,7 +394,7 @@
 				4048D7B41C73BF91002B490C /* StrikeThroughText.swift in Sources */,
 				40A0B3C61CA1FE5800F17BEA /* LoginManager.swift in Sources */,
 				40AE52EB1CA1FAD000A878F3 /* SwimTodoGlobals.swift in Sources */,
-				85553D461C6B31BA005D613B /* DetailViewController.swift in Sources */,
+				85553D461C6B31BA005D613B /* TodoListViewController.swift in Sources */,
 				400648E21C72680000701533 /* TodoEntryTableViewCell.swift in Sources */,
 				4048D7BD1C73D844002B490C /* CollectionType+Misc.swift in Sources */,
 				85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */,

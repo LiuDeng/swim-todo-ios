@@ -13,7 +13,7 @@ private let SwimHostURI = SwimUri("ws://\(SwimHost)")
 
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
@@ -41,8 +41,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         globals.loginManager = loginManager
         SwimTodoGlobals.instance = globals
 
-        configureSplitVC()
-
 //        if loginManager.isUserSignedIn {
 //            loginManager.signInSilently()
             userSignedIn()
@@ -52,13 +50,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 //        }
 
         return true
-    }
-
-    private func configureSplitVC() {
-        let splitVC = window!.rootViewController as! UISplitViewController
-        let nav = splitVC.viewControllers.last as! UINavigationController
-        nav.topViewController!.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
-        splitVC.delegate = self
     }
 
     private func userSignedIn() {
@@ -121,19 +112,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 
         // Any other URL handlers that your app needs.
 
-        return false
-    }
-
-
-    // MARK: - Split view
-
-    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController:UIViewController, ontoPrimaryViewController primaryViewController:UIViewController) -> Bool {
-        guard let secondaryAsNavController = secondaryViewController as? UINavigationController else { return false }
-        guard let topAsDetailController = secondaryAsNavController.topViewController as? DetailViewController else { return false }
-        if topAsDetailController.detailItem == nil {
-            // Return true to indicate that we have handled the collapse by doing nothing; the secondary controller will be discarded.
-            return true
-        }
         return false
     }
 }

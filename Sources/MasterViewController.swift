@@ -2,29 +2,25 @@ import SwimSwift
 import UIKit
 
 
-class MasterViewController: UITableViewController {
+class MasterViewController: UITableViewController, UISplitViewControllerDelegate {
     var todo: HostScope! = nil
 
-    var detailViewController: DetailViewController? = nil
     var objects = [NodeScope]()
 
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.navigationItem.leftBarButtonItem = self.editButtonItem()
-        //let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "insertNewObject:")
-        //self.navigationItem.rightBarButtonItem = addButton
-
-        if let split = self.splitViewController {
-            let controllers = split.viewControllers
-            self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
-        }
-
         let swim = SwimClient.sharedInstance
         let groceryList = swim.scope(node: "/todo/grocery")
         let elementsList = swim.scope(node: "/todo/elements")
         objects = [groceryList, elementsList]
+
+        guard let splitVC = splitViewController else {
+            return
+        }
+        splitVC.delegate = self
+        navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -36,15 +32,19 @@ class MasterViewController: UITableViewController {
     // MARK: - Segues
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "showDetail" {
-            if let indexPath = self.tableView.indexPathForSelectedRow {
-                let object = objects[indexPath.row]
-                let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-                controller.detailItem = object
-                controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
-                controller.navigationItem.leftItemsSupplementBackButton = true
-            }
-        }
+        precondition(segue.identifier == "showDetail")
+
+        let indexPath = tableView.indexPathForSelectedRow!
+        let object = objects[indexPath.row]
+
+        let splitVC = splitViewController!
+        let listVC = TodoListViewController()
+        listVC.detailItem = object
+        listVC.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
+        listVC.navigationItem.leftItemsSupplementBackButton = true
+
+        let destNav = segue.destinationViewController as! UINavigationController
+        destNav.viewControllers = [listVC]
     }
 
     // MARK: - Table View
@@ -66,6 +66,21 @@ class MasterViewController: UITableViewController {
     }
 
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return false
+    }
+
+
+    // MARK: - UISplitViewControllerDelegate
+
+    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController:UIViewController) -> Bool {
+        let detailNav = secondaryViewController as! UINavigationController
+        guard let listVC = detailNav.topViewController as? TodoListViewController else {
+            return false
+        }
+        if listVC.detailItem == nil {
+            // Return true to indicate that we have handled the collapse by doing nothing; the secondary controller will be discarded.
+            return true
+        }
         return false
     }
 }

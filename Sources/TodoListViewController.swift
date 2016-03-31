@@ -35,7 +35,7 @@ public class TodoItem: SwimModelBase {
 }
 
 
-class DetailViewController: SwimListViewController, SwimListManagerDelegate, TableViewCellDelegate {
+class TodoListViewController: SwimListViewController, SwimListManagerDelegate, TableViewCellDelegate {
     @IBOutlet weak var tableView: UITableView!
 
     let pinchRecognizer = UIPinchGestureRecognizer()
@@ -49,11 +49,18 @@ class DetailViewController: SwimListViewController, SwimListManagerDelegate, Tab
         }
     }
 
-    required init?(coder aDecoder: NSCoder) {
-        let listManager = SwimListManager<TodoItem>(laneUri: LANE_URI)
-        super.init(listManager: listManager, coder: aDecoder)
-
+    required init() {
+        super.init(listManager: TodoListViewController.createListManager(), nibName: nil, bundle: nil)
         listManager.addDelegate(self)
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        super.init(listManager: TodoListViewController.createListManager(), coder: aDecoder)
+        listManager.addDelegate(self)
+    }
+
+    private static func createListManager() -> SwimListManagerProtocol {
+        return SwimListManager<TodoItem>(laneUri: LANE_URI)
     }
 
     override func viewDidLoad() {
@@ -63,7 +70,7 @@ class DetailViewController: SwimListViewController, SwimListManagerDelegate, Tab
 
         navigationItem.rightBarButtonItem = editButtonItem()
 
-        pinchRecognizer.addTarget(self, action: #selector(DetailViewController.handlePinch(_:)))
+        pinchRecognizer.addTarget(self, action: #selector(handlePinch(_:)))
         tableView.addGestureRecognizer(pinchRecognizer)
         tableView.registerClass(TableViewCell.self, forCellReuseIdentifier: kCellIdentifier)
         tableView.separatorStyle = .None
