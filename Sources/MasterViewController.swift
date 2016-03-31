@@ -29,24 +29,6 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
     }
 
 
-    // MARK: - Segues
-
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        precondition(segue.identifier == "showDetail")
-
-        let indexPath = tableView.indexPathForSelectedRow!
-        let object = objects[indexPath.row]
-
-        let splitVC = splitViewController!
-        let listVC = TodoListViewController()
-        listVC.detailItem = object
-        listVC.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
-        listVC.navigationItem.leftItemsSupplementBackButton = true
-
-        let destNav = segue.destinationViewController as! UINavigationController
-        destNav.viewControllers = [listVC]
-    }
-
     // MARK: - Table View
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -67,6 +49,19 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
 
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
         return false
+    }
+
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        let indexPath = tableView.indexPathForSelectedRow!
+        let object = objects[indexPath.row]
+
+        let splitVC = splitViewController!
+        let listVC = TodoListViewController()
+        listVC.detailItem = object
+        listVC.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
+        listVC.navigationItem.leftItemsSupplementBackButton = true
+
+        splitVC.showDetailViewController(listVC, sender: self)
     }
 
 
