@@ -73,8 +73,6 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
         swimListTableView = tableView
 
-        navigationItem.rightBarButtonItem = editButtonItem()
-
         presenceView.backgroundColor = UIColor.clearColor()
         presenceView.collectionViewLayout = RTLLayout()
         presenceView.delegate = self
