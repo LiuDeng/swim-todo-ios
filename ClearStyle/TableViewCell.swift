@@ -143,9 +143,9 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
             let originalFrame = CGRect(x: 0, y: frame.origin.y,
                 width: bounds.size.width, height: bounds.size.height)
             if deleteOnDragRelease {
-                if delegate != nil && toDoItem != nil {
+                if let item = toDoItem {
                     // notify the delegate that this item should be deleted
-                    delegate!.toDoItemDeleted(toDoItem!)
+                    delegate?.toDoItemDeleted(item)
                 }
             } else if completeOnDragRelease {
                 if let item = toDoItem {
@@ -189,18 +189,12 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
     }
     
     func textFieldDidEndEditing(textField: UITextField) {
-        if toDoItem != nil {
-            toDoItem!.name = textField.text ?? ""
-        }
-        if delegate != nil {
-            delegate!.cellDidEndEditing(self)
-        }
+        toDoItem?.name = (textField.text ?? "")
+        delegate?.cellDidEndEditing(self)
     }
     
     func textFieldDidBeginEditing(textField: UITextField) {
-        if delegate != nil {
-            delegate!.cellDidBeginEditing(self)
-        }
+        delegate?.cellDidBeginEditing(self)
     }
 
 }
