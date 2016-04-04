@@ -132,4 +132,14 @@ public class SwimClient: HostScope {
     }
 
 
+    /**
+     Call this function from your AppDelegate.
+     */
+    public static func applicationPerformFetchWithCompletionHandler(completionHandler: UIBackgroundFetchResult -> Void) {
+        log.verbose("applicationPerformFetchWithCompletionHandler")
+
+        completionHandler(.NoData)
+    }
+
+
 }
