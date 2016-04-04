@@ -19,12 +19,31 @@ class PersonImageView: UIView {
         }
         set {
             lblInitials.text = newValue
+            let duration = (lblInitials.alpha == 0.0 && imgView.alpha == 0.0 ? 0.0 : 0.3)
+            UIView.animateWithDuration(duration) {
+                self.lblInitials.alpha = 1.0
+                self.imgView.alpha = 0.0
+            }
             backgroundColor = calcBackgroundColor(newValue)
         }
     }
 
 
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        if subviews.isEmpty {
+            addSelfSubviewFromNib()
+        }
+    }
+
+
     override func awakeFromNib() {
+        super.awakeFromNib()
+
+        if imgView == nil {
+            return
+        }
+
         imgView.alpha = 0.0
         lblInitials.alpha = 0.0
         layer.borderColor = UIColor.darkGrayColor().CGColor

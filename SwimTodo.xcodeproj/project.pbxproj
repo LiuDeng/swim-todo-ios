@@ -21,6 +21,11 @@
 		40C975C51CAD94A900407B67 /* PersonImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C975C41CAD94A900407B67 /* PersonImageView.swift */; };
 		40C975C71CAD957A00407B67 /* PersonImageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40C975C61CAD957A00407B67 /* PersonImageView.xib */; };
 		40C975EE1CAD9F7200407B67 /* TodoListViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40C975ED1CAD9F7200407B67 /* TodoListViewController.xib */; };
+		40C975F01CADE0C700407B67 /* RTLLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C975EF1CADE0C700407B67 /* RTLLayout.swift */; };
+		40C975F31CADE79600407B67 /* PersonImageCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C975F11CADE79600407B67 /* PersonImageCollectionViewCell.swift */; };
+		40C975F41CADE79600407B67 /* PersonImageCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40C975F21CADE79600407B67 /* PersonImageCollectionViewCell.xib */; };
+		40C975F81CAE113800407B67 /* UIView+Misc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C975F71CAE113800407B67 /* UIView+Misc.swift */; };
+		40C975FC1CB19B0200407B67 /* UINib+Misc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C975FB1CB19B0200407B67 /* UINib+Misc.swift */; };
 		85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D381C6B31BA005D613B /* AppDelegate.swift */; };
 		85553D431C6B31BA005D613B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85553D391C6B31BA005D613B /* Assets.xcassets */; };
 		85553D441C6B31BA005D613B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 85553D3A1C6B31BA005D613B /* LaunchScreen.storyboard */; };
@@ -70,6 +75,11 @@
 		40C975C41CAD94A900407B67 /* PersonImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PersonImageView.swift; sourceTree = "<group>"; };
 		40C975C61CAD957A00407B67 /* PersonImageView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PersonImageView.xib; sourceTree = "<group>"; };
 		40C975ED1CAD9F7200407B67 /* TodoListViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TodoListViewController.xib; sourceTree = "<group>"; };
+		40C975EF1CADE0C700407B67 /* RTLLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RTLLayout.swift; sourceTree = "<group>"; };
+		40C975F11CADE79600407B67 /* PersonImageCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PersonImageCollectionViewCell.swift; sourceTree = "<group>"; };
+		40C975F21CADE79600407B67 /* PersonImageCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PersonImageCollectionViewCell.xib; sourceTree = "<group>"; };
+		40C975F71CAE113800407B67 /* UIView+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+Misc.swift"; sourceTree = "<group>"; };
+		40C975FB1CB19B0200407B67 /* UINib+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UINib+Misc.swift"; sourceTree = "<group>"; };
 		84508E0E112F7E6A77F1CF05 /* Pods-SwimTodo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwimTodo.release.xcconfig"; path = "Pods/Target Support Files/Pods-SwimTodo/Pods-SwimTodo.release.xcconfig"; sourceTree = "<group>"; };
 		85553D381C6B31BA005D613B /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		85553D391C6B31BA005D613B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -120,6 +130,9 @@
 			isa = PBXGroup;
 			children = (
 				4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */,
+				40C975EF1CADE0C700407B67 /* RTLLayout.swift */,
+				40C975FB1CB19B0200407B67 /* UINib+Misc.swift */,
+				40C975F71CAE113800407B67 /* UIView+Misc.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -158,6 +171,8 @@
 				4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */,
 				402203111CA1FD1200D6B5E1 /* LoginViewController.xib */,
 				85553D401C6B31BA005D613B /* MasterViewController.swift */,
+				40C975F11CADE79600407B67 /* PersonImageCollectionViewCell.swift */,
+				40C975F21CADE79600407B67 /* PersonImageCollectionViewCell.xib */,
 				40C975C41CAD94A900407B67 /* PersonImageView.swift */,
 				40C975C61CAD957A00407B67 /* PersonImageView.xib */,
 				40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */,
@@ -318,6 +333,7 @@
 				85553D441C6B31BA005D613B /* LaunchScreen.storyboard in Resources */,
 				85553D431C6B31BA005D613B /* Assets.xcassets in Resources */,
 				40C975EE1CAD9F7200407B67 /* TodoListViewController.xib in Resources */,
+				40C975F41CADE79600407B67 /* PersonImageCollectionViewCell.xib in Resources */,
 				400648E31C72680000701533 /* TodoEntryTableViewCell.xib in Resources */,
 				85553D451C6B31BA005D613B /* Main.storyboard in Resources */,
 				400268241CA20F6200335AC7 /* GoogleService-Info.plist in Resources */,
@@ -390,14 +406,18 @@
 				40C975C51CAD94A900407B67 /* PersonImageView.swift in Sources */,
 				400648E51C7268DB00701533 /* TodoEntry.swift in Sources */,
 				85553D481C6B31BA005D613B /* MasterViewController.swift in Sources */,
+				40C975F01CADE0C700407B67 /* RTLLayout.swift in Sources */,
 				4048D7B31C73BF91002B490C /* TableViewCell.swift in Sources */,
 				4048D7B41C73BF91002B490C /* StrikeThroughText.swift in Sources */,
 				40A0B3C61CA1FE5800F17BEA /* LoginManager.swift in Sources */,
 				40AE52EB1CA1FAD000A878F3 /* SwimTodoGlobals.swift in Sources */,
+				40C975FC1CB19B0200407B67 /* UINib+Misc.swift in Sources */,
 				85553D461C6B31BA005D613B /* TodoListViewController.swift in Sources */,
 				400648E21C72680000701533 /* TodoEntryTableViewCell.swift in Sources */,
 				4048D7BD1C73D844002B490C /* CollectionType+Misc.swift in Sources */,
 				85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */,
+				40C975F31CADE79600407B67 /* PersonImageCollectionViewCell.swift in Sources */,
+				40C975F81CAE113800407B67 /* UIView+Misc.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

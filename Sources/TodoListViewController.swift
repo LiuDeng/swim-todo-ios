@@ -8,6 +8,8 @@ private let kCellIdentifier = "Cell"
 private let kRowHeight = CGFloat(50)
 private let kTableBgColor = UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1.0)
 
+private let kPersonImageCell = String(PersonImageCollectionViewCell.self)
+
 private let log = SwiftyBeaver.self
 
 
@@ -35,7 +37,10 @@ public class TodoItem: SwimModelBase {
 }
 
 
-class TodoListViewController: SwimListViewController, SwimListManagerDelegate, TableViewCellDelegate {
+class TodoListViewController: SwimListViewController, SwimListManagerDelegate, TableViewCellDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
+    @IBOutlet private weak var presenceView: UICollectionView!
+    @IBOutlet private weak var presenceContainer: UIView!
+    @IBOutlet private weak var presenceContainerTopConstraint: NSLayoutConstraint!
     @IBOutlet private weak var tableView: UITableView!
 
     private let pinchRecognizer = UIPinchGestureRecognizer()
@@ -70,13 +75,36 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
         navigationItem.rightBarButtonItem = editButtonItem()
 
+        presenceView.backgroundColor = UIColor.clearColor()
+        presenceView.collectionViewLayout = RTLLayout()
+        presenceView.delegate = self
+        presenceView.registerNib(UINib(nibName: kPersonImageCell, bundle: nil), forCellWithReuseIdentifier: kPersonImageCell)
+
+        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .Light))
+        presenceContainer.insertSubview(blur, belowSubview: presenceView)
+        presenceContainer.anchorSubview(blur)
+
         pinchRecognizer.addTarget(self, action: #selector(handlePinch(_:)))
         tableView.addGestureRecognizer(pinchRecognizer)
         tableView.registerClass(TableViewCell.self, forCellReuseIdentifier: kCellIdentifier)
         tableView.separatorStyle = .None
         tableView.backgroundColor = kTableBgColor
         tableView.rowHeight = kRowHeight
+        let presenceFrame = presenceView.superview!.frame
+        tableView.contentInset = UIEdgeInsets(top: presenceFrame.size.height, left: 0.0, bottom: 0.0, right: 0.0)
 
+        configureView()
+
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.addObserver(self, selector: #selector(orientationDidChange), name: UIDeviceOrientationDidChangeNotification, object: nil)
+
+        view.removeConstraint(presenceContainerTopConstraint)
+        presenceContainerTopConstraint = NSLayoutConstraint(item: presenceContainer, attribute: .Top, relatedBy: .Equal, toItem: topLayoutGuide, attribute: .Bottom, multiplier: 1.0, constant: 0)
+        view.addConstraint(presenceContainerTopConstraint)
+    }
+
+
+    func orientationDidChange() {
         configureView()
     }
 
@@ -208,6 +236,31 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
 
+    // MARK: UICollectionViewDataSource, UICollectionViewDelegate
+
+    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
+        return 1
+    }
+
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        precondition(collectionView == presenceView)
+        precondition(section == 0)
+
+        return 1
+    }
+
+
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        precondition(collectionView == presenceView)
+        precondition(indexPath.section == 0)
+        precondition(indexPath.item == 0)
+
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(kPersonImageCell, forIndexPath: indexPath) as! PersonImageCollectionViewCell
+        cell.personImageView.initials = "XY"
+        return cell
+    }
+
+
     // MARK: UIScrollViewDelegate methods
 
     // a cell that is rendered as a placeholder to indicate where a new item is added
@@ -227,14 +280,13 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     func scrollViewDidScroll(scrollView: UIScrollView)  {
         // non-scrollViewDelegate methods need this property value
-        let scrollViewContentOffsetY = tableView.contentOffset.y
+        let scrollViewContentOffsetY = tableView.contentOffset.y + tableView.contentInset.top
 
         if pullDownInProgress && scrollView.contentOffset.y <= 0.0 {
             // maintain the location of the placeholder
             placeHolderCell.frame = CGRect(x: 0, y: -tableView.rowHeight,
                 width: tableView.frame.size.width, height: tableView.rowHeight)
-            placeHolderCell.label.text = -scrollViewContentOffsetY > tableView.rowHeight ?
-                "Release to add item" : "Pull to add item"
+            placeHolderCell.label.text = -scrollViewContentOffsetY > tableView.rowHeight ? "Release to add item" : "Pull to add item"
             placeHolderCell.alpha = min(1.0, -scrollViewContentOffsetY / tableView.rowHeight)
         } else {
             pullDownInProgress = false
@@ -243,7 +295,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         // check whether the user pulled down far enough
-        if pullDownInProgress && -scrollView.contentOffset.y > tableView.rowHeight {
+        if pullDownInProgress && -scrollView.contentOffset.y > tableView.rowHeight + tableView.contentInset.top {
             toDoItemAdded()
         }
         pullDownInProgress = false
