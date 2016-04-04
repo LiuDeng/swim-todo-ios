@@ -297,6 +297,11 @@
 					85674A361C68CA0100F299D7 = {
 						CreatedOnToolsVersion = 7.2.1;
 						DevelopmentTeam = W5QR4AAB27;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 					85674A4C1C68CA0100F299D7 = {
 						CreatedOnToolsVersion = 7.2.1;

@@ -82,6 +82,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
 
+    func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
+        // This is required so that Swim can manage the background sync.
+        SwimClient.applicationPerformFetchWithCompletionHandler(completionHandler)
+    }
+
+
     /**
      For iOS 9 and above.
      */
