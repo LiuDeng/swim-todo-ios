@@ -77,6 +77,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         presenceView.collectionViewLayout = RTLLayout()
         presenceView.delegate = self
         presenceView.registerNib(UINib(nibName: kPersonImageCell, bundle: nil), forCellWithReuseIdentifier: kPersonImageCell)
+        presenceView.scrollsToTop = false
 
         let blur = UIVisualEffectView(effect: UIBlurEffect(style: .Light))
         presenceContainer.insertSubview(blur, belowSubview: presenceView)
