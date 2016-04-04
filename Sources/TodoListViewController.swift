@@ -13,30 +13,6 @@ private let kPersonImageCell = String(PersonImageCollectionViewCell.self)
 private let log = SwiftyBeaver.self
 
 
-public class TodoItem: SwimModelBase {
-    var label: String = ""
-    var completed: Bool = false
-
-    required public init() {
-        super.init()
-    }
-
-    required public init?(swimValue: SwimValue) {
-        super.init(swimValue: swimValue)
-        swim_updateWithSwimValue(swimValue)
-    }
-
-    override public func swim_toSwimValue() -> SwimValue {
-        return SwimValue(label)
-    }
-
-    override public func swim_updateWithSwimValue(swimValue: SwimValue) {
-        label = swimValue.text ?? ""
-        completed = false   // TODO: Put the completed flag on the wire
-    }
-}
-
-
 class TodoListViewController: SwimListViewController, SwimListManagerDelegate, TableViewCellDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
     @IBOutlet private weak var presenceView: UICollectionView!
     @IBOutlet private weak var presenceContainer: UIView!
@@ -65,7 +41,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
     private static func createListManager() -> SwimListManagerProtocol {
-        return SwimListManager<TodoItem>(laneUri: LANE_URI)
+        return SwimListManager<TodoEntry>(laneUri: LANE_URI)
     }
 
     override func viewDidLoad() {
@@ -132,7 +108,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
     func toDoItemAddedAtIndex(index: Int) {
-        let newObjectOrNil = listManager.insertNewObjectAtIndex(index) as? TodoItem
+        let newObjectOrNil = listManager.insertNewObjectAtIndex(index) as? TodoEntry
         tableView.reloadData()
         fixColors()
         guard let newObject = newObjectOrNil else {
@@ -144,8 +120,8 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         editCell?.label.becomeFirstResponder()
     }
 
-    func toDoItemDeleted(toDoItem: TodoItem) {
-        let objs = objects as! [TodoItem]
+    func toDoItemDeleted(toDoItem: TodoEntry) {
+        let objs = objects as! [TodoEntry]
         guard let index = objs.indexOf(toDoItem) else {
             log.warning("Couldn't find deleted item \(toDoItem)!")
             return
@@ -153,7 +129,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         toDoItemDeleted(toDoItem, atIndex: index)
     }
 
-    func toDoItemDeleted(toDoItem: TodoItem, atIndex index: Int) {
+    func toDoItemDeleted(toDoItem: TodoEntry, atIndex index: Int) {
         listManager.removeObjectAtIndex(index)
 
         // loop over the visible cells to animate delete
@@ -188,13 +164,23 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
     
 
+    func toDoItemCompleted(toDoItem: TodoEntry) {
+        let objs = objects as! [TodoEntry]
+        guard let index = objs.indexOf(toDoItem) else {
+            log.warning("Couldn't find deleted item \(toDoItem)!")
+            return
+        }
+        listManager.updateObjectAtIndex(index)
+    }
+
+
     // MARK: UITableViewDataSource / UITableViewDelegate
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier(kCellIdentifier, forIndexPath: indexPath) as! TableViewCell
         cell.selectionStyle = .None
         cell.textLabel?.backgroundColor = UIColor.clearColor()
-        let object = objects[indexPath.row] as! TodoItem
+        let object = objects[indexPath.row] as! TodoEntry
         cell.delegate = self
         cell.toDoItem = object
 

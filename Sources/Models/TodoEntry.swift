@@ -18,17 +18,50 @@ class TodoEntry : SwimModelBase {
     var activity : [String : NSDate] = [:]
     var assignees : [String] = []
     var highlighters : [String] = []
+    var status: String? = nil
+
+    var completed: Bool {
+        get {
+            return (status == "completed")
+        }
+        set {
+            status = (newValue ? "completed" : "open")
+        }
+    }
 
     required init?(swimValue: SwimValue) {
-        name = swimValue.text
         super.init(swimValue: swimValue)
+        swim_updateWithSwimValue(swimValue)
     }
 
     required init() {
         super.init()
     }
 
+    override func swim_updateWithSwimValue(swimValue: SwimValue) {
+        guard let json = swimValue.json as? [String: AnyObject] else {
+            if let n = swimValue.text {
+                name = n
+                return
+            }
+            else {
+                return
+            }
+        }
+
+        name = json["name"] as? String
+        status = json["status"] as? String
+        return
+    }
+
     override func swim_toSwimValue() -> SwimValue {
-        return SwimValue(name ?? "")
+        var json = [String: AnyObject]()
+        if name != nil {
+            json["name"] = name
+        }
+        if status != nil {
+            json["status"] = status
+        }
+        return SwimValue(json: json)
     }
 }
