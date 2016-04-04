@@ -2,11 +2,11 @@ import UIKit
 import SwimSwift
 import SwiftyBeaver
 
-let LANE_URI: SwimUri = "todo/list"
+private let LANE_URI: SwimUri = "todo/list"
 
-let kCellIdentifier = "Cell"
-let kRowHeight = CGFloat(50)
-let kTableBgColor = UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1.0)
+private let kCellIdentifier = "Cell"
+private let kRowHeight = CGFloat(50)
+private let kTableBgColor = UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1.0)
 
 private let log = SwiftyBeaver.self
 
@@ -36,9 +36,9 @@ public class TodoItem: SwimModelBase {
 
 
 class TodoListViewController: SwimListViewController, SwimListManagerDelegate, TableViewCellDelegate {
-    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet private weak var tableView: UITableView!
 
-    let pinchRecognizer = UIPinchGestureRecognizer()
+    private let pinchRecognizer = UIPinchGestureRecognizer()
 
     var detailItem : NodeScope? {
         get {
