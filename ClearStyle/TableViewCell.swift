@@ -149,11 +149,12 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
                 }
             } else if completeOnDragRelease {
                 if let item = toDoItem {
-                    item.completed = true
+                    let done = !item.completed
+                    item.completed = done
                     delegate?.toDoItemCompleted(item)
+                    label.strikeThrough = done
+                    itemCompleteLayer.hidden = !done
                 }
-                label.strikeThrough = true
-                itemCompleteLayer.hidden = false
                 UIView.animateWithDuration(0.2, animations: {self.frame = originalFrame})
             } else {
                 UIView.animateWithDuration(0.2, animations: {self.frame = originalFrame})
