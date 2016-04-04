@@ -61,7 +61,8 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
         listVC.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
         listVC.navigationItem.leftItemsSupplementBackButton = true
 
-        splitVC.showDetailViewController(listVC, sender: self)
+        let listNav = UINavigationController(rootViewController: listVC)
+        splitVC.showDetailViewController(listNav, sender: self)
     }
 
 
@@ -77,5 +78,12 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
             return true
         }
         return false
+    }
+
+    func splitViewController(splitViewController: UISplitViewController, separateSecondaryViewControllerFromPrimaryViewController primaryViewController: UIViewController) -> UIViewController? {
+        let masterNav = primaryViewController as! UINavigationController
+        let detailVC = masterNav.topViewController!
+        masterNav.popViewControllerAnimated(false)
+        return detailVC
     }
 }
