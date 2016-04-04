@@ -54,6 +54,10 @@ public enum Item: ArrayLiteralConvertible, StringLiteralConvertible, FloatLitera
     self = Value(ReconValue(value))
   }
 
+  public init(reconValue value: ReconValue) {
+    self = Value(value)
+  }
+
   public init(base64 string: String) {
     self = Value(ReconValue(base64: string))
   }

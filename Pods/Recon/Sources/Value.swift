@@ -64,6 +64,10 @@ public enum Value: ArrayLiteralConvertible, StringLiteralConvertible, FloatLiter
     self = Data(ReconData(base64: string)!)
   }
 
+  private init(extant: Bool) {
+    self = (extant ? .Extant : .Absent)
+  }
+
 #if os(OSX) || os(iOS) || os(tvOS) || os(watchOS)
   public init(data: NSData) {
     self = Data(ReconData(data: data))
@@ -80,6 +84,50 @@ public enum Value: ArrayLiteralConvertible, StringLiteralConvertible, FloatLiter
 
   public init(_ value: Uri) {
     self = Text(value.uri)
+  }
+
+  /**
+   Convert JSON-ish objects to ReconValue instances.
+
+   This has similar restrictions to NSJSONSerialization, but expanded to
+   allow for Swift native types:
+
+   - Top level object is an `[AnyObject]` or `[String: AnyObject]`.
+   - All objects are `Bool`, `Int`, `Double`, `String`, `NSNumber`,
+   `[AnyObject]`, `[String: AnyObject]`, or `NSNull`.
+
+   Keys in dictionaries are sorted before being added to the corresponding
+   ReconRecord, so that the results are reproducible.
+   */
+  public init(json: AnyObject) {
+    // Note that because json is AnyObject, the Swift native Bool, Int,
+    // and Double types have been boxed.  This means that if we use
+    // "json is Bool" and similar, we get the wrong answer because
+    // all three native types when boxed will return true to the "is Bool"
+    // query.  For this reason, we check the dynamicType.
+    //
+    // This is obviously relying on an internal detail of the Swift runtime,
+    // but it's working around what is arguably a bug in Swift.
+    if String(json.dynamicType) == "__NSCFBoolean" {
+      let bool = json as! Bool
+      self.init(booleanLiteral: bool)
+    }
+    else if String(json.dynamicType) == "__NSCFNumber" {
+      let val = json as! Double
+      self.init(val)
+    }
+    else if let str = json as? String {
+      self.init(str)
+    }
+    else if let num = json as? NSNumber {
+      self.init(num.doubleValue)
+    }
+    else if json is NSNull {
+      self.init(extant: false)
+    }
+    else {
+      self.init(ReconRecord(json: json))
+    }
   }
 
   public var isDefined: Bool {
@@ -131,6 +179,25 @@ public enum Value: ArrayLiteralConvertible, StringLiteralConvertible, FloatLiter
       return value
     } else {
       return nil
+    }
+  }
+
+  public var json: AnyObject {
+    switch self {
+    case .Absent:
+      return NSNull()
+
+    case .Number(let val):
+      return val
+
+    case .Record(let record):
+      return record.json
+
+    case .Text(let str):
+      return str
+
+    default:
+      preconditionFailure("Cannot convert ReconValue to JSON object: \(self)")
     }
   }
 

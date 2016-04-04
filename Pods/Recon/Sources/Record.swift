@@ -41,6 +41,34 @@ public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConve
     self.init(items: [], fields: nil)
   }
 
+  /**
+   Convert JSON-ish objects to ReconRecord instances.
+
+   This has similar restrictions to NSJSONSerialization, but expanded to
+   allow for Swift native types:
+
+   - Top level object is an `[AnyObject]` or `[String: AnyObject]`.
+   - All objects are `Bool`, `Int`, `Double`, `String`, `NSNumber`,
+     `[AnyObject]`, `[String: AnyObject]`, or `NSNull`.
+
+   Keys in dictionaries are sorted before being added to the corresponding
+   ReconRecord, so that the results are reproducible.
+   */
+  public init(json: AnyObject) {
+    if let arr = json as? [AnyObject] {
+      let newItems = arr.map { Item(reconValue: Value(json: $0)) }
+      self.init(newItems)
+    }
+    else if let dict = json as? [String: AnyObject] {
+      let keys = dict.keys.sort()
+      let newItems = keys.map { Item.Attr($0, Value(json: dict[$0]!)) }
+      self.init(newItems)
+    }
+    else {
+      preconditionFailure()
+    }
+  }
+
   public var isEmpty: Bool {
     return items.isEmpty
   }
@@ -354,7 +382,7 @@ public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConve
 
   mutating func reindex() {
     if items.count > Record.indexThreshold || self.fields != nil {
-      var fields = Dictionary<Value, Value>()
+      var fields = [Value: Value]()
       for item in items {
         if case .Field(let field) = item {
           fields.updateValue(field.value, forKey: field.key)
@@ -362,6 +390,17 @@ public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConve
       }
       self.fields = fields
     }
+  }
+
+  public var json: [String: AnyObject] {
+    var result = [String: AnyObject]()
+    for item in items {
+      guard let key = item.key?.text else {
+        preconditionFailure("Cannot convert ReconValue to JSON key: \(item)")
+      }
+      result[key] = item.value.json
+    }
+    return result
   }
 
   public var description: String {
