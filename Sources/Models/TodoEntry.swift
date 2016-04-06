@@ -51,7 +51,6 @@ class TodoEntry : SwimModelBase {
 
         name = json["name"] as? String
         status = json["status"] as? String
-        return
     }
 
     override func swim_toSwimValue() -> SwimValue {
