@@ -214,8 +214,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         }
 
         guard let path = tableView.indexPathForCell(editingCell) else {
-            assertionFailure("Cannot find cell when we're editing it!")
-            return
+            preconditionFailure("Cannot find cell when we're editing it!")
         }
         listManager.updateObjectAtIndex(path.row)
     }
