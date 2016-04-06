@@ -19,18 +19,6 @@ public protocol NodeScope {
      */
     func scope(lane lane: SwimUri) -> LaneScope
 
-    /**
-     - returns: A new `DownlinkBuilder`, used to construct a link to a lane of the service node to which this scope is bound.
-
-     ```swift
-        let chat = client.scope(node: "ws://swim.example.com/chat/public")
-        let messages = chat.downlink()
-            .lane("chat/room")
-            .syncList()
-     ```
-     */
-    func downlink() -> DownlinkBuilder
-
     func link(lane lane: SwimUri, prio: Double) -> Downlink
 
     func sync(lane lane: SwimUri, prio: Double) -> Downlink

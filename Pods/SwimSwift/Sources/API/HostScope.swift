@@ -3,39 +3,6 @@
  */
 public protocol HostScope {
 
-    /**
-     - returns: A new `NodeScope` bound to the service at the given `node` URI on the network endpoint to which this scope is bound.
-
-     ```swift
-        let host = client.scope(host: "ws://swim.example.com")
-        let chat = host.scope(node: "/chat/public")
-     ```
-     */
-    func scope(node node: SwimUri) -> NodeScope
-
-    /**
-     - returns: A new `LaneScope` bound to the `lane` URI of the given `node` URI on the network endpoint to which this scope is bound.
-
-     ```swift
-        let host = client.scope(host: "ws://swim.example.com")
-        let chatRoom = host.scope(node: "/chat/public", lane: "chat/room")
-     ```
-     */
-    func scope(node node: SwimUri, lane: SwimUri) -> LaneScope
-
-    /**
-     - returns: A new `DownlinkBuilder`, used to construct a link to a lane of a service node on the network endpoint to which this scope is bound.
-
-     ```swift
-        let host = client.scope(host: "ws://swim.example.com")
-        let link = host.downlink()
-            .node("/chat/public")
-            .lane("chat/room")
-            .sync()
-     ```
-     */
-    func downlink() -> DownlinkBuilder
-
     func link(node node: SwimUri, lane: SwimUri, prio: Double) -> Downlink
 
     func sync(node node: SwimUri, lane: SwimUri, prio: Double) -> Downlink

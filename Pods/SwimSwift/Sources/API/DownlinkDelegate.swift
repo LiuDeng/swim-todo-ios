@@ -1,17 +1,15 @@
 public protocol DownlinkDelegate {
     func downlink(downlink: Downlink, events: [EventMessage])
 
-    func downlink(downlink: Downlink, commands: [CommandMessage])
-
-    func downlink(downlink: Downlink, willLink request: LinkRequest)
+    func downlinkWillLink(downlink: Downlink)
 
     func downlink(downlink: Downlink, didLink response: LinkedResponse)
 
-    func downlink(downlink: Downlink, willSync request: SyncRequest)
+    func downlinkWillSync(downlink: Downlink)
 
     func downlink(downlink: Downlink, didSync response: SyncedResponse)
 
-    func downlink(downlink: Downlink, willUnlink request: UnlinkRequest)
+    func downlinkWillUnlink(downlink: Downlink)
 
     func downlink(downlink: Downlink, didUnlink response: UnlinkedResponse)
 
@@ -25,17 +23,15 @@ public protocol DownlinkDelegate {
 public extension DownlinkDelegate {
     public func downlink(downlink: Downlink, events: [EventMessage]) {}
 
-    public func downlink(downlink: Downlink, commands: [CommandMessage]) {}
-
-    public func downlink(downlink: Downlink, willLink request: LinkRequest) {}
+    public func downlinkWillLink(downlink: Downlink) {}
 
     public func downlink(downlink: Downlink, didLink response: LinkedResponse) {}
 
-    public func downlink(downlink: Downlink, willSync request: SyncRequest) {}
+    public func downlinkWillSync(downlink: Downlink) {}
 
     public func downlink(downlink: Downlink, didSync response: SyncedResponse) {}
 
-    public func downlink(downlink: Downlink, willUnlink request: UnlinkRequest) {}
+    public func downlinkWillUnlink(downlink: Downlink) {}
 
     public func downlink(downlink: Downlink, didUnlink response: UnlinkedResponse) {}
 

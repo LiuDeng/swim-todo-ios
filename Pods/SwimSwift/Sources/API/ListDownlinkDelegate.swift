@@ -1,4 +1,7 @@
 public protocol ListDownlinkDelegate: DownlinkDelegate {
+    func downlinkWillChangeObjects(downlink: Downlink)
+    func downlinkDidChangeObjects(downlink: Downlink)
+
     func downlink(downlink: ListDownlink, didUpdate value: SwimValue, atIndex: Int)
 
     func downlink(downlink: ListDownlink, didInsert value: SwimValue, atIndex: Int)

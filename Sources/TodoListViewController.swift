@@ -21,12 +21,18 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     private let pinchRecognizer = UIPinchGestureRecognizer()
 
-    var detailItem : NodeScope? {
+    private var laneScope: LaneScope? {
         get {
-            return listManager.nodeScope
+            return listManager.laneScope
         }
         set {
-            listManager.nodeScope = newValue
+            listManager.laneScope = newValue
+        }
+    }
+
+    var detailItem : NodeScope? {
+        didSet {
+            laneScope = detailItem?.scope(lane: LANE_URI)
         }
     }
 
@@ -41,7 +47,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
     private static func createListManager() -> SwimListManagerProtocol {
-        return SwimListManager<TodoEntry>(laneUri: LANE_URI)
+        return SwimListManager<TodoEntry>()
     }
 
     override func viewDidLoad() {

@@ -1,9 +1,17 @@
 import Recon
 
+
+private let log = SwimLogging.log
+
+
 class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
     var state: [Value] = [Value]()
 
     override func onEventMessages(messages: [EventMessage]) {
+        log.verbose("Did receive \(messages)")
+
+        sendWillChangeObjects()
+
         for message in messages {
             switch message.body.tag {
             case "update"?:
@@ -12,11 +20,17 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
                     let body = message.body.dropFirst()
                     remoteUpdate(body, atIndex: index)
                 }
+                else {
+                    log.warning("Received update with no index!")
+                }
             case "insert"?:
                 let header = message.body.first.value
                 if let index = header["index"].integer {
                     let body = message.body.dropFirst()
                     remoteInsert(body, atIndex: index)
+                }
+                else {
+                    log.warning("Received insert with no index!")
                 }
             case "move"?:
                 let header = message.body.first.value
@@ -24,18 +38,33 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
                     let body = message.body.dropFirst()
                     remoteMove(body, fromIndex: from, toIndex: to)
                 }
+                else {
+                    log.warning("Received move without from or to index!")
+                }
             case "remove"?, "delete"?:
                 let header = message.body.first.value
                 if let index = header["index"].integer {
                     let body = message.body.dropFirst()
                     remoteRemove(body, atIndex: index)
                 }
-            case "clear"? where message.body.record?.count == 1:
-                remoteRemoveAll()
-            default:
+                else {
+                    log.warning("Received \(message.body.tag) with no index!")
+                }
+            case "clear"?:
+                if message.body.record?.count == 1 {
+                    remoteRemoveAll()
+                }
+                else {
+                    log.warning("Received clear with invalid body!")
+                }
+
+            default:  // TODO: Check for "append" as a command here?
                 remoteAppend(message.body)
             }
         }
+
+        sendDidChangeObjects()
+
         super.onEventMessages(messages)
     }
 
@@ -74,6 +103,9 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
             if case let delegate as ListDownlinkDelegate = self.delegate {
                 delegate.downlink(self, didInsert: value, atIndex: index)
             }
+        }
+        else {
+            log.warning("Received insert that we cannot handle!")
         }
     }
 
@@ -120,7 +152,6 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
         }
         set(value) {
             state[index] = value
-            let nodeUri = channel.unresolve(self.nodeUri)
             var body = Record()
             body.append(Item.Attr("update", Value(Slot("index", Value(index)))))
             if let record = value.record {
@@ -128,9 +159,7 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
             } else {
                 body.append(Item.Value(value))
             }
-            let message = CommandMessage(node: nodeUri, lane: laneUri, body: Value(body))
-            onCommandMessage(message)
-            channel.push(envelope: message)
+            channel.command(node: nodeUri, lane: laneUri, body: Value(body))
         }
     }
 
@@ -144,15 +173,11 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
 
     func append(value: Value) {
         state.append(value)
-        let nodeUri = channel.unresolve(self.nodeUri)
-        let message = CommandMessage(node: nodeUri, lane: laneUri, body: value)
-        onCommandMessage(message)
-        channel.push(envelope: message)
+        channel.command(node: nodeUri, lane: laneUri, body: value)
     }
 
     func insert(value: Value, atIndex index: Int) {
         state.insert(value, atIndex: index)
-        let nodeUri = channel.unresolve(self.nodeUri)
         var body = Record()
         body.append(Item.Attr("insert", Value(Slot("index", Value(index)))))
         if let record = value.record {
@@ -160,15 +185,12 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
         } else {
             body.append(Item.Value(value))
         }
-        let message = CommandMessage(node: nodeUri, lane: laneUri, body: Value(body))
-        onCommandMessage(message)
-        channel.push(envelope: message)
+        channel.command(node: nodeUri, lane: laneUri, body: Value(body))
     }
 
     func moveFromIndex(from: Int, toIndex to: Int) {
         let value = state.removeAtIndex(from)
         state.insert(value, atIndex: to)
-        let nodeUri = channel.unresolve(self.nodeUri)
         var body = Record()
         body.append(Item.Attr("move", Value(Slot("from", Value(from)), Slot("to", Value(to)))))
         if let record = value.record {
@@ -176,14 +198,11 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
         } else {
             body.append(Item.Value(value))
         }
-        let message = CommandMessage(node: nodeUri, lane: laneUri, body: Value(body))
-        onCommandMessage(message)
-        channel.push(envelope: message)
+        channel.command(node: nodeUri, lane: laneUri, body: Value(body))
     }
 
     func removeAtIndex(index: Int) -> Value {
         let value = state.removeAtIndex(index)
-        let nodeUri = channel.unresolve(self.nodeUri)
         var body = Record()
         body.append(Item.Attr("remove", Value(Slot("index", Value(index)))))
         if let record = value.record {
@@ -191,25 +210,19 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
         } else {
             body.append(Item.Value(value))
         }
-        let message = CommandMessage(node: nodeUri, lane: laneUri, body: Value(body))
-        onCommandMessage(message)
-        channel.push(envelope: message)
+        channel.command(node: nodeUri, lane: laneUri, body: Value(body))
         return value
     }
 
     func removeAll() {
         state.removeAll()
-        let nodeUri = channel.unresolve(self.nodeUri)
         let body = Value(Item.Attr("clear"))
-        let message = CommandMessage(node: nodeUri, lane: laneUri, body: body)
-        onCommandMessage(message)
-        channel.push(envelope: message)
+        channel.command(node: nodeUri, lane: laneUri, body: body)
     }
 
     func popLast() -> Value? {
         if let value = state.popLast() {
             let index = state.count
-            let nodeUri = channel.unresolve(self.nodeUri)
             var body = Record()
             body.append(Item.Attr("remove", Value(Slot("index", Value(index)))))
             if let record = value.record {
@@ -217,9 +230,7 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
             } else {
                 body.append(Item.Value(value))
             }
-            let message = CommandMessage(node: nodeUri, lane: laneUri, body: Value(body))
-            onCommandMessage(message)
-            channel.push(envelope: message)
+            channel.command(node: nodeUri, lane: laneUri, body: Value(body))
             return value
         } else {
             return nil
@@ -229,7 +240,6 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
     func removeLast() -> Value {
         let value = state.removeLast()
         let index = state.count
-        let nodeUri = channel.unresolve(self.nodeUri)
         var body = Record()
         body.append(Item.Attr("remove", Value(Slot("index", Value(index)))))
         if let record = value.record {
@@ -237,13 +247,23 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
         } else {
             body.append(Item.Value(value))
         }
-        let message = CommandMessage(node: nodeUri, lane: laneUri, body: Value(body))
-        onCommandMessage(message)
-        channel.push(envelope: message)
+        channel.command(node: nodeUri, lane: laneUri, body: Value(body))
         return value
     }
 
     func forEach(f: Value throws -> ()) rethrows {
         try state.forEach(f)
+    }
+
+    func sendWillChangeObjects() {
+        if let delegate = delegate as? ListDownlinkDelegate {
+            delegate.downlinkWillChangeObjects(self)
+        }
+    }
+
+    func sendDidChangeObjects() {
+        if let delegate = delegate as? ListDownlinkDelegate {
+            delegate.downlinkDidChangeObjects(self)
+        }
     }
 }

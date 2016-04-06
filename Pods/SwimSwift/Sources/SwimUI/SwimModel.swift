@@ -17,7 +17,7 @@ public protocol SwimModelProtocol: class, Equatable {
 }
 
 
-public class SwimModelBase: SwimModelProtocol {
+public class SwimModelBase: SwimModelProtocol, CustomStringConvertible {
     required public init() {
     }
 
@@ -30,6 +30,10 @@ public class SwimModelBase: SwimModelProtocol {
 
     public func swim_updateWithSwimValue(swimValue: SwimValue) {
         fatalError("Must be implemented by a subclass")
+    }
+
+    public var description: String {
+        return swim_toSwimValue().recon
     }
 }
 

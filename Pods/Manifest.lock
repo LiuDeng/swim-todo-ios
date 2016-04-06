@@ -1,4 +1,10 @@
 PODS:
+  - Bolts (1.7.0):
+    - Bolts/AppLinks (= 1.7.0)
+    - Bolts/Tasks (= 1.7.0)
+  - Bolts/AppLinks (1.7.0):
+    - Bolts/Tasks
+  - Bolts/Tasks (1.7.0)
   - Google/Core (2.0.3):
     - GoogleInterchangeUtilities (~> 1.0)
     - GoogleNetworkingUtilities (~> 1.0)
@@ -29,23 +35,27 @@ PODS:
   - SQLite.swift (0.10.1)
   - SwiftWebSocket (2.6.0)
   - SwiftyBeaver (0.4.2)
-  - SwimSwift (0.2.5):
+  - SwimSwift (0.2.6):
+    - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-    - SwimSwift/Core (= 0.2.5)
-  - SwimSwift/Core (0.2.5):
+    - SwimSwift/Core (= 0.2.6)
+  - SwimSwift/Core (0.2.6):
+    - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-  - SwimSwift/GoogleSignIn (0.2.5):
+  - SwimSwift/GoogleSignIn (0.2.6):
+    - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-  - SwimSwift/SwiftyBeaver (0.2.5):
+  - SwimSwift/SwiftyBeaver (0.2.6):
+    - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
@@ -59,6 +69,7 @@ DEPENDENCIES:
   - SwimSwift/SwiftyBeaver
 
 SPEC CHECKSUMS:
+  Bolts: a0058fa3b331c5a1e4402d534f2dae36dbff31e4
   Google: 61379f0072bc561a7e174d23a6cbe41bd6d8599c
   GoogleAppUtilities: 974598e8ed618c74ead33541d9caffbc3d144266
   GoogleAuthUtilities: 79e4143c77a08081a480b08df27a066cc8944f43
@@ -72,7 +83,7 @@ SPEC CHECKSUMS:
   SQLite.swift: 6a6e4b034efc317ce4e203b6af2d3024fee2b570
   SwiftWebSocket: c24c0dde0b33852f478ffb54226408bfe703b26b
   SwiftyBeaver: 3eced9aabe4f10b975453cc1baaa2d523a5eaeae
-  SwimSwift: 88bcddc6501624d967b9c8c802d32ce7ca0ff870
+  SwimSwift: 51236484d8823d8f7f282fd9984edc143f9bb7e9
 
 PODFILE CHECKSUM: c4450464167ca8851e348322bbea7e9799ba20d5
 

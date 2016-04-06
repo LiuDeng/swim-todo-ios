@@ -34,32 +34,16 @@ class RemoteDownlink: Downlink, Hashable {
         delegate?.downlink(self, events: messages)
     }
 
-    func onCommandMessage(message: CommandMessage) {
-        onCommandMessages([message])
-    }
-
-    func onCommandMessages(messages: [CommandMessage]) {
-        delegate?.downlink(self, commands: messages)
-    }
-
-    func onLinkRequest(request: LinkRequest) {
-        delegate?.downlink(self, willLink: request)
-    }
-
     func onLinkedResponse(response: LinkedResponse) {
         delegate?.downlink(self, didLink: response)
-    }
-
-    func onSyncRequest(request: SyncRequest) {
-        delegate?.downlink(self, willSync: request)
     }
 
     func onSyncedResponse(response: SyncedResponse) {
         delegate?.downlink(self, didSync: response)
     }
 
-    func onUnlinkRequest(request: UnlinkRequest) {
-        delegate?.downlink(self, willUnlink: request)
+    func onUnlinkRequest() {
+        delegate?.downlinkWillUnlink(self)
     }
 
     func onUnlinkedResponse(response: UnlinkedResponse) {

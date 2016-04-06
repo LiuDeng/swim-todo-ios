@@ -73,16 +73,12 @@ class RemoteMapDownlink: RemoteSyncedDownlink, MapDownlink {
 
     func updateValue(value: SwimValue, forKey key: SwimValue) -> SwimValue? {
         let oldValue = state.updateValue(value, forKey: key)
-        let nodeUri = channel.unresolve(self.nodeUri)
-        let message = CommandMessage(node: nodeUri, lane: laneUri, body: value)
-        onCommandMessages([message])
-        channel.push(envelope: message)
+        channel.command(node: nodeUri, lane: laneUri, body: value)
         return oldValue
     }
 
     func removeValueForKey(key: SwimValue) -> SwimValue? {
         if let oldValue = state.removeValueForKey(key) {
-            let nodeUri = channel.unresolve(self.nodeUri)
             var body = Record()
             body.append(Item.Attr("remove"))
             if let oldRecord = oldValue.record {
@@ -90,9 +86,7 @@ class RemoteMapDownlink: RemoteSyncedDownlink, MapDownlink {
             } else {
                 body.append(Item.Value(oldValue))
             }
-            let message = CommandMessage(node: nodeUri, lane: laneUri, body: SwimValue(body))
-            onCommandMessages([message])
-            channel.push(envelope: message)
+            channel.command(node: nodeUri, lane: laneUri, body: Value(body))
             return oldValue
         } else {
             return nil
@@ -101,11 +95,8 @@ class RemoteMapDownlink: RemoteSyncedDownlink, MapDownlink {
 
     func removeAll() {
         state.removeAll()
-        let nodeUri = channel.unresolve(self.nodeUri)
         let body = SwimValue(Item.Attr("clear"))
-        let message = CommandMessage(node: nodeUri, lane: laneUri, body: body)
-        onCommandMessages([message])
-        channel.push(envelope: message)
+        channel.command(node: nodeUri, lane: laneUri, body: body)
     }
 
     func forEach(f: (SwimValue, SwimValue) throws -> ()) rethrows {

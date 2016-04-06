@@ -14,7 +14,7 @@ private let log = SwimLogging.log
 
 public protocol SwimListManagerProtocol: class {
     var objects: [AnyObject] { get }
-    var nodeScope: NodeScope? { get set }
+    var laneScope: LaneScope? { get set }
 
     /**
      - parameter delegate: Will be weakly referenced by this SwimListManager.
@@ -43,18 +43,17 @@ public protocol SwimListManagerDelegate: class {
      Will be called whenever commands are received that will change SwimListManagerProtocol.objects,
      and before those commands are processed.
 
-    In other words, this indicates the start of a batch of calls to swimDid{Append,Insert,Move,Remove,Replace}.
+    In other words, this indicates the start of a batch of calls to swimDid{Insert,Move,Remove,Replace}.
      */
     func swimWillChangeObjects()
 
     /**
      Will be called after a batch of changes to SwimListManagerProtocol.objects has been processed.
 
-     In other words, this indicates the end of a batch of calls to swimDid{Append,Insert,Move,Remove,Replace}.
+     In other words, this indicates the end of a batch of calls to swimDid{Insert,Move,Remove,Replace}.
      */
     func swimDidChangeObjects()
 
-    func swimDidAppend(object: AnyObject)
     func swimDidInsert(object: AnyObject, atIndex: Int)
     func swimDidMove(fromIndex: Int, toIndex: Int)
     func swimDidRemove(index: Int, object: AnyObject)
@@ -73,7 +72,6 @@ public extension SwimListManagerDelegate {
     public func swimWillChangeObjects() {}
     public func swimDidChangeObjects() {}
 
-    public func swimDidAppend(object: AnyObject) {}
     public func swimDidInsert(object: AnyObject, atIndex: Int) {}
     public func swimDidMove(fromIndex: Int, toIndex: Int) {}
     public func swimDidRemove(index: Int, object: AnyObject) {}
@@ -89,19 +87,16 @@ public extension SwimListManagerDelegate {
 }
 
 
-public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProtocol, DownlinkDelegate {
+public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProtocol, ListDownlinkDelegate {
     private var delegates = WeakArray<AnyObject>()
 
     public var objects: [AnyObject] = []
 
-    public var nodeScope: NodeScope? = nil
+    public var laneScope: LaneScope? = nil
 
-    let laneUri: SwimUri
+    private var downLink: ListDownlink? = nil
 
-    var downLink: Downlink? = nil
-
-    public init(laneUri: SwimUri) {
-        self.laneUri = laneUri
+    public init() {
     }
 
     public func addDelegate(delegate: SwimListManagerDelegate) {
@@ -113,11 +108,11 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
     }
 
     public func startSynching() {
-        guard let ns = nodeScope else {
+        guard let ls = laneScope else {
             return
         }
 
-        downLink = ns.sync(lane: laneUri)
+        downLink = ls.syncList()
         guard var dl = downLink else {
             log.warning("Failed to create downLink!")
             return
@@ -132,11 +127,11 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
     }
 
     public func stopSynching() {
-        guard let ns = nodeScope else {
+        guard let dl = downLink else {
             return
         }
-        ns.close()
-        nodeScope = nil
+        dl.close()
+        downLink = nil
 
         forEachDelegate {
             $0.swimDidStopSynching()
@@ -145,25 +140,25 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
     public func insertNewObjectAtIndex(index: Int) -> Any? {
         // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
-        guard let ns = nodeScope else {
+        guard let dl = downLink else {
             return nil
         }
 
         let object = ObjectType()
-        let item = object.swim_toSwimValue()
+        let item = Value(Slot("item", object.swim_toSwimValue()))
         // We're not inserting into objects right now -- we're waiting for it to come back from the server instead.
         // TODO: This is a dirty hack and needs fixing properly.  We need a sessionId on messages so that we don't
         // respond to our own.
 //        objects.insert(object, atIndex: index)
         log.verbose("Inserted new object at \(index)")
 
-        ns.command(lane: laneUri, body: Value(Attr("insert", Value(Slot("index", Value(index)), Slot("item", item)))))
+        dl.insert(item, atIndex: index)
 
         return object
     }
 
     public func moveObjectAtIndex(fromIndex: Int, toIndex: Int) {
-        guard let ns = nodeScope else {
+        guard let dl = downLink else {
             return
         }
 
@@ -171,168 +166,97 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         objects.insert(object, atIndex: toIndex)
         log.verbose("Moved \(fromIndex) -> \(toIndex): \(object)")
 
-        ns.command(lane: laneUri, body: Value(Attr("move", Value(Slot("from", Value(fromIndex)), Slot("to", Value(toIndex))))))
+        dl.moveFromIndex(fromIndex, toIndex: toIndex)
     }
 
     public func removeObjectAtIndex(index: Int) {
-        guard let ns = nodeScope else {
+        guard let dl = downLink else {
             return
         }
 
         objects.removeAtIndex(index)
         log.verbose("Deleted object at \(index)")
 
-        ns.command(lane: laneUri, body: Value(Attr("remove", Value(Slot("index", Value(index))))))
+        dl.removeAtIndex(index)
     }
 
     public func setHighlightAtIndex(index: Int, isHighlighted: Bool) {
-        guard let ns = nodeScope else {
+        guard var dl = downLink else {
             return
         }
 
         let object = objects[index] as! ObjectType
-        let item = object.swim_toSwimValue()
         let cmd = (isHighlighted ? "highlight" : "unhighlight")
         log.verbose("Did \(cmd) \(index): \(object)")
 
+        let objectValue = object.swim_toSwimValue()
         if isHighlighted {
-            ns.command(lane: laneUri, body: Value(Attr("update", Value(Slot("index", Value(index)))), Slot("item", item), Slot("highlight", Value.True)))
+            dl[index] = Value(Slot("item", objectValue), Slot("highlight", Value.True))
         }
         else {
-            ns.command(lane: laneUri, body: Value(Attr("update", Value(Slot("index", Value(index)))), Slot("item", item)))
+            dl[index] = Value(Slot("item", objectValue))
         }
     }
 
     public func updateObjectAtIndex(index: Int) {
-        // TODO: It's a complete fluke that setHighlightAtIndex:isHighlighted=false happens
-        // to do exactly what we want.  Tidy this up.
-        setHighlightAtIndex(index, isHighlighted: false)
-    }
-
-    public func downlink(downlink: Downlink, events: [EventMessage]) {
-        log.verbose("Did receive \(events)")
-
-        sendWillChangeObjects()
-
-        for message in events {
-            let heading = message.body.first
-            switch heading.key?.text {
-            case "insert"?:
-                didReceiveInsert(message)
-
-            case "update"?:
-                didReceiveUpdate(message)
-
-            case "move"?:
-                didReceiveMove(message)
-
-            case "remove"?:
-                didReceiveRemove(message)
-
-            default:  // TODO: Check for "append" as a command here?
-                didReceiveAppend(message)
-            }
-        }
-
-        sendDidChangeObjects()
-    }
-
-    func didReceiveInsert(message: EventMessage) {
-        let heading = message.body.first
-        let item = message.body["item"]
-        guard let index = heading.value["index"].number else {
-            log.warning("Received insert with no index!")
+        guard var dl = downLink else {
             return
         }
+
+        let object = objects[index] as! ObjectType
+        log.verbose("Updated \(index): \(object)")
+
+        dl[index] = Value(Slot("item", object.swim_toSwimValue()))
+    }
+
+    public func downlink(_: ListDownlink, didInsert value: SwimValue, atIndex index: Int) {
+        let item = value["item"]
         guard let object = ObjectType(swimValue: item) else {
             log.warning("Received insert with unparseable item!")
-            return
+            preconditionFailure("Recovery from this is unimplemented")
         }
 
-        let idx = Int(index)
-        objects.insert(object, atIndex: idx)
+        objects.insert(object, atIndex: index)
 
         forEachDelegate {
-            $0.swimDidInsert(object, atIndex: idx)
+            $0.swimDidInsert(object, atIndex: index)
         }
     }
 
-    func didReceiveAppend(message: EventMessage) {
-        let item = message.body["item"]
-        guard let object = ObjectType(swimValue: item) else {
-            log.warning("Received append with unparseable item!")
-            return
-        }
+    public func downlink(_: ListDownlink, didUpdate value: SwimValue, atIndex index: Int) {
+        precondition(index < objects.count)
 
-        objects.append(object)
-
-        forEachDelegate {
-            $0.swimDidAppend(object)
-        }
-    }
-
-    func didReceiveUpdate(message: EventMessage) {
-        let heading = message.body.first
-        let item = message.body["item"]
-        guard let index = heading.value["index"].number else {
-            log.warning("Received update with no index!")
-            return
-        }
-
-        let idx = Int(index)
+        let item = value["item"]
         let objectOrNil = ObjectType(swimValue: item)
-
         if let object = objectOrNil {
-            if idx == objects.count {
-                objects.append(object)
+            log.verbose("Replacing item at \(index): \(object)")
+            let oldObject = objects[index] as! ObjectType
+            oldObject.swim_updateWithSwimValue(item)
 
-                forEachDelegate {
-                    $0.swimDidAppend(object)
-                }
-            }
-            else if idx > objects.count {
-                log.warning("Ignoring update referring to rows beyond our list! \(heading.value)")
-                return
-            }
-            else {
-                log.verbose("Replacing item at \(idx): \(object)")
-                let oldObject = objects[idx] as! ObjectType
-                oldObject.swim_updateWithSwimValue(item)
-
-                forEachDelegate {
-                    $0.swimDidReplace(idx, object: object)
-                }
+            forEachDelegate {
+                $0.swimDidReplace(index, object: object)
             }
         }
 
-        let isHighlighted = (message.body["highlight"] == Value.True)
-        log.verbose("Highlight \(idx) = \(isHighlighted)")
+        let isHighlighted = (value["highlight"] == Value.True)
+        log.verbose("Highlight \(index) = \(isHighlighted)")
 
         forEachDelegate {
-            $0.swimDidSetHighlight(idx, isHighlighted: isHighlighted)
+            $0.swimDidSetHighlight(index, isHighlighted: isHighlighted)
         }
     }
 
-    func didReceiveMove(message: EventMessage) {
-        let heading = message.body.first
-        guard
-            let from = heading.value["from"].number,
-            let to = heading.value["to"].number else {
-                log.warning("Received move with no from or to index!")
-                return
-        }
-
-        let fromIndex = Int(from)
-        let toIndex = Int(to)
+    public func downlink(_: ListDownlink, didMove value: SwimValue, fromIndex: Int, toIndex: Int) {
         let oldDestObject = objects[toIndex] as! ObjectType
-        guard let newDestObject = ObjectType(swimValue: message.body["item"]) else {
-            log.warning("Ignoring move with invalid object! \(heading.value)")
-            return
+        let item = value["item"]
+        guard let newDestObject = ObjectType(swimValue: item) else {
+            log.warning("Ignoring move with invalid object! \(item)")
+            preconditionFailure("Recovery from this is unimplemented")
         }
         log.verbose("Moving \(fromIndex) -> \(toIndex): \(oldDestObject) -> \(newDestObject)")
 
         if oldDestObject == newDestObject {
-            log.verbose("Ignoring duplicate move \(heading.value)")
+            log.verbose("Ignoring duplicate move \(item)")
             return
         }
 
@@ -344,45 +268,38 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }
     }
 
-    func didReceiveRemove(message: EventMessage) {
-        let heading = message.body.first
-        guard let index = heading.value["index"].number else {
-            log.warning("Received remove with no index!")
-            return
-        }
-
-        let idx = Int(index)
-        let oldObject = objects[idx] as! ObjectType
-        guard let removedObject = ObjectType(swimValue: message.body["item"]) else {
-            log.info("Ignoring remove with invalid object! \(heading.value)")
-            return
+    public func downlink(_: ListDownlink, didRemove value: SwimValue, atIndex index: Int) {
+        let oldObject = objects[index] as! ObjectType
+        let item = value["item"]
+        guard let removedObject = ObjectType(swimValue: item) else {
+            log.info("Ignoring remove with invalid object! \(item)")
+            preconditionFailure("Recovery from this is unimplemented")
         }
 
         if oldObject != removedObject {
             log.verbose("Ignoring remove, presumably this was a local change")
-            return
+            preconditionFailure("Recovery from this is unimplemented")
         }
 
-        let object = objects.removeAtIndex(idx)
-        assert(oldObject === object)
+        let object = objects.removeAtIndex(index)
+        precondition(oldObject === object)
 
         forEachDelegate {
-            $0.swimDidRemove(idx, object: object)
+            $0.swimDidRemove(index, object: object)
         }
     }
 
-    func sendWillChangeObjects() {
+    public func downlinkWillChangeObjects(downlink: Downlink) {
         forEachDelegate {
             $0.swimWillChangeObjects()
         }
     }
 
-    func sendDidChangeObjects() {
+    public func downlinkDidChangeObjects(downlink: Downlink) {
         forEachDelegate {
             $0.swimDidChangeObjects()
         }
     }
-
 
     public func downlink(downlink: Downlink, didLink response: LinkedResponse) {
         forEachDelegate {
@@ -398,6 +315,8 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
 
     private func forEachDelegate(f: (SwimListManagerDelegate -> ())) {
+        precondition(NSThread.isMainThread())
+
         delegates.forEach {
             f($0 as! SwimListManagerDelegate)
         }

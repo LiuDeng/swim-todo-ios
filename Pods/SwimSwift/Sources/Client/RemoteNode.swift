@@ -17,10 +17,6 @@ class RemoteNode: RemoteScope, NodeScope {
         return RemoteLane(channel: channel, host: hostUri, node: nodeUri, lane: lane)
     }
 
-    func downlink() -> DownlinkBuilder {
-        return RemoteDownlinkBuilder(channel: channel, scope: self, host: hostUri, node: nodeUri)
-    }
-
     func link(lane lane: SwimUri, prio: Double) -> Downlink {
         let downlink = channel.link(scope: self, node: nodeUri, lane: lane, prio: prio)
         registerDownlink(downlink)

@@ -49,26 +49,14 @@ class Channel: HostScope, WebSocketDelegate {
         return socket != nil && socket!.readyState == .Open
     }
 
-    func resolve(uri: SwimUri) -> SwimUri {
+    private func resolve(uri: SwimUri) -> SwimUri {
         return uriCache.resolve(uri)
     }
 
-    func unresolve(uri: SwimUri) -> SwimUri {
+    private func unresolve(uri: SwimUri) -> SwimUri {
         return uriCache.unresolve(uri)
     }
 
-
-    func scope(node node: SwimUri) -> NodeScope {
-        return RemoteNode(channel: self, host: hostUri, node: node)
-    }
-
-    func scope(node node: SwimUri, lane: SwimUri) -> LaneScope {
-        return RemoteLane(channel: self, host: hostUri, node: node, lane: lane)
-    }
-
-    func downlink() -> DownlinkBuilder {
-        return RemoteDownlinkBuilder(channel: self)
-    }
 
     func link(scope scope: RemoteScope?, node: SwimUri, lane: SwimUri, prio: Double) -> RemoteDownlink {
         let downlink = RemoteLinkedDownlink(channel: self, scope: scope, host: hostUri, node: resolve(node), lane: lane, prio: prio)
@@ -115,6 +103,21 @@ class Channel: HostScope, WebSocketDelegate {
         push(envelope: message)
     }
 
+    func pushLinkRequest(node node: SwimUri, lane: SwimUri, prio: Double) {
+        let request = LinkRequest(node: unresolve(node), lane: lane, prio: prio)
+        push(envelope: request)
+    }
+
+    func pushSyncRequest(node node: SwimUri, lane: SwimUri, prio: Double) {
+        let request = SyncRequest(node: unresolve(node), lane: lane, prio: prio)
+        push(envelope: request)
+    }
+
+    func pushUnlinkRequest(node node: SwimUri, lane: SwimUri) {
+        let request = UnlinkRequest(node: unresolve(node), lane: lane)
+        push(envelope: request)
+    }
+
     func auth(credentials credentials: Value) {
         self.credentials = credentials
         if socket?.readyState == .Open {
@@ -142,25 +145,23 @@ class Channel: HostScope, WebSocketDelegate {
     func unregisterDownlink(downlink: RemoteDownlink) {
         let node = downlink.nodeUri
         let lane = downlink.laneUri
-        if var nodeDownlinks = downlinks[node] {
-            if var laneDownlinks = nodeDownlinks[lane] {
-                if laneDownlinks.remove(downlink) != nil {
-                    if laneDownlinks.isEmpty {
-                        nodeDownlinks.removeValueForKey(lane)
-                        if nodeDownlinks.isEmpty {
-                            downlinks.removeValueForKey(node)
-                            watchIdle()
-                        }
-                        if socket?.readyState == .Open {
-                            let request = UnlinkRequest(node: unresolve(node), lane: lane)
-                            downlink.onUnlinkRequest(request)
-                            push(envelope: request)
-                        }
-                    }
-                    downlink.onClose()
-                }
+        guard var nodeDownlinks = downlinks[node], laneDownlinks = nodeDownlinks[lane] else {
+            return
+        }
+        laneDownlinks.remove(downlink)
+        if laneDownlinks.isEmpty {
+            nodeDownlinks.removeValueForKey(lane)
+            if nodeDownlinks.isEmpty {
+                downlinks.removeValueForKey(node)
+                watchIdle()
+            }
+            if socket?.readyState == .Open {
+                let request = UnlinkRequest(node: unresolve(node), lane: lane)
+                downlink.onUnlinkRequest()
+                push(envelope: request)
             }
         }
+        downlink.onClose()
     }
 
 
@@ -200,13 +201,12 @@ class Channel: HostScope, WebSocketDelegate {
     private func onLinkedResponse(response: LinkedResponse) {
         let node = resolve(response.node)
         let lane = response.lane
-        if let nodeDownlinks = downlinks[node] {
-            if let laneDownlinks = nodeDownlinks[lane] {
-                let resolvedResponse = response.withNode(node)
-                for downlink in laneDownlinks {
-                    downlink.onLinkedResponse(resolvedResponse)
-                }
-            }
+        guard let nodeDownlinks = downlinks[node], laneDownlinks = nodeDownlinks[lane] else {
+            return
+        }
+        let resolvedResponse = response.withNode(node)
+        for downlink in laneDownlinks {
+            downlink.onLinkedResponse(resolvedResponse)
         }
     }
 
@@ -217,13 +217,12 @@ class Channel: HostScope, WebSocketDelegate {
     private func onSyncedResponse(response: SyncedResponse) {
         let node = resolve(response.node)
         let lane = response.lane
-        if let nodeDownlinks = downlinks[node] {
-            if let laneDownlinks = nodeDownlinks[lane] {
-                let resolvedResponse = response.withNode(node)
-                for downlink in laneDownlinks {
-                    downlink.onSyncedResponse(resolvedResponse)
-                }
-            }
+        guard let nodeDownlinks = downlinks[node], laneDownlinks = nodeDownlinks[lane] else {
+            return
+        }
+        let resolvedResponse = response.withNode(node)
+        for downlink in laneDownlinks {
+            downlink.onSyncedResponse(resolvedResponse)
         }
     }
 
@@ -234,18 +233,17 @@ class Channel: HostScope, WebSocketDelegate {
     private func onUnlinkedResponse(response: UnlinkedResponse) {
         let node = resolve(response.node)
         let lane = response.lane
-        if var nodeDownlinks = downlinks[node] {
-            if let laneDownlinks = nodeDownlinks[lane] {
-                nodeDownlinks.removeValueForKey(lane)
-                if nodeDownlinks.isEmpty {
-                    downlinks.removeValueForKey(node)
-                }
-                let resolvedResponse = response.withNode(node)
-                for downlink in laneDownlinks {
-                    downlink.onUnlinkedResponse(resolvedResponse)
-                    downlink.onClose()
-                }
-            }
+        guard var nodeDownlinks = downlinks[node], let laneDownlinks = nodeDownlinks[lane] else {
+            return
+        }
+        nodeDownlinks.removeValueForKey(lane)
+        if nodeDownlinks.isEmpty {
+            downlinks.removeValueForKey(node)
+        }
+        let resolvedResponse = response.withNode(node)
+        for downlink in laneDownlinks {
+            downlink.onUnlinkedResponse(resolvedResponse)
+            downlink.onClose()
         }
     }
 
@@ -368,7 +366,7 @@ class Channel: HostScope, WebSocketDelegate {
         }
     }
 
-    func push(envelope envelope: Envelope) {
+    private func push(envelope envelope: Envelope) {
         if socket?.readyState == .Open {
             clearIdle()
             let text = envelope.recon
