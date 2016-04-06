@@ -206,6 +206,11 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
                 }
             })
         }
+
+        guard let path = tableView.indexPathForCell(editingCell) else {
+            preconditionFailure("Cannot find cell when we're editing it!")
+        }
+        listManager.setHighlightAtIndex(path.row, isHighlighted: true)
     }
 
     func cellDidEndEditing(editingCell: TableViewCell) {
@@ -222,6 +227,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         guard let path = tableView.indexPathForCell(editingCell) else {
             preconditionFailure("Cannot find cell when we're editing it!")
         }
+        listManager.setHighlightAtIndex(path.row, isHighlighted: false)
         listManager.updateObjectAtIndex(path.row)
     }
 
