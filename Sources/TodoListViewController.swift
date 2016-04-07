@@ -102,7 +102,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         fixColors()
     }
 
-    func configureView() {
+    private func configureView() {
         title? = detailItem?.nodeUri.path.description ?? ""
     }
 
@@ -260,9 +260,9 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     // MARK: UIScrollViewDelegate methods
 
     // a cell that is rendered as a placeholder to indicate where a new item is added
-    let placeHolderCell = TableViewCell(style: .Default, reuseIdentifier: kCellIdentifier)
+    private let placeHolderCell = TableViewCell(style: .Default, reuseIdentifier: kCellIdentifier)
     // indicates the state of this behavior
-    var pullDownInProgress = false
+    private var pullDownInProgress = false
 
     func scrollViewWillBeginDragging(scrollView: UIScrollView) {
         // this behavior starts when a user pulls down while at the top of the table
@@ -301,20 +301,20 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     // MARK: - pinch-to-add methods
 
-    struct TouchPoints {
+    private struct TouchPoints {
         var upper: CGPoint
         var lower: CGPoint
     }
     // the indices of the upper and lower cells that are being pinched
-    var upperCellIndex = -100
-    var lowerCellIndex = -100
+    private var upperCellIndex = -100
+    private var lowerCellIndex = -100
     // the location of the touch points when the pinch began
-    var initialTouchPoints: TouchPoints!
+    private var initialTouchPoints: TouchPoints!
     // indicates that the pinch was big enough to cause a new item to be added
-    var pinchExceededRequiredDistance = false
+    private var pinchExceededRequiredDistance = false
 
     // indicates that the pinch is in progress
-    var pinchInProgress = false
+    private var pinchInProgress = false
 
     func handlePinch(recognizer: UIPinchGestureRecognizer) {
 //        if recognizer.state == .Began {
@@ -423,7 +423,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     // returns the two touch points, ordering them to ensure that
     // upper and lower are correctly identified.
-    func getNormalizedTouchPoints(recognizer: UIGestureRecognizer) -> TouchPoints {
+    private func getNormalizedTouchPoints(recognizer: UIGestureRecognizer) -> TouchPoints {
         var pointOne = recognizer.locationOfTouch(0, inView: tableView)
         var pointTwo = recognizer.locationOfTouch(1, inView: tableView)
         // ensure pointOne is the top-most
@@ -435,7 +435,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         return TouchPoints(upper: pointOne, lower: pointTwo)
     }
 
-    func viewContainsPoint(view: UIView, point: CGPoint) -> Bool {
+    private func viewContainsPoint(view: UIView, point: CGPoint) -> Bool {
         let frame = view.frame
         return (frame.origin.y < point.y) && (frame.origin.y + (frame.size.height) > point.y)
     }
@@ -443,7 +443,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     // MARK: Helpers
 
-    func fixColors() {
+    private func fixColors() {
         tableView.visibleCells.forEach { (cell) -> () in
             if let idx = tableView.indexPathForCell(cell) {
                 cell.backgroundColor = colorForIndex(idx.row)
@@ -451,7 +451,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         }
     }
 
-    func colorForIndex(index: Int) -> UIColor {
+    private func colorForIndex(index: Int) -> UIColor {
         let itemCount = objects.count - 1
         let val = (itemCount == 0 ? 0.3 : (CGFloat(index) / CGFloat(itemCount)) * 0.6)
         return UIColor(red: 1.0, green: val, blue: 0.0, alpha: 1.0)
