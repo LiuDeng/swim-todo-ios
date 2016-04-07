@@ -12,8 +12,8 @@ private let log = SwimLogging.log
 
 
 protocol SwimListTableViewHelperDelegate: class {
-    var objects: [AnyObject] { get }
-    var objectSection: Int { get }
+    var swimObjects: [SwimModelProtocolBase] { get }
+    var swimObjectSection: Int { get }
 }
 
 class SwimListTableViewHelper: SwimListManagerDelegate {
@@ -45,7 +45,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
 
     func swimDidChangeObjects() {
         if firstSync {
-            log.debug("First sync added \(delegate?.objects.count ?? 0) objects")
+            log.debug("First sync added \(delegate?.swimObjects.count ?? 0) objects")
             firstSync = false
         }
         else {
@@ -53,16 +53,20 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         }
     }
 
-    func swimDidAppend(item: AnyObject) {
-        guard let count = delegate?.objects.count, let objectSection = delegate?.objectSection else {
+    func swimDidStopSynching() {
+        tableView?.reloadData()
+    }
+
+    func swimDidAppend(item: SwimModelProtocolBase) {
+        guard let count = delegate?.swimObjects.count, let objectSection = delegate?.swimObjectSection else {
             return
         }
         let indexPath = NSIndexPath(forRow: count - 1, inSection: objectSection)
         tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: (firstSync ? .None : .Fade))
     }
 
-    func swimDidInsert(object: AnyObject, atIndex index: Int) {
-        guard let objectSection = delegate?.objectSection else {
+    func swimDidInsert(object: SwimModelProtocolBase, atIndex index: Int) {
+        guard let objectSection = delegate?.swimObjectSection else {
             return
         }
         let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
@@ -70,7 +74,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
     }
 
     func swimDidMove(fromIndex: Int, toIndex: Int) {
-        guard let objectSection = delegate?.objectSection else {
+        guard let objectSection = delegate?.swimObjectSection else {
             return
         }
         let fromIndexPath = NSIndexPath(forRow: fromIndex, inSection: objectSection)
@@ -78,16 +82,16 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.moveRowAtIndexPath(fromIndexPath, toIndexPath: toIndexPath)
     }
 
-    func swimDidRemove(index: Int, object: AnyObject) {
-        guard let objectSection = delegate?.objectSection else {
+    func swimDidRemove(index: Int, object: SwimModelProtocolBase) {
+        guard let objectSection = delegate?.swimObjectSection else {
             return
         }
         let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
         tableView?.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
     }
 
-    func swimDidSetHighlight(index: Int, isHighlighted: Bool) {
-        guard let objectSection = delegate?.objectSection else {
+    func swimDidUpdate(index: Int, object: SwimModelProtocolBase) {
+        guard let objectSection = delegate?.swimObjectSection else {
             return
         }
         let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
@@ -95,10 +99,10 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
             return
         }
 
-        if isHighlighted == cell.highlighted {
+        if object.isHighlighted == cell.highlighted {
             return
         }
 
-        cell.setHighlighted(isHighlighted, animated: true)
+        cell.setHighlighted(object.isHighlighted, animated: true)
     }
 }

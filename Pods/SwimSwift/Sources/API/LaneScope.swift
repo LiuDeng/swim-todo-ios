@@ -16,7 +16,13 @@ public protocol LaneScope {
 
     func sync(prio prio: Double) -> Downlink
 
-    func syncList(prio prio: Double) -> ListDownlink
+    /**
+     - parameter objectMaker: A callback that will construct a model object
+     given the SwimValue received from the server.  This effectively tells
+     the ListDownlink what type of model object should be constructed when
+     a new value is received.
+     */
+    func syncList(prio prio: Double, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink
 
     func syncMap(prio prio: Double, primaryKey: SwimValue -> SwimValue) -> MapDownlink
 
@@ -43,8 +49,8 @@ public extension LaneScope {
         return sync(prio: 0.0)
     }
 
-    func syncList() -> ListDownlink {
-        return syncList(prio: 0.0)
+    func syncList(objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink {
+        return syncList(prio: 0.0, objectMaker: objectMaker)
     }
 
     public func syncMap(primaryKey primaryKey: SwimValue -> SwimValue) -> MapDownlink {

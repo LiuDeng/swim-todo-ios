@@ -7,8 +7,6 @@ public protocol HostScope {
 
     func sync(node node: SwimUri, lane: SwimUri, prio: Double) -> Downlink
 
-    func syncList(node node: SwimUri, lane: SwimUri, prio: Double) -> ListDownlink
-
     func syncMap(node node: SwimUri, lane: SwimUri, prio: Double, primaryKey: SwimValue -> SwimValue) -> MapDownlink
 
     /**
@@ -32,10 +30,6 @@ public extension HostScope {
 
     public func sync(node node: SwimUri, lane: SwimUri) -> Downlink {
         return sync(node: node, lane: lane, prio: 0.0)
-    }
-
-    public func syncList(node node: SwimUri, lane: SwimUri) -> ListDownlink {
-        return syncList(node: node, lane: lane, prio: 0.0)
     }
 
     public func syncMap(node node: SwimUri, lane: SwimUri, primaryKey: SwimValue -> SwimValue) -> MapDownlink {

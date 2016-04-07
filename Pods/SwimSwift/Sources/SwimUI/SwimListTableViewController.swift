@@ -17,16 +17,16 @@ public class SwimListTableViewController: UITableViewController, SwimListTableVi
 
      Equivalent to listManager.objects (this is just an alias for convenience).
      */
-    public var objects: [AnyObject] {
+    public var swimObjects: [SwimModelProtocolBase] {
         get {
-            return listManager.objects
+            return swimListManager.objects
         }
     }
 
     /**
      The SwimListManager instance that was given to us in the init.
      */
-    public var listManager: SwimListManagerProtocol {
+    public var swimListManager: SwimListManagerProtocol {
         get {
             return tableViewHelper.listManager
         }
@@ -40,7 +40,7 @@ public class SwimListTableViewController: UITableViewController, SwimListTableVi
      all the UITableViewDataSource methods and call SwimListTableViewController's
      implementation of those if and only if the given section is equal to objectSection.
      */
-    public var objectSection = 0
+    public var swimObjectSection = 0
 
 
     // MARK: Lifecycle
@@ -75,24 +75,24 @@ public class SwimListTableViewController: UITableViewController, SwimListTableVi
 
     override public func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        listManager.startSynching()
+        swimListManager.startSynching()
     }
 
     override public func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
-        listManager.stopSynching()
+        swimListManager.stopSynching()
     }
 
 
     // MARK: UITableViewDataSource / UITableViewDelegate
 
     override public func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return objectSection + 1
+        return swimObjectSection + 1
     }
 
     override public func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        assert(section == objectSection)
-        return objects.count
+        precondition(section == swimObjectSection)
+        return swimObjects.count
     }
 
     override public func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
@@ -104,18 +104,18 @@ public class SwimListTableViewController: UITableViewController, SwimListTableVi
     }
 
     override public func tableView(tableView: UITableView, didHighlightRowAtIndexPath indexPath: NSIndexPath) {
-        assert(indexPath.section == objectSection)
-        listManager.setHighlightAtIndex(indexPath.row, isHighlighted: true)
+        precondition(indexPath.section == swimObjectSection)
+        swimListManager.setHighlightAtIndex(indexPath.row, isHighlighted: true)
     }
 
     override public func tableView(tableView: UITableView, didUnhighlightRowAtIndexPath indexPath: NSIndexPath) {
-        assert(indexPath.section == objectSection)
-        listManager.setHighlightAtIndex(indexPath.row, isHighlighted: false)
+        precondition(indexPath.section == swimObjectSection)
+        swimListManager.setHighlightAtIndex(indexPath.row, isHighlighted: false)
     }
 
     override public func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
-        assert(fromIndexPath.section == objectSection && toIndexPath.section == objectSection)
-        listManager.moveObjectAtIndex(fromIndexPath.row, toIndex: toIndexPath.row)
+        precondition(fromIndexPath.section == swimObjectSection && toIndexPath.section == swimObjectSection)
+        swimListManager.moveObjectAtIndex(fromIndexPath.row, toIndex: toIndexPath.row)
     }
 
     override public func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {

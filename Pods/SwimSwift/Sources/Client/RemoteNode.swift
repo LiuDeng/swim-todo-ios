@@ -29,12 +29,6 @@ class RemoteNode: RemoteScope, NodeScope {
         return downlink
     }
 
-    func syncList(lane lane: SwimUri, prio: Double) -> ListDownlink {
-        let downlink = channel.syncList(scope: self, node: nodeUri, lane: lane, prio: prio)
-        registerDownlink(downlink)
-        return downlink
-    }
-
     func syncMap(lane lane: SwimUri, prio: Double, primaryKey: Value -> Value) -> MapDownlink {
         let downlink = channel.syncMap(scope: self, node: nodeUri, lane: lane, prio: prio, primaryKey: primaryKey)
         registerDownlink(downlink)

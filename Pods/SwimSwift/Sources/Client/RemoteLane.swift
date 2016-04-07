@@ -26,9 +26,9 @@ class RemoteLane: RemoteScope, LaneScope {
         return downlink
     }
 
-    func syncList(prio prio: Double) -> ListDownlink {
-        let downlink = channel.syncList(scope: self, node: nodeUri, lane: laneUri, prio: prio)
-        registerDownlink(downlink)
+    func syncList(prio prio: Double, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink {
+        let downlink = channel.syncList(scope: self, node: nodeUri, lane: laneUri, prio: prio, objectMaker: objectMaker)
+        registerDownlink(downlink as! RemoteDownlink)
         return downlink
     }
 

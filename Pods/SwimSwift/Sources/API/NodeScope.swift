@@ -23,8 +23,6 @@ public protocol NodeScope {
 
     func sync(lane lane: SwimUri, prio: Double) -> Downlink
 
-    func syncList(lane lane: SwimUri, prio: Double) -> ListDownlink
-
     func syncMap(lane lane: SwimUri, prio: Double, primaryKey: SwimValue -> SwimValue) -> MapDownlink
 
     /**
@@ -48,10 +46,6 @@ public extension NodeScope {
 
     public func sync(lane laneUri: SwimUri) -> Downlink {
         return sync(lane: laneUri, prio: 0.0)
-    }
-
-    public func syncList(lane laneUri: SwimUri) -> ListDownlink {
-        return syncList(lane: laneUri, prio: 0.0)
     }
 
     public func syncMap(lane lane: SwimUri, primaryKey: SwimValue -> SwimValue) -> MapDownlink {

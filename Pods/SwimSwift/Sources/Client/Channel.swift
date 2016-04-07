@@ -78,14 +78,14 @@ class Channel: HostScope, WebSocketDelegate {
         return sync(scope: nil, node: node, lane: lane, prio: prio)
     }
 
-    func syncList(scope scope: RemoteScope?, node: SwimUri, lane: SwimUri, prio: Double) -> RemoteListDownlink {
-        let downlink = RemoteListDownlink(channel: self, scope: scope, host: hostUri, node: resolve(node), lane: lane, prio: prio)
+    func syncList(scope scope: RemoteScope?, node: SwimUri, lane: SwimUri, prio: Double, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink {
+        let downlink = RemoteListDownlink(channel: self, scope: scope, host: hostUri, node: resolve(node), lane: lane, prio: prio, objectMaker: objectMaker)
         registerDownlink(downlink)
         return downlink
     }
 
-    func syncList(node node: SwimUri, lane: SwimUri, prio: Double) -> ListDownlink {
-        return syncList(scope: nil, node: node, lane: lane, prio: prio)
+    func syncList(node node: SwimUri, lane: SwimUri, prio: Double, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink {
+        return syncList(scope: nil, node: node, lane: lane, prio: prio, objectMaker: objectMaker)
     }
 
     func syncMap(scope scope: RemoteScope?, node: SwimUri, lane: SwimUri, prio: Double, primaryKey: Value -> Value) -> RemoteMapDownlink {

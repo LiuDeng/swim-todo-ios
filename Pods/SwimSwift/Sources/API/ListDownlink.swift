@@ -4,31 +4,45 @@
  a `ListLane` of a remote Swim service in the background.
  */
 public protocol ListDownlink: Downlink {
-    var state: [SwimValue] { get }
+    var objects: [SwimModelProtocolBase] { get }
 
     var isEmpty: Bool { get }
 
     var count: Int { get }
 
-    subscript(index: Int) -> SwimValue { get set }
+    subscript(index: Int) -> SwimModelProtocolBase { get set }
 
-    var first: SwimValue? { get }
-
-    var last: SwimValue? { get }
-
-    func append(value: SwimValue)
-
-    func insert(value: SwimValue, atIndex: Int)
+    func insert(value: SwimModelProtocolBase, atIndex: Int)
 
     func moveFromIndex(from: Int, toIndex to: Int)
 
-    func removeAtIndex(index: Int) -> SwimValue
+    func removeAtIndex(index: Int) -> SwimModelProtocolBase
 
     func removeAll()
 
-    func popLast() -> SwimValue?
+    func updateObjectAtIndex(index: Int)
+}
 
-    func removeLast() -> SwimValue
 
-    func forEach(f: SwimValue throws -> ()) rethrows
+public protocol ListDownlinkDelegate: DownlinkDelegate {
+    func downlinkWillChangeObjects(downlink: ListDownlink)
+    func downlinkDidChangeObjects(downlink: ListDownlink)
+
+    func downlink(downlink: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex: Int)
+
+    func downlink(downlink: ListDownlink, didInsert object: SwimModelProtocolBase, atIndex: Int)
+
+    func downlink(downlink: ListDownlink, didMove object: SwimModelProtocolBase, fromIndex: Int, toIndex: Int)
+
+    func downlink(downlink: ListDownlink, didRemove object: SwimModelProtocolBase, atIndex: Int)
+}
+
+public extension ListDownlinkDelegate {
+    func downlinkWillChangeObjects(downlink: ListDownlink) {}
+    func downlinkDidChangeObjects(downlink: ListDownlink) {}
+
+    func downlink(downlink: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex: Int) {}
+    func downlink(downlink: ListDownlink, didInsert object: SwimModelProtocolBase, atIndex: Int) {}
+    func downlink(downlink: ListDownlink, didMove object: SwimModelProtocolBase, fromIndex: Int, toIndex: Int) {}
+    func downlink(downlink: ListDownlink, didRemove object: SwimModelProtocolBase, atIndex: Int) {}
 }
