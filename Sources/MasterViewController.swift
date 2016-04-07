@@ -3,8 +3,6 @@ import UIKit
 
 
 class MasterViewController: UITableViewController, UISplitViewControllerDelegate {
-    var todo: HostScope! = nil
-
     var objects = [NodeScope]()
 
 
