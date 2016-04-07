@@ -23,10 +23,10 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     private var laneScope: LaneScope? {
         get {
-            return listManager.laneScope
+            return swimListManager.laneScope
         }
         set {
-            listManager.laneScope = newValue
+            swimListManager.laneScope = newValue
         }
     }
 
@@ -38,12 +38,12 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     required init() {
         super.init(listManager: TodoListViewController.createListManager(), nibName: nil, bundle: nil)
-        listManager.addDelegate(self)
+        swimListManager.addDelegate(self)
     }
 
     required init?(coder aDecoder: NSCoder) {
         super.init(listManager: TodoListViewController.createListManager(), coder: aDecoder)
-        listManager.addDelegate(self)
+        swimListManager.addDelegate(self)
     }
 
     private static func createListManager() -> SwimListManagerProtocol {
@@ -114,7 +114,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
     func toDoItemAddedAtIndex(index: Int) {
-        let newObjectOrNil = listManager.insertNewObjectAtIndex(index) as? TodoEntry
+        let newObjectOrNil = swimListManager.insertNewObjectAtIndex(index) as? TodoEntry
         tableView.reloadData()
         fixColors()
         guard let newObject = newObjectOrNil else {
@@ -136,7 +136,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
     func toDoItemDeleted(toDoItem: TodoEntry, atIndex index: Int) {
-        listManager.removeObjectAtIndex(index)
+        swimListManager.removeObjectAtIndex(index)
 
         // loop over the visible cells to animate delete
         let visibleCells = tableView.visibleCells as! [TableViewCell]
@@ -176,7 +176,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
             log.warning("Couldn't find deleted item \(toDoItem)!")
             return
         }
-        listManager.updateObjectAtIndex(index)
+        swimListManager.updateObjectAtIndex(index)
     }
 
 
@@ -186,7 +186,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         let cell = tableView.dequeueReusableCellWithIdentifier(kCellIdentifier, forIndexPath: indexPath) as! TableViewCell
         cell.selectionStyle = .None
         cell.textLabel?.backgroundColor = UIColor.clearColor()
-        let object = objects[indexPath.row] as! TodoEntry
+        let object = swimObjects[indexPath.row] as! TodoEntry
         cell.delegate = self
         cell.toDoItem = object
 
@@ -210,7 +210,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         guard let path = tableView.indexPathForCell(editingCell) else {
             preconditionFailure("Cannot find cell when we're editing it!")
         }
-        listManager.setHighlightAtIndex(path.row, isHighlighted: true)
+        swimListManager.setHighlightAtIndex(path.row, isHighlighted: true)
     }
 
     func cellDidEndEditing(editingCell: TableViewCell) {
@@ -227,8 +227,8 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         guard let path = tableView.indexPathForCell(editingCell) else {
             preconditionFailure("Cannot find cell when we're editing it!")
         }
-        listManager.setHighlightAtIndex(path.row, isHighlighted: false)
-        listManager.updateObjectAtIndex(path.row)
+        swimListManager.setHighlightAtIndex(path.row, isHighlighted: false)
+        swimListManager.updateObjectAtIndex(path.row)
     }
 
 
@@ -452,7 +452,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
     private func colorForIndex(index: Int) -> UIColor {
-        let itemCount = objects.count - 1
+        let itemCount = swimObjects.count - 1
         let val = (itemCount == 0 ? 0.3 : (CGFloat(index) / CGFloat(itemCount)) * 0.6)
         return UIColor(red: 1.0, green: val, blue: 0.0, alpha: 1.0)
     }
