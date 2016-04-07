@@ -29,15 +29,8 @@ class TodoEntry : SwimModelBase {
         }
     }
 
-    required init?(swimValue: SwimValue) {
-        super.init(swimValue: swimValue)
-        swim_updateWithSwimValue(swimValue)
-    }
-
-    required init() {
-        super.init()
-    }
-
+    // Backwards compat for when we were only persisting the name
+    // of the entry.  This can be removed soon.
     override func swim_updateWithSwimValue(swimValue: SwimValue) {
         guard let json = swimValue.json as? [String: AnyObject] else {
             if let n = swimValue.text {
@@ -49,18 +42,24 @@ class TodoEntry : SwimModelBase {
             }
         }
 
+        swim_updateWithJSON(json)
+    }
+
+    override func swim_updateWithJSON(json: [String: AnyObject]) {
+        super.swim_updateWithJSON(json)
+
         name = json["name"] as? String
         status = json["status"] as? String
     }
 
-    override func swim_toSwimValue() -> SwimValue {
-        var json = [String: AnyObject]()
+    override func swim_toJSON() -> [String: AnyObject] {
+        var json = super.swim_toJSON()
         if name != nil {
             json["name"] = name
         }
         if status != nil {
             json["status"] = status
         }
-        return SwimValue(json: json)
+        return json
     }
 }

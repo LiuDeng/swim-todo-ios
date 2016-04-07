@@ -89,6 +89,12 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         configureView()
     }
 
+    private func configureView() {
+        title? = detailItem?.nodeUri.path.description ?? ""
+    }
+
+
+    // MARK: - SwimListManagerDelegate
 
     func swimDidStartSynching() {
         configureView()
@@ -98,12 +104,14 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         fixColors()
     }
 
-    func swimDidSetHighlight(index: Int, isHighlighted: Bool) {
-        fixColors()
-    }
-
-    private func configureView() {
-        title? = detailItem?.nodeUri.path.description ?? ""
+    func swimDidUpdate(index: Int, object: SwimModelProtocolBase) {
+        let indexPath = NSIndexPath(forRow: index, inSection: swimObjectSection)
+        guard let visiblePaths = tableView.indexPathsForVisibleRows where visiblePaths.contains(indexPath) else {
+            return
+        }
+        let cell = tableView.cellForRowAtIndexPath(indexPath) as! TableViewCell
+        precondition(swimObjects.contains { $0 === object })
+        cell.toDoItem = (object as! TodoEntry)
     }
 
 
@@ -127,8 +135,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
     func toDoItemDeleted(toDoItem: TodoEntry) {
-        let objs = objects as! [TodoEntry]
-        guard let index = objs.indexOf(toDoItem) else {
+        guard let index = indexOfObject(toDoItem) else {
             log.warning("Couldn't find deleted item \(toDoItem)!")
             return
         }
@@ -171,9 +178,8 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     
 
     func toDoItemCompleted(toDoItem: TodoEntry) {
-        let objs = objects as! [TodoEntry]
-        guard let index = objs.indexOf(toDoItem) else {
-            log.warning("Couldn't find deleted item \(toDoItem)!")
+        guard let index = indexOfObject(toDoItem) else {
+            log.warning("Couldn't find completed item \(toDoItem)!")
             return
         }
         swimListManager.updateObjectAtIndex(index)
@@ -227,6 +233,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         guard let path = tableView.indexPathForCell(editingCell) else {
             preconditionFailure("Cannot find cell when we're editing it!")
         }
+
         swimListManager.setHighlightAtIndex(path.row, isHighlighted: false)
         swimListManager.updateObjectAtIndex(path.row)
     }
@@ -442,6 +449,10 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
 
     // MARK: Helpers
+
+    private func indexOfObject(object: TodoEntry) -> Int? {
+        return swimObjects.indexOf { ($0 as! TodoEntry) == object }
+    }
 
     private func fixColors() {
         tableView.visibleCells.forEach { (cell) -> () in
