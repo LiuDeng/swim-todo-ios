@@ -1,6 +1,6 @@
 //
 //  SwimListTableViewController.swift
-//  SwimTodo
+//  Swim
 //
 //  Created by Ewan Mellor on 2/15/16.
 //  Copyright © 2016 swim.it. All rights reserved.
@@ -9,7 +9,7 @@
 import UIKit
 
 
-public class SwimListTableViewController: UITableViewController, SwimListTableViewHelperDelegate {
+public class SwimListTableViewController: UITableViewController, SwimListViewHelperDelegate {
     private let tableViewHelper: SwimListTableViewHelper
 
     /**

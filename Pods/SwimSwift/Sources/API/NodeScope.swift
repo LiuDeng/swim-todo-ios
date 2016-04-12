@@ -19,36 +19,6 @@ public protocol NodeScope {
      */
     func scope(lane lane: SwimUri) -> LaneScope
 
-    func link(lane lane: SwimUri, prio: Double) -> Downlink
-
-    func sync(lane lane: SwimUri, prio: Double) -> Downlink
-
-    func syncMap(lane lane: SwimUri, prio: Double, primaryKey: SwimValue -> SwimValue) -> MapDownlink
-
-    /**
-     Sends a command to a lane of the service to which this scope is bound.
-
-     ```swift
-        let chat = client.scope(node: "ws://swim.example.com/chat/public")
-        chat.command(lane: "chat/room", body: "Hello, world!")
-     ```
-     */
-    func command(lane lane: SwimUri, body: SwimValue)
-
     /// Unlinks all downlinks registered with the scope.
     func close()
-}
-
-public extension NodeScope {
-    public func link(lane lane: SwimUri) -> Downlink {
-        return link(lane: lane, prio: 0.0)
-    }
-
-    public func sync(lane laneUri: SwimUri) -> Downlink {
-        return sync(lane: laneUri, prio: 0.0)
-    }
-
-    public func syncMap(lane lane: SwimUri, primaryKey: SwimValue -> SwimValue) -> MapDownlink {
-        return syncMap(lane: lane, prio: 0.0, primaryKey: primaryKey)
-    }
 }

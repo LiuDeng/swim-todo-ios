@@ -1,6 +1,6 @@
 //
 //  SwimListManager.swift
-//  SwimTodo
+//  Swim
 //
 //  Created by Ewan Mellor on 2/15/16.
 //  Copyright © 2016 swim.it. All rights reserved.
@@ -88,6 +88,8 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
     public var laneScope: LaneScope? = nil
 
+    public let laneProperties = LaneProperties()
+
     private var downLink: ListDownlink? = nil
 
     public init() {
@@ -110,7 +112,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
             return
         }
 
-        var dl = ls.syncList() { ObjectType(swimValue: $0) }
+        var dl = ls.syncList(properties: laneProperties) { ObjectType(swimValue: $0) }
         dl.keepAlive = true
         dl.delegate = self
         downLink = dl

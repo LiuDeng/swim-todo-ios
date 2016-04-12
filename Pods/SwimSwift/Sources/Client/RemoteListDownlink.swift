@@ -14,9 +14,9 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
         return delegate as? ListDownlinkDelegate
     }
 
-    init(channel: Channel, scope: RemoteScope?, host: SwimUri, node: SwimUri, lane: SwimUri, prio: Double, objectMaker: (SwimValue -> SwimModelProtocolBase?)) {
+    init(channel: Channel, scope: RemoteScope?, host: SwimUri, node: SwimUri, lane: SwimUri, laneProperties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) {
         self.objectMaker = objectMaker
-        super.init(channel: channel, scope: scope, host: host, node: node, lane: lane, prio: prio)
+        super.init(channel: channel, scope: scope, host: host, node: node, lane: lane, laneProperties: laneProperties)
     }
 
     override func onEventMessages(messages: [EventMessage]) {

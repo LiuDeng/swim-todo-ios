@@ -12,9 +12,9 @@ public protocol LaneScope {
     /// The URI of the lane to which the scope is bound.
     var laneUri: SwimUri { get }
 
-    func link(prio prio: Double) -> Downlink
+    func link(properties properties: LaneProperties) -> Downlink
 
-    func sync(prio prio: Double) -> Downlink
+    func sync(properties properties: LaneProperties) -> Downlink
 
     /**
      - parameter objectMaker: A callback that will construct a model object
@@ -22,9 +22,9 @@ public protocol LaneScope {
      the ListDownlink what type of model object should be constructed when
      a new value is received.
      */
-    func syncList(prio prio: Double, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink
+    func syncList(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink
 
-    func syncMap(prio prio: Double, primaryKey: SwimValue -> SwimValue) -> MapDownlink
+    func syncMap(properties properties: LaneProperties, primaryKey: SwimValue -> SwimValue) -> MapDownlink
 
     /**
      Sends a command to the remote lane to which this scope is bound.
@@ -38,22 +38,4 @@ public protocol LaneScope {
 
     /// Unlinks all downlinks registered with the scope.
     func close()
-}
-
-public extension LaneScope {
-    public func link() -> Downlink {
-        return link(prio: 0.0)
-    }
-
-    public func sync() -> Downlink {
-        return sync(prio: 0.0)
-    }
-
-    func syncList(objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink {
-        return syncList(prio: 0.0, objectMaker: objectMaker)
-    }
-
-    public func syncMap(primaryKey primaryKey: SwimValue -> SwimValue) -> MapDownlink {
-        return syncMap(prio: 0.0, primaryKey: primaryKey)
-    }
 }

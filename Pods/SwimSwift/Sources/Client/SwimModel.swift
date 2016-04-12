@@ -1,6 +1,6 @@
 //
 //  SwimModel.swift
-//  SwimTodo
+//  Swim
 //
 //  Created by Ewan Mellor on 2/15/16.
 //  Copyright © 2016 swim.it. All rights reserved.

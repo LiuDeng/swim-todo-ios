@@ -9,8 +9,8 @@ public protocol Downlink {
     /// The URI of the lane to which this `Downlink` connects.
     var laneUri: SwimUri { get }
 
-    /// The priority level of this `Downlink`.
-    var prio: Double { get }
+    /// The properties of this `Downlink`.
+    var laneProperties: LaneProperties { get }
 
     /// `true` if the network connection carrying this link is currently connected.
     var connected: Bool { get }

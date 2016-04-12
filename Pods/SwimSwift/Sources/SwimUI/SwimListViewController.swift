@@ -1,6 +1,6 @@
 //
 //  SwimListViewController.swift
-//  SwimTodo
+//  Swim
 //
 //  Created by Ewan Mellor on 2/16/16.
 //  Copyright © 2016 swim.it. All rights reserved.
@@ -20,7 +20,7 @@ import UIKit
  3. Implement cellForRowAtIndexPath as normal (overriding the
     fake implementation here).
  */
-public class SwimListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, SwimListTableViewHelperDelegate {
+public class SwimListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, SwimListViewHelperDelegate {
     private let tableViewHelper: SwimListTableViewHelper
 
     /**

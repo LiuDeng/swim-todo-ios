@@ -1,6 +1,6 @@
 //
 //  SwimListTableViewHelper.swift
-//  SwimTodo
+//  Swim
 //
 //  Created by Ewan Mellor on 2/16/16.
 //  Copyright © 2016 swim.it. All rights reserved.
@@ -11,24 +11,19 @@ import UIKit
 private let log = SwimLogging.log
 
 
-protocol SwimListTableViewHelperDelegate: class {
-    var swimObjects: [SwimModelProtocolBase] { get }
-    var swimObjectSection: Int { get }
-}
+public class SwimListTableViewHelper: SwimListManagerDelegate {
+    public let listManager: SwimListManagerProtocol
+    public var firstSync = true
 
-class SwimListTableViewHelper: SwimListManagerDelegate {
-    let listManager: SwimListManagerProtocol
-    var firstSync = true
+    public weak var delegate: SwimListViewHelperDelegate?
+    public weak var tableView: UITableView?
 
-    weak var delegate: SwimListTableViewHelperDelegate?
-    weak var tableView: UITableView?
-
-    init(listManager: SwimListManagerProtocol) {
+    public init(listManager: SwimListManagerProtocol) {
         self.listManager = listManager
         self.listManager.addDelegate(self)
     }
 
-    func commitEdit(editingStyle: UITableViewCellEditingStyle, indexPath: NSIndexPath) {
+    public func commitEdit(editingStyle: UITableViewCellEditingStyle, indexPath: NSIndexPath) {
         if editingStyle == .Delete {
             listManager.removeObjectAtIndex(indexPath.row)
         }
@@ -37,13 +32,13 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         }
     }
 
-    func swimWillChangeObjects() {
+    public func swimWillChangeObjects() {
         if !firstSync {
             tableView?.beginUpdates()
         }
     }
 
-    func swimDidChangeObjects() {
+    public func swimDidChangeObjects() {
         if firstSync {
             log.debug("First sync added \(delegate?.swimObjects.count ?? 0) objects")
             firstSync = false
@@ -53,19 +48,11 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         }
     }
 
-    func swimDidStopSynching() {
+    public func swimDidStopSynching() {
         tableView?.reloadData()
     }
 
-    func swimDidAppend(item: SwimModelProtocolBase) {
-        guard let count = delegate?.swimObjects.count, let objectSection = delegate?.swimObjectSection else {
-            return
-        }
-        let indexPath = NSIndexPath(forRow: count - 1, inSection: objectSection)
-        tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: (firstSync ? .None : .Fade))
-    }
-
-    func swimDidInsert(object: SwimModelProtocolBase, atIndex index: Int) {
+    public func swimDidInsert(object: SwimModelProtocolBase, atIndex index: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -73,7 +60,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: (firstSync ? .None : .Fade))
     }
 
-    func swimDidMove(fromIndex: Int, toIndex: Int) {
+    public func swimDidMove(fromIndex: Int, toIndex: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -82,7 +69,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.moveRowAtIndexPath(fromIndexPath, toIndexPath: toIndexPath)
     }
 
-    func swimDidRemove(index: Int, object: SwimModelProtocolBase) {
+    public func swimDidRemove(index: Int, object: SwimModelProtocolBase) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -90,7 +77,7 @@ class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
     }
 
-    func swimDidUpdate(index: Int, object: SwimModelProtocolBase) {
+    public func swimDidUpdate(index: Int, object: SwimModelProtocolBase) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }

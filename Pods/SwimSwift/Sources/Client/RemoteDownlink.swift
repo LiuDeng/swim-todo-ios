@@ -11,19 +11,19 @@ class RemoteDownlink: Downlink, Hashable {
 
     let laneUri: SwimUri
 
-    let prio: Double
+    let laneProperties: LaneProperties
 
     var keepAlive: Bool = false
 
     var delegate: DownlinkDelegate? = nil
 
-    init(channel: Channel, scope: RemoteScope?, host: SwimUri, node: SwimUri, lane: SwimUri, prio: Double) {
+    init(channel: Channel, scope: RemoteScope?, host: SwimUri, node: SwimUri, lane: SwimUri, laneProperties: LaneProperties) {
         self.channel = channel
         self.scope = scope
         self.hostUri = host
         self.nodeUri = node
         self.laneUri = lane
-        self.prio = prio
+        self.laneProperties = laneProperties
     }
 
     var connected: Bool {

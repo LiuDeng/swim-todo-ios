@@ -14,26 +14,26 @@ class RemoteLane: RemoteScope, LaneScope {
         self.laneUri = lane
     }
 
-    func link(prio prio: Double) -> Downlink {
-        let downlink = channel.link(scope: self, node: nodeUri, lane: laneUri, prio: prio)
+    func link(properties properties: LaneProperties) -> Downlink {
+        let downlink = channel.link(scope: self, node: nodeUri, lane: laneUri, properties: properties)
         registerDownlink(downlink)
         return downlink
     }
 
-    func sync(prio prio: Double) -> Downlink {
-        let downlink = channel.sync(scope: self, node: nodeUri, lane: laneUri, prio: prio)
+    func sync(properties properties: LaneProperties) -> Downlink {
+        let downlink = channel.sync(scope: self, node: nodeUri, lane: laneUri, properties: properties)
         registerDownlink(downlink)
         return downlink
     }
 
-    func syncList(prio prio: Double, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink {
-        let downlink = channel.syncList(scope: self, node: nodeUri, lane: laneUri, prio: prio, objectMaker: objectMaker)
+    func syncList(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink {
+        let downlink = channel.syncList(scope: self, node: nodeUri, lane: laneUri, properties: properties, objectMaker: objectMaker)
         registerDownlink(downlink as! RemoteDownlink)
         return downlink
     }
 
-    func syncMap(prio prio: Double, primaryKey: SwimValue -> SwimValue) -> MapDownlink {
-        let downlink = channel.syncMap(scope: self, node: nodeUri, lane: laneUri, prio: prio, primaryKey: primaryKey)
+    func syncMap(properties properties: LaneProperties, primaryKey: SwimValue -> SwimValue) -> MapDownlink {
+        let downlink = channel.syncMap(scope: self, node: nodeUri, lane: laneUri, properties: properties, primaryKey: primaryKey)
         registerDownlink(downlink)
         return downlink
     }
