@@ -30,6 +30,10 @@ class RemoteDownlink: Downlink, Hashable {
         return channel.isConnected
     }
 
+    func onAcks(messages: [AckResponse]) {
+        delegate?.downlink(self, acks: messages)
+    }
+
     func onEventMessages(messages: [EventMessage]) {
         delegate?.downlink(self, events: messages)
     }

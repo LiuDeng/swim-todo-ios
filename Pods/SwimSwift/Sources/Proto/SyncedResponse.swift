@@ -1,7 +1,7 @@
 import Recon
 
-public struct SyncedResponse: Envelope, Equatable {
-  public let node: Uri
+public class SyncedResponse: Envelope, Equatable, CustomStringConvertible {
+  public internal(set) var node: Uri
   public let lane: Uri
   public let body: Value
 
@@ -11,7 +11,7 @@ public struct SyncedResponse: Envelope, Equatable {
     self.body = body
   }
 
-  public init?(value: Value) {
+  public convenience init?(value: Value) {
     let heading = value.first
     if heading.isAttr && heading.key?.text == "synced", let headers = heading.value.record {
       var node = nil as Uri?
@@ -48,19 +48,11 @@ public struct SyncedResponse: Envelope, Equatable {
     }
   }
 
-  public init?(recon string: String) {
+  public convenience init?(recon string: String) {
     guard let value = Recon.recon(string) else {
       return nil
     }
     self.init(value: value)
-  }
-
-  public func withNode(node: Uri, lane: Uri) -> SyncedResponse {
-    return SyncedResponse(node: node, lane: lane, body: body)
-  }
-
-  public func withNode(node: Uri) -> SyncedResponse {
-    return SyncedResponse(node: node, lane: lane, body: body)
   }
 
   public var reconValue: Value {
@@ -78,6 +70,10 @@ public struct SyncedResponse: Envelope, Equatable {
 
   public var recon: String {
     return reconValue.recon
+  }
+
+  public var description: String {
+    return recon
   }
 }
 

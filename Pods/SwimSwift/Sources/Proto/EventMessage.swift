@@ -1,8 +1,8 @@
 import Recon
 
-public struct EventMessage: Envelope, Equatable {
-  public let node: Uri
-  public let lane: Uri
+public class EventMessage: RoutableEnvelope, Equatable, CustomStringConvertible {
+  public internal(set) var node: SwimUri!
+  public let lane: SwimUri!
   public let body: Value
 
   public init(node: Uri, lane: Uri, body: Value = Value.Absent) {
@@ -11,7 +11,7 @@ public struct EventMessage: Envelope, Equatable {
     self.body = body
   }
 
-  public init?(value: Value) {
+  public convenience init?(value: Value) {
     let heading = value.first
     if heading.isAttr && heading.key?.text == "event", let headers = heading.value.record {
       var node = nil as Uri?
@@ -48,22 +48,14 @@ public struct EventMessage: Envelope, Equatable {
     }
   }
 
-  public init?(recon string: String) {
+  public convenience init?(recon string: String) {
     guard let value = Recon.recon(string) else {
       return nil
     }
     self.init(value: value)
   }
 
-  public func withNode(node: Uri, lane: Uri) -> EventMessage {
-    return EventMessage(node: node, lane: lane, body: body)
-  }
-
-  public func withNode(node: Uri) -> EventMessage {
-    return EventMessage(node: node, lane: lane, body: body)
-  }
-
-  public var reconValue: Value {
+  private var reconValue: Value {
     var heading = Record()
     heading.append(Slot("node", Value(node)))
     heading.append(Slot("lane", Value(lane)))
@@ -78,6 +70,10 @@ public struct EventMessage: Envelope, Equatable {
 
   public var recon: String {
     return reconValue.recon
+  }
+
+  public var description: String {
+    return recon
   }
 }
 

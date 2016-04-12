@@ -165,28 +165,19 @@ class Channel: HostScope, WebSocketDelegate {
     }
 
 
+    private func onAcks(acks: [AckResponse]) {
+        log.debug("Received acks: \(acks)")
+//        let resolvedMessages = resolveAndSortMessages(acks)
+//        routeMessages(resolvedMessages) { downlink, laneMessages in
+//            downlink.onAcks(laneMessages)
+//        }
+    }
+
+
     private func onEventMessages(messages: [EventMessage]) {
-        var resolvedMessages = [SwimUri: [SwimUri: [EventMessage]]]()
-        for message in messages {
-            let node = resolve(message.node)
-            let lane = message.lane
-            let resolvedMessage = message.withNode(node)
-
-            var nodeMessages = resolvedMessages[node] ?? [SwimUri: [EventMessage]]()
-            var laneMessages = nodeMessages[lane] ?? [EventMessage]()
-            laneMessages.append(resolvedMessage)
-            nodeMessages[lane] = laneMessages
-            resolvedMessages[node] = nodeMessages
-        }
-
-        for (node, nodeMessages) in resolvedMessages {
-            for (lane, laneMessages) in nodeMessages {
-                if let nodeDownlinks = downlinks[node], let laneDownlinks = nodeDownlinks[lane] {
-                    for downlink in laneDownlinks {
-                        downlink.onEventMessages(laneMessages)
-                    }
-                }
-            }
+        let resolvedMessages = resolveAndSortMessages(messages)
+        routeMessages(resolvedMessages) { downlink, laneMessages in
+            downlink.onEventMessages(laneMessages)
         }
     }
 
@@ -200,13 +191,13 @@ class Channel: HostScope, WebSocketDelegate {
 
     private func onLinkedResponse(response: LinkedResponse) {
         let node = resolve(response.node)
+        response.node = node
         let lane = response.lane
         guard let nodeDownlinks = downlinks[node], laneDownlinks = nodeDownlinks[lane] else {
             return
         }
-        let resolvedResponse = response.withNode(node)
         for downlink in laneDownlinks {
-            downlink.onLinkedResponse(resolvedResponse)
+            downlink.onLinkedResponse(response)
         }
     }
 
@@ -216,13 +207,13 @@ class Channel: HostScope, WebSocketDelegate {
 
     private func onSyncedResponse(response: SyncedResponse) {
         let node = resolve(response.node)
+        response.node = node
         let lane = response.lane
         guard let nodeDownlinks = downlinks[node], laneDownlinks = nodeDownlinks[lane] else {
             return
         }
-        let resolvedResponse = response.withNode(node)
         for downlink in laneDownlinks {
-            downlink.onSyncedResponse(resolvedResponse)
+            downlink.onSyncedResponse(response)
         }
     }
 
@@ -232,6 +223,7 @@ class Channel: HostScope, WebSocketDelegate {
 
     private func onUnlinkedResponse(response: UnlinkedResponse) {
         let node = resolve(response.node)
+        response.node = node
         let lane = response.lane
         guard var nodeDownlinks = downlinks[node], let laneDownlinks = nodeDownlinks[lane] else {
             return
@@ -240,9 +232,8 @@ class Channel: HostScope, WebSocketDelegate {
         if nodeDownlinks.isEmpty {
             downlinks.removeValueForKey(node)
         }
-        let resolvedResponse = response.withNode(node)
         for downlink in laneDownlinks {
-            downlink.onUnlinkedResponse(resolvedResponse)
+            downlink.onUnlinkedResponse(response)
             downlink.onClose()
         }
     }
@@ -274,6 +265,36 @@ class Channel: HostScope, WebSocketDelegate {
             for laneDownlinks in nodeDownlinks.values {
                 for downlink in laneDownlinks {
                     downlink.onError(error)
+                }
+            }
+        }
+    }
+
+
+    private func resolveAndSortMessages<T where T : RoutableEnvelope>(messages: [T]) -> [SwimUri: [SwimUri: [T]]] {
+        var result = [SwimUri: [SwimUri: [T]]]()
+        for var message in messages {
+            let node = resolve(message.node)
+            message.node = node
+            let lane = message.lane
+
+            var nodeMessages = result[node] ?? [SwimUri: [T]]()
+            var laneMessages = nodeMessages[lane] ?? [T]()
+            laneMessages.append(message)
+            nodeMessages[lane] = laneMessages
+            result[node] = nodeMessages
+        }
+        return result
+    }
+
+
+    private func routeMessages<T where T : RoutableEnvelope>(messages: [SwimUri: [SwimUri: [T]]], _ f: (RemoteDownlink, [T]) -> Void) {
+        for (node, nodeMessages) in messages {
+            for (lane, laneMessages) in nodeMessages {
+                if let nodeDownlinks = downlinks[node], let laneDownlinks = nodeDownlinks[lane] {
+                    for downlink in laneDownlinks {
+                        f(downlink, laneMessages)
+                    }
                 }
             }
         }
@@ -387,8 +408,16 @@ class Channel: HostScope, WebSocketDelegate {
 
 
     private func handlePendingMessages(messages: [Envelope]) {
+        var ackBatch = [AckResponse]()
         var commandBatch = [CommandMessage]()
         var eventBatch = [EventMessage]()
+
+        func flushAckBatch() {
+            if ackBatch.count > 0 {
+                onAcks(ackBatch)
+                ackBatch = []
+            }
+        }
 
         func flushCommandBatch() {
             if commandBatch.count > 0 {
@@ -405,6 +434,7 @@ class Channel: HostScope, WebSocketDelegate {
         }
 
         func flushAllBatches() {
+            flushAckBatch()
             flushCommandBatch()
             flushEventBatch()
         }
@@ -414,10 +444,12 @@ class Channel: HostScope, WebSocketDelegate {
 
             switch envelope {
             case let message as EventMessage:
+                flushAckBatch()
                 flushCommandBatch()
                 eventBatch.append(message)
 
             case let message as CommandMessage:
+                flushAckBatch()
                 flushEventBatch()
                 commandBatch.append(message)
 
@@ -444,6 +476,11 @@ class Channel: HostScope, WebSocketDelegate {
             case let response as UnlinkedResponse:
                 flushAllBatches()
                 onUnlinkedResponse(response)
+
+            case let ack as AckResponse:
+                flushCommandBatch()
+                flushEventBatch()
+                ackBatch.append(ack)
 
             default:
                 log.warning("Unknown envelope \(envelope)")

@@ -1,7 +1,7 @@
 import Recon
 
-public struct LinkedResponse: Envelope, Equatable {
-  public let node: Uri
+public class LinkedResponse: Envelope, Equatable, CustomStringConvertible {
+  public internal(set) var node: Uri
   public let lane: Uri
   public let prio: Double
   public let body: Value
@@ -13,7 +13,7 @@ public struct LinkedResponse: Envelope, Equatable {
     self.body = body
   }
 
-  public init?(value: Value) {
+  public convenience init?(value: Value) {
     let heading = value.first
     if heading.isAttr && heading.key?.text == "linked", let headers = heading.value.record {
       var node = nil as Uri?
@@ -53,22 +53,14 @@ public struct LinkedResponse: Envelope, Equatable {
     }
   }
 
-  public init?(recon string: String) {
+  public convenience init?(recon string: String) {
     guard let value = Recon.recon(string) else {
       return nil
     }
     self.init(value: value)
   }
 
-  public func withNode(node: Uri, lane: Uri) -> LinkedResponse {
-    return LinkedResponse(node: node, lane: lane, prio: prio, body: body)
-  }
-
-  public func withNode(node: Uri) -> LinkedResponse {
-    return LinkedResponse(node: node, lane: lane, prio: prio, body: body)
-  }
-
-  public var reconValue: Value {
+  private var reconValue: Value {
     var heading = Record()
     heading.append(Slot("node", Value(node)))
     heading.append(Slot("lane", Value(lane)))
@@ -86,6 +78,10 @@ public struct LinkedResponse: Envelope, Equatable {
 
   public var recon: String {
     return reconValue.recon
+  }
+
+  public var description: String {
+    return recon
   }
 }
 

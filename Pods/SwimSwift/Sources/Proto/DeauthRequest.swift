@@ -1,21 +1,13 @@
 import Recon
 
-public struct DeauthRequest: Envelope, Equatable {
-  public var node: Uri {
-    return Uri()
-  }
-
-  public var lane: Uri {
-    return Uri()
-  }
-
+public class DeauthRequest: Envelope, Equatable, CustomStringConvertible {
   public let body: Value
 
   public init(body: Value = Value.Absent) {
     self.body = body
   }
 
-  public init?(value: Value) {
+  public convenience init?(value: Value) {
     let heading = value.first
     if heading.isAttr && heading.key?.text == "deauth" {
       let body = value.record?.count > 1 ? value.dropFirst() : Value.Absent
@@ -25,14 +17,14 @@ public struct DeauthRequest: Envelope, Equatable {
     }
   }
 
-  public init?(recon string: String) {
+  public convenience init?(recon string: String) {
     guard let value = Recon.recon(string) else {
       return nil
     }
     self.init(value: value)
   }
 
-  public var reconValue: Value {
+  private var reconValue: Value {
     var record = Record(Attr("deauth"))
     if let body = self.body.record {
       record.appendContentsOf(body)
@@ -44,6 +36,10 @@ public struct DeauthRequest: Envelope, Equatable {
 
   public var recon: String {
     return reconValue.recon
+  }
+
+  public var description: String {
+    return recon
   }
 }
 

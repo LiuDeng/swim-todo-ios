@@ -1,4 +1,6 @@
 public protocol DownlinkDelegate {
+    func downlink(downlink: Downlink, acks: [AckResponse])
+
     func downlink(downlink: Downlink, events: [EventMessage])
 
     func downlinkWillLink(downlink: Downlink)
@@ -21,6 +23,8 @@ public protocol DownlinkDelegate {
 }
 
 public extension DownlinkDelegate {
+    public func downlink(downlink: Downlink, acks: [AckResponse]) {}
+
     public func downlink(downlink: Downlink, events: [EventMessage]) {}
 
     public func downlinkWillLink(downlink: Downlink) {}
