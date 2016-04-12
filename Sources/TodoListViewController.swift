@@ -2,7 +2,8 @@ import UIKit
 import SwimSwift
 import SwiftyBeaver
 
-private let LANE_URI: SwimUri = "todo/list"
+private let listLaneUri: SwimUri = "todo/list"
+private let presenceLaneUri: SwimUri = "todo/presence"
 
 private let kCellIdentifier = "Cell"
 private let kRowHeight = CGFloat(50)
@@ -21,6 +22,9 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     private let pinchRecognizer = UIPinchGestureRecognizer()
 
+    private let presenceListHelper: SwimListCollectionViewHelper
+    private let presenceListManager: SwimListManagerProtocol
+
     private var laneScope: LaneScope? {
         get {
             return swimListManager.laneScope
@@ -32,22 +36,36 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     var detailItem : NodeScope? {
         didSet {
-            laneScope = detailItem?.scope(lane: LANE_URI)
+            laneScope = detailItem?.scope(lane: listLaneUri)
         }
     }
 
     required init() {
+        self.presenceListManager = TodoListViewController.createPresenceListManager()
+        self.presenceListHelper = TodoListViewController.createPresenceListHelper(presenceListManager)
         super.init(listManager: TodoListViewController.createListManager(), nibName: nil, bundle: nil)
         swimListManager.addDelegate(self)
     }
 
     required init?(coder aDecoder: NSCoder) {
+        self.presenceListManager = TodoListViewController.createPresenceListManager()
+        self.presenceListHelper = TodoListViewController.createPresenceListHelper(presenceListManager)
         super.init(listManager: TodoListViewController.createListManager(), coder: aDecoder)
         swimListManager.addDelegate(self)
     }
 
     private static func createListManager() -> SwimListManagerProtocol {
         return SwimListManager<TodoEntry>()
+    }
+
+    private static func createPresenceListManager() -> SwimListManagerProtocol {
+        let mgr = SwimListManager<UserPresenceModel>()
+        mgr.laneProperties.isTransient = true
+        return mgr
+    }
+
+    private static func createPresenceListHelper(mgr: SwimListManagerProtocol) -> SwimListCollectionViewHelper {
+        return SwimListCollectionViewHelper(listManager: mgr)
     }
 
     override func viewDidLoad() {
@@ -249,17 +267,17 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         precondition(collectionView == presenceView)
         precondition(section == 0)
 
-        return 1
+        return presenceListManager.objects.count;
     }
 
 
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         precondition(collectionView == presenceView)
         precondition(indexPath.section == 0)
-        precondition(indexPath.item == 0)
 
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier(kPersonImageCell, forIndexPath: indexPath) as! PersonImageCollectionViewCell
-        cell.personImageView.initials = "XY"
+        let user = presenceListManager.objects[indexPath.item] as! UserPresenceModel
+        cell.personImageView.initials = user.initials ?? "?"
         return cell
     }
 
