@@ -33,9 +33,12 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
     // The item that this cell renders.
     var toDoItem: TodoEntry? {
         didSet {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
             label.text = toDoItem!.name
             label.strikeThrough = toDoItem!.completed
             itemCompleteLayer.hidden = !label.strikeThrough
+            CATransaction.commit()
         }
     }
     
