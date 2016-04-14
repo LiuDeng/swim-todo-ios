@@ -112,6 +112,20 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
 
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+
+        presenceListManager.startSynching()
+    }
+
+
+    override func viewDidDisappear(animated: Bool) {
+        super.viewDidDisappear(animated)
+
+        presenceListManager.stopSynching()
+    }
+
+
     // MARK: - SwimListManagerDelegate
 
     func swimDidStartSynching() {
