@@ -17,5 +17,5 @@ public class SwimGlobals {
 
     public var networkConditionMonitor: SwimNetworkConditionMonitor!
 
-    public var oplogManager: SwimOplogManager?
+    public var dbManager: SwimDBManager?
 }

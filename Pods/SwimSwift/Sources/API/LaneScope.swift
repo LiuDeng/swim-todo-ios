@@ -1,7 +1,7 @@
 /**
  Facilitates the creation and management of downlinks to a single lane of some service instance.
  */
-public protocol LaneScope {
+public protocol LaneScope: class {
 
     /// The URI of the network endpoint to which the scope is bound.
     var hostUri: SwimUri { get }

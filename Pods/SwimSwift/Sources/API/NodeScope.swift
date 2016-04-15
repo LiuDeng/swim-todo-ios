@@ -1,7 +1,7 @@
 /**
  Facilitates the creation and management of downlinks to a single service instance.
  */
-public protocol NodeScope {
+public protocol NodeScope: class {
 
     /// The URI of the network endpoint to which the scope is bound.
     var hostUri: SwimUri { get }

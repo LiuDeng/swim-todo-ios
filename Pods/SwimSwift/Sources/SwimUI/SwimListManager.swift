@@ -6,6 +6,7 @@
 //  Copyright © 2016 swim.it. All rights reserved.
 //
 
+import Bolts
 import Foundation
 import Recon
 
@@ -29,10 +30,16 @@ public protocol SwimListManagerProtocol: class {
     /**
      This will fail, and return nil, if the server connection is not open.
      */
-    func insertNewObjectAtIndex(index: Int) -> Any?
+    func insertNewObjectAtIndex(index: Int) -> SwimModelProtocolBase?
 
     func moveObjectAtIndex(fromIndex: Int, toIndex: Int)
-    func removeObjectAtIndex(index: Int)
+
+    /**
+     This will fail, and return nil, if the server connection is not open.
+     Otherwise, the removed object will be returned.
+     */
+    func removeObjectAtIndex(index: Int) -> SwimModelProtocolBase?
+
     func setHighlightAtIndex(index: Int, isHighlighted: Bool)
     func updateObjectAtIndex(index: Int)
 }
@@ -112,7 +119,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
             return
         }
 
-        var dl = ls.syncList(properties: laneProperties) { ObjectType(swimValue: $0) }
+        let dl = ls.syncList(properties: laneProperties) { ObjectType(swimValue: $0) }
         dl.keepAlive = true
         dl.delegate = self
         downLink = dl
@@ -134,7 +141,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }
     }
 
-    public func insertNewObjectAtIndex(index: Int) -> Any? {
+    public func insertNewObjectAtIndex(index: Int) -> SwimModelProtocolBase? {
         SwimAssertOnMainThread()
 
         guard let dl = downLink else {
@@ -143,7 +150,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }
 
         let object = ObjectType()
-        dl.insert(object, atIndex: index)
+        dl.insert(object, atIndex: index).continueWithBlock(logFailures)
 
         return object
     }
@@ -156,18 +163,20 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
             return
         }
 
-        dl.moveFromIndex(fromIndex, toIndex: toIndex)
+        dl.moveFromIndex(fromIndex, toIndex: toIndex).continueWithBlock(logFailures)
     }
 
-    public func removeObjectAtIndex(index: Int) {
+    public func removeObjectAtIndex(index: Int) -> SwimModelProtocolBase? {
         SwimAssertOnMainThread()
 
         guard let dl = downLink else {
             log.warning("Ignoring request to unsynched list")
-            return
+            return nil
         }
 
-        dl.removeAtIndex(index)
+        let (obj, task) = dl.removeAtIndex(index)
+        task.continueWithBlock(logFailures)
+        return obj
     }
 
     public func setHighlightAtIndex(index: Int, isHighlighted: Bool) {
@@ -183,7 +192,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         log.verbose("Did \(cmd) \(index): \(object)")
 
         object.isHighlighted = isHighlighted
-        dl.updateObjectAtIndex(index)
+        dl.updateObjectAtIndex(index).continueWithBlock(logFailures)
     }
 
     public func updateObjectAtIndex(index: Int) {
@@ -194,7 +203,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
             return
         }
 
-        dl.updateObjectAtIndex(index)
+        dl.updateObjectAtIndex(index).continueWithBlock(logFailures)
     }
 
     public func downlink(_: ListDownlink, didInsert object: SwimModelProtocolBase, atIndex index: Int) {
@@ -250,5 +259,15 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         delegates.forEach {
             f($0 as! SwimListManagerDelegate)
         }
+    }
+
+    private func logFailures(task: BFTask) -> BFTask {
+        if let err = task.error {
+            log.warning("Operation failed: \(err).")
+        }
+        if let exn = task.exception {
+            log.warning("Operation failed: \(exn).")
+        }
+        return task
     }
 }

@@ -35,26 +35,26 @@ PODS:
   - SQLite.swift (0.10.1)
   - SwiftWebSocket (2.6.0)
   - SwiftyBeaver (0.4.2)
-  - SwimSwift (0.2.10):
+  - SwimSwift (0.2.14):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-    - SwimSwift/Core (= 0.2.10)
-  - SwimSwift/Core (0.2.10):
+    - SwimSwift/Core (= 0.2.14)
+  - SwimSwift/Core (0.2.14):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-  - SwimSwift/GoogleSignIn (0.2.10):
+  - SwimSwift/GoogleSignIn (0.2.14):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-  - SwimSwift/SwiftyBeaver (0.2.10):
+  - SwimSwift/SwiftyBeaver (0.2.14):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
@@ -83,7 +83,7 @@ SPEC CHECKSUMS:
   SQLite.swift: 6a6e4b034efc317ce4e203b6af2d3024fee2b570
   SwiftWebSocket: c24c0dde0b33852f478ffb54226408bfe703b26b
   SwiftyBeaver: 3eced9aabe4f10b975453cc1baaa2d523a5eaeae
-  SwimSwift: 0c0bd49fae30d4d774962feea1ccc5673edf847f
+  SwimSwift: 6037fd67902cf760b75e4761e6e6a236cb0fcc1f
 
 PODFILE CHECKSUM: c4450464167ca8851e348322bbea7e9799ba20d5
 

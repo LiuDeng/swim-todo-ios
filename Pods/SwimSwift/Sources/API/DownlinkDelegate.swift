@@ -1,4 +1,4 @@
-public protocol DownlinkDelegate {
+public protocol DownlinkDelegate: class {
     func downlink(downlink: Downlink, acks: [AckResponse])
 
     func downlink(downlink: Downlink, events: [EventMessage])

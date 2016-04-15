@@ -1,10 +1,7 @@
 class RemoteLane: RemoteScope, LaneScope {
     let channel: Channel
-
     let hostUri: SwimUri
-
     let nodeUri: SwimUri
-
     let laneUri: SwimUri
 
     init(channel: Channel, host: SwimUri, node: SwimUri, lane: SwimUri) {
@@ -15,30 +12,26 @@ class RemoteLane: RemoteScope, LaneScope {
     }
 
     func link(properties properties: LaneProperties) -> Downlink {
-        let downlink = channel.link(scope: self, node: nodeUri, lane: laneUri, properties: properties)
-        registerDownlink(downlink)
-        return downlink
+        return channel.link(node: nodeUri, lane: laneUri, properties: properties)
     }
 
     func sync(properties properties: LaneProperties) -> Downlink {
-        let downlink = channel.sync(scope: self, node: nodeUri, lane: laneUri, properties: properties)
-        registerDownlink(downlink)
-        return downlink
+        return channel.sync(node: nodeUri, lane: laneUri, properties: properties)
     }
 
     func syncList(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink {
-        let downlink = channel.syncList(scope: self, node: nodeUri, lane: laneUri, properties: properties, objectMaker: objectMaker)
-        registerDownlink(downlink as! RemoteDownlink)
-        return downlink
+        return channel.syncList(node: nodeUri, lane: laneUri, properties: properties, objectMaker: objectMaker)
     }
 
     func syncMap(properties properties: LaneProperties, primaryKey: SwimValue -> SwimValue) -> MapDownlink {
-        let downlink = channel.syncMap(scope: self, node: nodeUri, lane: laneUri, properties: properties, primaryKey: primaryKey)
-        registerDownlink(downlink)
-        return downlink
+        return channel.syncMap(node: nodeUri, lane: laneUri, properties: properties, primaryKey: primaryKey)
     }
     
     func command(body body: SwimValue) {
         channel.command(node: nodeUri, lane: laneUri, body: body)
+    }
+
+    override func close() {
+        channel.closeDownlinks(node: nodeUri, lane: laneUri)
     }
 }

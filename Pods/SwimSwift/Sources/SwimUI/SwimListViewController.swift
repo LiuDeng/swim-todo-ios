@@ -96,8 +96,8 @@ public class SwimListViewController: UIViewController, UITableViewDataSource, UI
         swimListManager.startSynching()
     }
 
-    override public func viewWillDisappear(animated: Bool) {
-        super.viewWillDisappear(animated)
+    override public func viewDidDisappear(animated: Bool) {
+        super.viewDidDisappear(animated)
         swimListManager.stopSynching()
     }
 

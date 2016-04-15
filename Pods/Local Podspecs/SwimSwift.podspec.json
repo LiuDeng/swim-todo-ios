@@ -1,6 +1,6 @@
 {
   "name": "SwimSwift",
-  "version": "0.2.7",
+  "version": "0.2.12",
   "summary": "Swim",
   "homepage": "https://github.com/swimit/swim-swift",
   "license": {
@@ -12,7 +12,7 @@
   },
   "source": {
     "git": "https://github.com/swimit/swim-swift.git",
-    "tag": "0.2.7"
+    "tag": "0.2.12"
   },
   "requires_arc": true,
   "platforms": {
@@ -60,7 +60,11 @@
       },
       "pod_target_xcconfig": {
         "SWIFT_INCLUDE_PATHS": "$(PODS_ROOT)/Google",
-        "OTHER_LDFLAGS": "-undefined dynamic_lookup"
+        "OTHER_LDFLAGS": "-undefined dynamic_lookup",
+        "ENABLE_BITCODE": "NO"
+      },
+      "user_target_xcconfig": {
+        "ENABLE_BITCODE": "NO"
       }
     }
   ]

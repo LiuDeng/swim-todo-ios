@@ -9,25 +9,25 @@
 import Recon
 
 public class AckResponse: RoutableEnvelope, Equatable, CustomStringConvertible {
-    public internal(set) var node: SwimUri!
-    public let lane: SwimUri!
+    public internal(set) var node: SwimUri
+    public let lane: SwimUri
     public let commands: Int
 
     public convenience init?(value: Value) {
-        guard let c = value["ack"]["commands"].integer else {
+        guard let ack = value["ack"].record, n = ack["node"].uri, l = ack["lane"].uri, c = ack["commands"].integer else {
             return nil
         }
-        self.init(commands: c)
+        self.init(node: n, lane: l, commands: c)
     }
 
-    public required init(commands: Int) {
+    public required init(node: SwimUri, lane: SwimUri, commands: Int) {
+        self.node = node
+        self.lane = lane
         self.commands = commands
-        self.node = nil
-        self.lane = nil
     }
 
     public var recon: String {
-        let reconValue = Value([Item.Attr("ack", Value(Item.Slot("commands", Value(commands))))])
+        let reconValue = Value([Item.Attr("ack", Value(Item.Slot("node", Value(node)), Item.Slot("lane", Value(lane)), Item.Slot("commands", Value(commands))))])
         return reconValue.recon
     }
 
@@ -37,5 +37,9 @@ public class AckResponse: RoutableEnvelope, Equatable, CustomStringConvertible {
 }
 
 public func == (lhs: AckResponse, rhs: AckResponse) -> Bool {
-    return lhs.commands == rhs.commands
+    return (
+        lhs.node == rhs.node &&
+        lhs.lane == rhs.lane &&
+        lhs.commands == rhs.commands
+    )
 }

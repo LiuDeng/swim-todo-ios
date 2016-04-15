@@ -2,10 +2,14 @@ import Foundation
 import Recon
 import SwiftWebSocket
 
+
+private let EnablePersistentDownlinks = false
+
+
 private let log = SwimLogging.log
 
 
-class Channel: HostScope, WebSocketDelegate {
+class Channel: WebSocketDelegate {
     let hostUri: SwimUri
 
     private let protocols: [String]
@@ -58,44 +62,64 @@ class Channel: HostScope, WebSocketDelegate {
     }
 
 
-    func link(scope scope: RemoteScope?, node: SwimUri, lane: SwimUri, properties: LaneProperties) -> RemoteDownlink {
-        let downlink = RemoteLinkedDownlink(channel: self, scope: scope, host: hostUri, node: resolve(node), lane: lane, laneProperties: properties)
-        registerDownlink(downlink)
-        return downlink
-    }
-
     func link(node node: SwimUri, lane: SwimUri, properties: LaneProperties) -> Downlink {
-        return link(scope: nil, node: node, lane: lane, properties: properties)
-    }
-
-    func sync(scope scope: RemoteScope?, node: SwimUri, lane: SwimUri, properties: LaneProperties) -> RemoteDownlink {
-        let downlink = RemoteSyncedDownlink(channel: self, scope: scope, host: hostUri, node: resolve(node), lane: lane, laneProperties: properties)
+        let downlink = RemoteLinkedDownlink(channel: self, host: hostUri, node: resolve(node), lane: lane, laneProperties: properties)
         registerDownlink(downlink)
         return downlink
     }
 
     func sync(node node: SwimUri, lane: SwimUri, properties: LaneProperties) -> Downlink {
-        return sync(scope: nil, node: node, lane: lane, properties: properties)
-    }
-
-    func syncList(scope scope: RemoteScope?, node: SwimUri, lane: SwimUri, properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink {
-        let downlink = RemoteListDownlink(channel: self, scope: scope, host: hostUri, node: resolve(node), lane: lane, laneProperties: properties, objectMaker: objectMaker)
+        let downlink = RemoteSyncedDownlink(channel: self, host: hostUri, node: resolve(node), lane: lane, laneProperties: properties)
         registerDownlink(downlink)
         return downlink
     }
 
     func syncList(node node: SwimUri, lane: SwimUri, properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink {
-        return syncList(scope: nil, node: node, lane: lane, properties: properties, objectMaker: objectMaker)
+        let (remoteDownlink, listDownlink) = createListDownlinks(node: node, lane: lane, properties: properties, objectMaker: objectMaker)
+
+        registerDownlink(remoteDownlink)
+
+        return listDownlink
     }
 
-    func syncMap(scope scope: RemoteScope?, node: SwimUri, lane: SwimUri, properties: LaneProperties, primaryKey: Value -> Value) -> RemoteMapDownlink {
-        let downlink = RemoteMapDownlink(channel: self, scope: scope, host: hostUri, node: resolve(node), lane: lane, laneProperties: properties, primaryKey: primaryKey)
-        registerDownlink(downlink)
-        return downlink
+    /**
+     - returns: The RemoteDownlink that's actually connected to the server,
+     and the Downlink that is to be returned to the caller.  If this request
+     is for a transient lane then these two will be equal, otherwise the
+     second Downlink will impose the requested persistence.
+     */
+    private func createListDownlinks(node node: SwimUri, lane: SwimUri, properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> (RemoteDownlink, ListDownlink) {
+        let nodeUri = resolve(node)
+        let remoteDownlink = RemoteDownlink(channel: self, host: hostUri, node: nodeUri, lane: lane, laneProperties: properties)
+
+        if properties.isTransient || !EnablePersistentDownlinks {
+            let listDownlink = ListDownlinkAdapter(downlink: remoteDownlink, objectMaker: objectMaker)
+            return (remoteDownlink, listDownlink)
+        }
+
+        let globals = SwimGlobals.instance
+        if globals.dbManager == nil {
+            globals.dbManager = SwimDBManager()
+        }
+        let laneFQUri = hostUri.resolve(nodeUri).resolve(lane)
+        globals.dbManager?.openAsync(laneFQUri, persistenceType: .List).continueWithBlock { task in
+            if let err = task.error {
+                log.error("Failed to open DB connection to \(laneFQUri): \(err).  Lane is broken now.")
+            }
+            if let exn = task.exception {
+                log.error("Failed to open DB connection to \(laneFQUri): \(exn).  Lane is broken now.")
+            }
+            return task
+        }
+
+        return (remoteDownlink, PersistentListDownlink(downlink: remoteDownlink, objectMaker: objectMaker, laneFQUri: laneFQUri))
     }
+
 
     func syncMap(node node: SwimUri, lane: SwimUri, properties: LaneProperties, primaryKey: Value -> Value) -> MapDownlink {
-        return syncMap(scope: nil, node: node, lane: lane, properties: properties, primaryKey: primaryKey)
+        let downlink = RemoteMapDownlink(channel: self, host: hostUri, node: resolve(node), lane: lane, laneProperties: properties, primaryKey: primaryKey)
+        registerDownlink(downlink)
+        return downlink
     }
 
     func command(node node: SwimUri, lane: SwimUri, body: Value) {
@@ -166,11 +190,12 @@ class Channel: HostScope, WebSocketDelegate {
 
 
     private func onAcks(acks: [AckResponse]) {
-        log.debug("Received acks: \(acks)")
-//        let resolvedMessages = resolveAndSortMessages(acks)
-//        routeMessages(resolvedMessages) { downlink, laneMessages in
-//            downlink.onAcks(laneMessages)
-//        }
+        log.verbose("Received acks: \(acks)")
+
+        let resolvedMessages = resolveAndSortMessages(acks)
+        routeMessages(resolvedMessages) { downlink, laneMessages in
+            downlink.onAcks(laneMessages)
+        }
     }
 
 
@@ -273,7 +298,7 @@ class Channel: HostScope, WebSocketDelegate {
 
     private func resolveAndSortMessages<T where T : RoutableEnvelope>(messages: [T]) -> [SwimUri: [SwimUri: [T]]] {
         var result = [SwimUri: [SwimUri: [T]]]()
-        for var message in messages {
+        for message in messages {
             let node = resolve(message.node)
             message.node = node
             let lane = message.lane
@@ -349,6 +374,36 @@ class Channel: HostScope, WebSocketDelegate {
             networkMonitor = nil
         }
     }
+
+
+    func closeDownlinks(node node: SwimUri) {
+        let node = resolve(node)
+        guard let nodeDownlinks = downlinks[node] else {
+            return
+        }
+        downlinks.removeValueForKey(node)
+
+        for laneDownlinks in nodeDownlinks.values {
+            laneDownlinks.forEach {
+                $0.onClose()
+            }
+        }
+    }
+
+
+    func closeDownlinks(node node: SwimUri, lane: SwimUri) {
+        let node = resolve(node)
+        guard var nodeDownlinks = downlinks[node], let laneDownlinks = nodeDownlinks[lane] else {
+            return
+        }
+        nodeDownlinks.removeValueForKey(lane)
+        downlinks[node] = nodeDownlinks
+
+        laneDownlinks.forEach {
+            $0.onClose()
+        }
+    }
+
 
     private func reconnect() {
         if reconnectTimer != nil {

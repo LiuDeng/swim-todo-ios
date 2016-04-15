@@ -1,9 +1,12 @@
+import Bolts
 import Foundation
+
+
+private let log = SwimLogging.log
+
 
 class RemoteDownlink: Downlink, Hashable {
     unowned let channel: Channel
-
-    weak var scope: RemoteScope?
 
     let hostUri: SwimUri
 
@@ -17,9 +20,20 @@ class RemoteDownlink: Downlink, Hashable {
 
     var delegate: DownlinkDelegate? = nil
 
-    init(channel: Channel, scope: RemoteScope?, host: SwimUri, node: SwimUri, lane: SwimUri, laneProperties: LaneProperties) {
+    /**
+     Commands that have been sent to self.channel and for which we have not
+     yet received an ack.
+     */
+    private let inFlightCommands = TaskQueue()
+
+    /**
+     SyncRequests that have been sent to self.channel and for which we have
+     not yet received a SyncedResponse
+     */
+    private let inFlightSyncRequests = TaskQueue()
+
+    init(channel: Channel, host: SwimUri, node: SwimUri, lane: SwimUri, laneProperties: LaneProperties) {
         self.channel = channel
-        self.scope = scope
         self.hostUri = host
         self.nodeUri = node
         self.laneUri = lane
@@ -31,6 +45,10 @@ class RemoteDownlink: Downlink, Hashable {
     }
 
     func onAcks(messages: [AckResponse]) {
+        messages.forEach {
+            inFlightCommands.ack($0.commands)
+        }
+
         delegate?.downlink(self, acks: messages)
     }
 
@@ -43,6 +61,7 @@ class RemoteDownlink: Downlink, Hashable {
     }
 
     func onSyncedResponse(response: SyncedResponse) {
+        inFlightSyncRequests.ack(1)
         delegate?.downlink(self, didSync: response)
     }
 
@@ -71,13 +90,30 @@ class RemoteDownlink: Downlink, Hashable {
         delegate?.downlinkDidClose(self)
     }
 
-    func command(body body: SwimValue) {
+    func command(body body: SwimValue) -> BFTask {
+        let task = BFTaskCompletionSource()
         channel.command(node: nodeUri, lane: laneUri, body: body)
+        inFlightCommands.append(task)
+        return task.task
+    }
+
+    func sendSyncRequest() -> BFTask {
+        delegate?.downlinkWillSync(self)
+        let task = BFTaskCompletionSource()
+        channel.pushSyncRequest(node: nodeUri, lane: laneUri, prio: laneProperties.prio)
+        inFlightSyncRequests.append(task)
+        return task.task
     }
 
     func close() {
-        scope?.unregisterDownlink(self)
+        failAllInFlight()
         channel.unregisterDownlink(self)
+    }
+
+    private func failAllInFlight() {
+        let err = NSError(domain: NSURLErrorDomain, code: NSURLErrorNetworkConnectionLost, userInfo: nil)
+        inFlightCommands.failAll(err)
+        inFlightSyncRequests.failAll(err)
     }
 
     var hashValue: Int {

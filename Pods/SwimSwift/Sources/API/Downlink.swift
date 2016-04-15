@@ -1,4 +1,7 @@
-public protocol Downlink {
+import Bolts
+
+
+public protocol Downlink: class {
 
     /// The URI of the network endpoint to which this `Downlink` connects.
     var hostUri: SwimUri { get }
@@ -20,8 +23,17 @@ public protocol Downlink {
 
     var delegate: DownlinkDelegate? { get set }
 
-    /// Send a command to the remote lane to which this `Downlink` is connected.
-    func command(body body: SwimValue)
+    /**
+     Send a command to the remote lane to which this `Downlink` is
+     connected.
+
+     - returns: A BFTask representing the command.  This will succeed with
+     nil result when the server acks the command, or it will fail if the
+     command could not be sent.
+     */
+    func command(body body: SwimValue) -> BFTask
+
+    func sendSyncRequest() -> BFTask
 
     /// Unregister this `Downlink` so that it no longer receives events.  If this was the only active link to a particular lane, then the link will be unlinked.
     func close()

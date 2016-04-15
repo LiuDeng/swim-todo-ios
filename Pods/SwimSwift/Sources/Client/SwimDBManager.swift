@@ -1,5 +1,5 @@
 //
-//  SwimOplogManager.swift
+//  SwimDBManager.swift
 //  Swim
 //
 //  Created by Ewan Mellor on 4/4/16.
@@ -20,10 +20,19 @@ private let colTimestamp = Expression<NSDate>("timestamp")
 private let colCounter = Expression<Int64>("counter")
 private let colSwimValue = Expression<String>("swimValue")
 
+private let tableList = Table("list")
+private let colIndex = Expression<Int>("index")
 
-public class SwimOplogManager {
-    public static let ErrorDomain = "SwimOplogManager.ErrorDomain"
-    public static let SQLErrorDomain = "SwimOplogManager.SQLErrorDomain"
+
+public class SwimDBManager {
+    public static let ErrorDomain = "SwimDBManager.ErrorDomain"
+    public static let SQLErrorDomain = "SwimDBManager.SQLErrorDomain"
+
+
+    public enum PersistenceType {
+        case None
+        case List
+    }
 
 
     public enum ErrorCode: Int {
@@ -74,14 +83,14 @@ public class SwimOplogManager {
     }
 
 
-    public func openAsync(lane: SwimUri) -> BFTask {
+    public func openAsync(lane: SwimUri, persistenceType: PersistenceType) -> BFTask {
         return withSelfLock {
-            return self.openAsync_(lane)
+            return self.openAsync_(lane, persistenceType)
         }
     }
 
     /// May only be called under objc_sync_enter(self)
-    public func openAsync_(lane: SwimUri) -> BFTask {
+    private func openAsync_(lane: SwimUri, _ persistenceType: PersistenceType) -> BFTask {
         if connections[lane] != nil {
             return BFTask(result: nil)
         }
@@ -89,20 +98,23 @@ public class SwimOplogManager {
         let path = dbPath(lane)
 
         do {
-            let dir = path.URLByDeletingLastPathComponent!.absoluteString
+            let dir = path.URLByDeletingLastPathComponent!.path!
             let fm = NSFileManager.defaultManager()
             try fm.createDirectoryAtPath(dir, withIntermediateDirectories: true, attributes: nil)
 
-            let db = try Connection(path.absoluteString)
+            let db = try Connection(path.path!)
             db.busyTimeout = 5
             db.busyHandler { $0 < 3 }
 
             connections[lane] = db
 
-            return createTables(db).continueWithSuccessBlock { [weak self] _ in
+            return createTables(db, persistenceType).continueWithSuccessBlock { [weak self] _ in
                 self?.loadStats(path)
             }.continueWithSuccessBlock { [weak self] _ in
                 self?.loadTotalStats()
+            }.continueWithSuccessBlock { _ in
+                log.verbose("Opened connection to \(path)")
+                return nil
             }
         }
         catch Result.Error(message: let msg, code: let code, statement: _) {
@@ -114,13 +126,23 @@ public class SwimOplogManager {
     }
 
 
-    private func createTables(db: Connection) -> BFTask {
-        return db.runTask(tableOplog.create(ifNotExists: true) { t in
-            t.column(colId, primaryKey: .Autoincrement)
-            t.column(colTimestamp)
-            t.column(colCounter)
-            t.column(colSwimValue)
+    private func createTables(db: Connection, _ persistenceType: PersistenceType) -> BFTask {
+        var tasks = [
+            tableOplog.create() { t in
+                t.column(colId, primaryKey: .Autoincrement)
+                t.column(colTimestamp)
+                t.column(colCounter)
+                t.column(colSwimValue)
+            }
+        ]
+        if persistenceType == .List {
+            tasks.append(tableList.create(ifNotExists: true) { t in
+                t.column(colIndex, primaryKey: true)
+                t.column(colTimestamp)
+                t.column(colSwimValue)
             })
+        }
+        return db.runTasks(tasks)
     }
 
 
@@ -132,7 +154,7 @@ public class SwimOplogManager {
 
     private func loadStatsBackground(path: NSURL) {
         let fm = NSFileManager.defaultManager()
-        let fileSize = fm.fileSize(path.absoluteString)
+        let fileSize = fm.fileSize(path)
 
         objc_sync_enter(self)
         setFileSize(path, fileSize)
@@ -149,7 +171,7 @@ public class SwimOplogManager {
     private func loadTotalStatsBackground() {
         let fm = NSFileManager.defaultManager()
         guard let sizes = fm.allFileSizes(rootDir) else {
-            log.warning("Failed to load filesystem stats")
+            log.warning("Failed to load filesystem stats for \(rootDir)")
             return
         }
 
@@ -184,6 +206,79 @@ public class SwimOplogManager {
             colCounter <- counter,
             colSwimValue <- swimValue.recon
             ))
+    }
+
+
+    public func insertOrUpdateListEntry(lane: SwimUri, timestamp: NSDate, swimValue: SwimValue, index index_: Int) -> BFTask {
+        precondition(index_ >= 0)
+        let index = index_ + 1
+
+        guard let db = connectionForLane(lane) else {
+            return BFTask(error: NSError(errorCode: .NotConnected))
+        }
+        return db.runTask(tableList.insert(or: .Replace,
+            colIndex <- index,
+            colTimestamp <- timestamp,
+            colSwimValue <- swimValue.recon
+            ))
+    }
+
+
+    public func moveListEntry(lane: SwimUri, timestamp: NSDate, fromIndex fromIndex_: Int, toIndex toIndex_: Int) -> BFTask {
+        precondition(fromIndex_ >= 0)
+        precondition(toIndex_ >= 0)
+        precondition(fromIndex_ != toIndex_)
+        let fromIndex = fromIndex_ + 1
+        let toIndex = toIndex_ + 1
+
+        guard let db = connectionForLane(lane) else {
+            return BFTask(error: NSError(errorCode: .NotConnected))
+        }
+
+        // Moving down the list, everything in the gap moves to index - 1.
+        // Moving up the list, everything in the gap moves to index + 1.
+        // Since index is the primary key, we have to delete the row,
+        // move everything, and then re-insert the row.
+        let gapOffset = (fromIndex < toIndex ? -1 : 1)
+        func f() throws -> NSNumber {
+            var rowId = Int64(0)
+            try db.transaction {
+                guard let oldValue = db.pluck(tableList.select(colSwimValue).filter(colIndex == fromIndex))?.get(colSwimValue) else {
+                    return
+                }
+
+                tableList.filter(colIndex == fromIndex).delete()
+                let gap = tableList.filter(colIndex > fromIndex && colIndex <= toIndex)
+                try db.run(gap.update(colIndex <- colIndex + gapOffset))
+                rowId = try db.run(tableList.insert(
+                    colTimestamp <- timestamp,
+                    colIndex <- toIndex,
+                    colSwimValue <- oldValue
+                ))
+            }
+            return NSNumber(longLong: rowId)
+        }
+        return backgroundTask(f)
+    }
+
+
+    public func removeListEntry(lane: SwimUri, index index_: Int) -> BFTask {
+        precondition(index_ >= 0)
+        let index = index_ + 1
+
+        guard let db = connectionForLane(lane) else {
+            return BFTask(error: NSError(errorCode: .NotConnected))
+        }
+        let entry = tableList.filter(colIndex == index)
+        return db.runTask(entry.delete())
+    }
+
+
+    public func removeAllListEntries(lane: SwimUri) -> BFTask {
+        guard let db = connectionForLane(lane) else {
+            return BFTask(error: NSError(errorCode: .NotConnected))
+        }
+        return db.runTask(tableList.delete())
     }
 
 
@@ -222,8 +317,8 @@ public class SwimOplogManager {
 
 
 private extension NSError {
-    private convenience init(errorCode: SwimOplogManager.ErrorCode, userInfo: [NSObject : AnyObject]? = nil)  {
-        self.init(domain: SwimOplogManager.ErrorDomain, code: errorCode.rawValue, userInfo: userInfo)
+    private convenience init(errorCode: SwimDBManager.ErrorCode, userInfo: [NSObject : AnyObject]? = nil)  {
+        self.init(domain: SwimDBManager.ErrorDomain, code: errorCode.rawValue, userInfo: userInfo)
     }
 
     private convenience init(unknownErrorType: ErrorType) {
@@ -231,7 +326,7 @@ private extension NSError {
     }
 
     private convenience init(sqlErrorCode: Int32, msg: String) {
-        self.init(domain: SwimOplogManager.SQLErrorDomain, code: Int(sqlErrorCode), userInfo: ["message": msg])
+        self.init(domain: SwimDBManager.SQLErrorDomain, code: Int(sqlErrorCode), userInfo: ["message": msg])
     }
 }
 
@@ -247,6 +342,21 @@ private extension Connection {
         return backgroundTask {
             return NSNumber(longLong: try self.run(query))
         }
+    }
+
+    private func runTask(query: Delete) -> BFTask {
+        return backgroundTask {
+            return NSNumber(long: try self.run(query))
+        }
+    }
+
+    private func runTasks(statements: [String], _ bindings: Binding?...) -> BFTask {
+        func f() throws -> NSArray {
+            return try statements.map { statement in
+                return try self.run(statement, bindings)
+            }
+        }
+        return backgroundTask(f)
     }
 }
 

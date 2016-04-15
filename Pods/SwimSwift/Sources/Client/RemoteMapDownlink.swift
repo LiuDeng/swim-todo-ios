@@ -5,9 +5,9 @@ class RemoteMapDownlink: RemoteSyncedDownlink, MapDownlink {
 
     var primaryKey: SwimValue -> SwimValue
 
-    init(channel: Channel, scope: RemoteScope?, host: SwimUri, node: SwimUri, lane: SwimUri, laneProperties: LaneProperties, primaryKey: SwimValue -> SwimValue) {
+    init(channel: Channel, host: SwimUri, node: SwimUri, lane: SwimUri, laneProperties: LaneProperties, primaryKey: SwimValue -> SwimValue) {
         self.primaryKey = primaryKey
-        super.init(channel: channel, scope: scope, host: host, node: node, lane: lane, laneProperties: laneProperties)
+        super.init(channel: channel, host: host, node: node, lane: lane, laneProperties: laneProperties)
     }
 
     override func onEventMessages(messages: [EventMessage]) {

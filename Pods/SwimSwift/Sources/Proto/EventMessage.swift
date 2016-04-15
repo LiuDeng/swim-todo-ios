@@ -1,8 +1,8 @@
 import Recon
 
 public class EventMessage: RoutableEnvelope, Equatable, CustomStringConvertible {
-  public internal(set) var node: SwimUri!
-  public let lane: SwimUri!
+  public internal(set) var node: SwimUri
+  public let lane: SwimUri
   public let body: Value
 
   public init(node: Uri, lane: Uri, body: Value = Value.Absent) {

@@ -1,25 +1,29 @@
+import Bolts
 import Recon
 
 
 private let log = SwimLogging.log
 
 
-class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
-    private var state = [Value]()
+class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
+    var state = [Value]()
     var objects = [SwimModelProtocolBase]()
 
     private let objectMaker: (SwimValue -> SwimModelProtocolBase?)
 
-    private var listDownlinkDelegate: ListDownlinkDelegate? {
+    var listDownlinkDelegate: ListDownlinkDelegate? {
         return delegate as? ListDownlinkDelegate
     }
 
-    init(channel: Channel, scope: RemoteScope?, host: SwimUri, node: SwimUri, lane: SwimUri, laneProperties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) {
+
+    init(downlink: Downlink, objectMaker: (SwimValue -> SwimModelProtocolBase?)) {
         self.objectMaker = objectMaker
-        super.init(channel: channel, scope: scope, host: host, node: node, lane: lane, laneProperties: laneProperties)
+        super.init(downlink: downlink)
+        uplink = self
     }
 
-    override func onEventMessages(messages: [EventMessage]) {
+
+    override func downlink(downlink: Downlink, events messages: [EventMessage]) {
         log.verbose("Did receive \(messages)")
 
         sendWillChangeObjects()
@@ -77,86 +81,88 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
 
         sendDidChangeObjects()
 
-        super.onEventMessages(messages)
+        super.downlink(downlink, events: messages)
     }
 
-    func remoteAppend(value: Value) {
+
+    private func remoteAppend(value: SwimValue) {
         remoteInsert(value, atIndex: state.count)
     }
 
-    func remoteUpdate(value: Value, atIndex index: Int) {
+
+    func remoteUpdate(value: SwimValue, atIndex index: Int) -> Bool {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
-        let item = value["item"]
-        guard let object = objectMaker(item) else {
-            log.warning("Received update with unparseable item!")
-            return
+        guard 0 <= index && index <= state.count else {
+            log.warning("Ignoring update out of range!")
+            return false
         }
 
-        if 0 <= index && index < state.count {
+        let item = value["item"]
+        guard let object = objectMaker(item) else {
+            log.warning("Ignoring update with unparseable item!")
+            return false
+        }
+
+        if index == state.count {
+            state.append(value)
+            objects.append(object)
+            listDownlinkDelegate?.downlink(self, didInsert: object, atIndex: index)
+        }
+        else {
             state[index] = value
             let existingObject = objects[index]
             existingObject.swim_updateWithSwimValue(item)
-            if let delegate = listDownlinkDelegate {
-                delegate.downlink(self, didUpdate: existingObject, atIndex: index)
-            }
+            listDownlinkDelegate?.downlink(self, didUpdate: existingObject, atIndex: index)
         }
-        else {
-            let index = state.count
-            state.append(value)
-            objects.append(object)
-            if let delegate = listDownlinkDelegate {
-                delegate.downlink(self, didInsert: object, atIndex: index)
-            }
-        }
+
+        return true
     }
 
-    func remoteInsert(value: Value, atIndex index: Int) {
+
+    func remoteInsert(value: SwimValue, atIndex index: Int) -> Bool {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
+        guard 0 <= index && index <= state.count else {
+            log.warning("Ignoring insert out of range!")
+            return false
+        }
+
         let item = value["item"]
         guard let object = objectMaker(item) else {
-            log.warning("Received insert with unparseable item!")
-            return
+            log.warning("Ignoring insert with unparseable item!")
+            return false
         }
 
-        if 0 <= index && index <= state.count && state[index] != value {
-            state.insert(value, atIndex: index)
-            objects.insert(object, atIndex: index)
+        if state[index] == value {
+            log.warning("Ignoring duplicate insert!")
+            return false
+        }
 
-            if let delegate = listDownlinkDelegate {
-                delegate.downlink(self, didInsert: object, atIndex: index)
-            }
-        }
-        else if index > state.count {
-            let index = state.count
-            state.append(value)
-            objects.append(object)
+        state.insert(value, atIndex: index)
+        objects.insert(object, atIndex: index)
 
-            if let delegate = listDownlinkDelegate {
-                delegate.downlink(self, didInsert: object, atIndex: index)
-            }
-        }
-        else {
-            log.warning("Received insert that we cannot handle!")
-        }
+        listDownlinkDelegate?.downlink(self, didInsert: object, atIndex: index)
+
+        return true
     }
 
-    func remoteMove(value: Value, fromIndex from: Int, toIndex to: Int) {
+
+    func remoteMove(value: SwimValue, fromIndex from: Int, toIndex to: Int) -> Bool {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
         if state[to] == value {
             log.verbose("Ignoring duplicate move \(value)")
-            return
+            return false
         }
 
         let item = value["item"]
         guard let newDestObject = objectMaker(item) else {
             log.warning("Ignoring move with invalid object! \(item)")
-            return
+            return false
         }
 
         let oldDestObject = objects[to]
@@ -167,27 +173,29 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
         let object = objects.removeAtIndex(from)
         objects.insert(object, atIndex: to)
 
-        if let delegate = listDownlinkDelegate {
-            delegate.downlink(self, didMove: object, fromIndex: from, toIndex: to)
-        }
+        listDownlinkDelegate?.downlink(self, didMove: object, fromIndex: from, toIndex: to)
+
+        return true
     }
 
-    func remoteRemove(value: Value, atIndex index: Int) {
+
+    func remoteRemove(value: SwimValue, atIndex index: Int) -> Bool {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
         if state[index] != value {
             log.verbose("Ignoring remove, presumably this was a local change")
-            return
+            return false
         }
 
         state.removeAtIndex(index)
         let object = objects.removeAtIndex(index)
 
-        if let delegate = listDownlinkDelegate {
-            delegate.downlink(self, didRemove: object, atIndex: index)
-        }
+        listDownlinkDelegate?.downlink(self, didRemove: object, atIndex: index)
+
+        return true
     }
+
 
     func remoteRemoveAll() {
         SwimAssertOnMainThread()
@@ -203,6 +211,7 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
         }
     }
 
+
     var isEmpty: Bool {
         SwimAssertOnMainThread()
         return objects.isEmpty
@@ -213,50 +222,56 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
         return objects.count
     }
 
+
     subscript(index: Int) -> SwimModelProtocolBase {
         get {
             SwimAssertOnMainThread()
             return objects[index]
         }
-        set(obj) {
-            SwimAssertOnMainThread()
-            precondition(state.count == objects.count)
-            
-            let value = obj.swim_toSwimValue()
-            let body = bodyWithCommand("update", item: value, index: index)
-            channel.command(node: nodeUri, lane: laneUri, body: body)
-
-            state[index] = value
-            objects[index].swim_updateWithSwimValue(value)
-        }
     }
 
-    func updateObjectAtIndex(index: Int) {
+
+    func replace(object: SwimModelProtocolBase, atIndex index: Int) -> BFTask {
+        SwimAssertOnMainThread()
+        precondition(state.count == objects.count)
+
+        log.verbose("Replaced \(index): \(object)")
+
+        let value = object.swim_toSwimValue()
+        let task = sendCommand("update", item: value, index: index)
+
+        state[index] = value
+        objects[index].swim_updateWithSwimValue(value)
+        return task
+    }
+
+    func updateObjectAtIndex(index: Int) -> BFTask {
         SwimAssertOnMainThread()
 
         let object = objects[index]
         log.verbose("Updated \(index): \(object)")
-        self[index] = object
+        return replace(object, atIndex: index)
     }
 
-    func insert(object: SwimModelProtocolBase, atIndex index: Int) {
+    func insert(object: SwimModelProtocolBase, atIndex index: Int) -> BFTask {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
         log.verbose("Inserted object at \(index): \(object)")
 
         let value = object.swim_toSwimValue()
-        let body = bodyWithCommand("insert", item: value, index: index)
-        channel.command(node: nodeUri, lane: laneUri, body: body)
+        let task = sendCommand("insert", item: value, index: index)
 
         // We're not inserting into objects right now -- we're waiting for it to come back from the server instead.
         // TODO: This is a dirty hack and needs fixing properly.  We need a sessionId on messages so that we don't
         // respond to our own.
 //        objects.insert(object, atIndex: index)
 //        state.insert(value, atIndex: index)
+
+        return task
     }
 
-    func moveFromIndex(from: Int, toIndex to: Int) {
+    func moveFromIndex(from: Int, toIndex to: Int) -> BFTask {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
@@ -267,11 +282,10 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
 
         log.verbose("Moved \(from) -> \(to): \(object)")
 
-        let body = bodyWithCommand("move", item: value, from: from, to: to)
-        channel.command(node: nodeUri, lane: laneUri, body: body)
+        return sendCommand("move", item: value, from: from, to: to)
     }
 
-    func removeAtIndex(index: Int) -> SwimModelProtocolBase {
+    func removeAtIndex(index: Int) -> (SwimModelProtocolBase, BFTask) {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
@@ -280,54 +294,66 @@ class RemoteListDownlink: RemoteSyncedDownlink, ListDownlink {
 
         log.verbose("Removed object at \(index)")
 
-        let body = bodyWithCommand("remove", item: value, index: index)
-        channel.command(node: nodeUri, lane: laneUri, body: body)
+        let task = sendCommand("remove", item: value, index: index)
 
-        return object
+        return (object, task)
     }
 
-    func removeAll() {
+    func removeAll() -> BFTask {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
         state.removeAll()
         objects.removeAll()
 
-        let body = Value(Item.Attr("clear"))
-        channel.command(node: nodeUri, lane: laneUri, body: body)
+        return command(body: SwimValue(Item.Attr("clear")))
+    }
+
+    private func sendCommand(cmd: String, item: SwimValue, index: Int) -> BFTask {
+        let indexValue = Value(Slot("index", Value(index)))
+        return command(body: bodyWithCommand(cmd, item: item, indexValue: indexValue))
+    }
+
+    private func sendCommand(cmd: String, item: SwimValue, from: Int, to: Int) -> BFTask {
+        let indexValue = Value(Slot("from", Value(from)), Slot("to", Value(to)))
+        return command(body: bodyWithCommand(cmd, item: item, indexValue: indexValue))
+    }
+
+    private func sendCommand(cmd: String, item: SwimValue, indexValue: SwimValue) -> BFTask {
+        return command(body: bodyWithCommand(cmd, item: item, indexValue: indexValue))
+    }
+
+    override func sendSyncRequest() -> BFTask {
+        preconditionFailure("You do not need to call this, this list is automatically synched.")
     }
 
     private func sendWillChangeObjects() {
         SwimAssertOnMainThread()
 
-        if let delegate = listDownlinkDelegate {
-            delegate.downlinkWillChangeObjects(self)
-        }
+        listDownlinkDelegate?.downlinkWillChangeObjects(self)
     }
 
     private func sendDidChangeObjects() {
         SwimAssertOnMainThread()
 
-        if let delegate = listDownlinkDelegate {
-            delegate.downlinkDidChangeObjects(self)
-        }
+        listDownlinkDelegate?.downlinkDidChangeObjects(self)
+    }
+
+
+    var hashValue: Int {
+        return ObjectIdentifier(self).hashValue
     }
 }
 
 
-private func bodyWithCommand(command: String, item: SwimValue, index: Int) -> Value {
-    let indexValue = Value(Slot("index", Value(index)))
-    return bodyWithCommand(command, item: item, indexValue: indexValue)
-}
-
-private func bodyWithCommand(command: String, item: SwimValue, from: Int, to: Int) -> Value {
-    let indexValue = Value(Slot("from", Value(from)), Slot("to", Value(to)))
-    return bodyWithCommand(command, item: item, indexValue: indexValue)
-}
-
-private func bodyWithCommand(command: String, item: SwimValue, indexValue: Value) -> Value {
+private func bodyWithCommand(command: String, item: SwimValue, indexValue: SwimValue) -> SwimValue {
     var body = Record()
     body.append(Item.Attr(command, indexValue))
     body.append(Slot("item", item))
     return Value(body)
+}
+
+
+func == (lhs: ListDownlinkAdapter, rhs: ListDownlinkAdapter) -> Bool {
+    return lhs === rhs
 }
