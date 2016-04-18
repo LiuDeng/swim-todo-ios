@@ -31,30 +31,30 @@ PODS:
   - GoogleUtilities (1.2.0):
     - GoogleSymbolUtilities (~> 1.0)
   - ReachabilitySwift (2.3.3)
-  - Recon (0.2.2)
+  - Recon (0.3.0)
   - SQLite.swift (0.10.1)
   - SwiftWebSocket (2.6.0)
   - SwiftyBeaver (0.4.2)
-  - SwimSwift (0.2.14):
+  - SwimSwift (0.3.0):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-    - SwimSwift/Core (= 0.2.14)
-  - SwimSwift/Core (0.2.14):
+    - SwimSwift/Core (= 0.3.0)
+  - SwimSwift/Core (0.3.0):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-  - SwimSwift/GoogleSignIn (0.2.14):
+  - SwimSwift/GoogleSignIn (0.3.0):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-  - SwimSwift/SwiftyBeaver (0.2.14):
+  - SwimSwift/SwiftyBeaver (0.3.0):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
@@ -79,12 +79,12 @@ SPEC CHECKSUMS:
   GoogleSymbolUtilities: eb3965ea12710569c7b80db198a39e39b18613f7
   GoogleUtilities: 85f8ad6b251544286a97163133d042ec95f889c5
   ReachabilitySwift: e0f6b6f280effb47731acfaaa2d5ffe223703793
-  Recon: 43d523d25551ca9425203c73814632a39b0bfa05
+  Recon: 320d8c3c981dd5f804effd8da4041a3cb2c19a8b
   SQLite.swift: 6a6e4b034efc317ce4e203b6af2d3024fee2b570
   SwiftWebSocket: c24c0dde0b33852f478ffb54226408bfe703b26b
   SwiftyBeaver: 3eced9aabe4f10b975453cc1baaa2d523a5eaeae
-  SwimSwift: 6037fd67902cf760b75e4761e6e6a236cb0fcc1f
+  SwimSwift: 6dd81db073a4fd45fdafb0178b5c0ba9f32f028c
 
 PODFILE CHECKSUM: c4450464167ca8851e348322bbea7e9799ba20d5
 
-COCOAPODS: 1.0.0.beta.6
+COCOAPODS: 1.0.0.beta.8

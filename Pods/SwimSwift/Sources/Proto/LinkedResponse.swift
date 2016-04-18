@@ -61,13 +61,13 @@ public class LinkedResponse: Envelope, Equatable, CustomStringConvertible {
   }
 
   private var reconValue: Value {
-    var heading = Record()
+    let heading = Record()
     heading.append(Slot("node", Value(node)))
     heading.append(Slot("lane", Value(lane)))
     if prio != 0.0 {
       heading.append(Slot("prio", Value(prio)))
     }
-    var record = Record(Attr("linked", Value(heading)))
+    let record = Record(Attr("linked", Value(heading)))
     if let body = self.body.record {
       record.appendContentsOf(body)
     } else if body != Value.Absent {

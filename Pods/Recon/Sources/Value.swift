@@ -289,7 +289,7 @@ public enum Value: ArrayLiteralConvertible, StringLiteralConvertible, FloatLiter
 
   public mutating func popFirst() -> Item? {
     switch self {
-    case Record(var value):
+    case Record(let value):
       let first = value.popFirst()
       self = Record(value)
       return first
@@ -300,7 +300,7 @@ public enum Value: ArrayLiteralConvertible, StringLiteralConvertible, FloatLiter
 
   public mutating func popLast() -> Item? {
     switch self {
-    case Record(var value):
+    case Record(let value):
       let last = value.popLast()
       self = Record(value)
       return last

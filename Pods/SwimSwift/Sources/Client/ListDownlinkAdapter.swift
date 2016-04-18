@@ -347,7 +347,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 
 
 private func bodyWithCommand(command: String, item: SwimValue, indexValue: SwimValue) -> SwimValue {
-    var body = Record()
+    let body = Record()
     body.append(Item.Attr(command, indexValue))
     body.append(Slot("item", item))
     return Value(body)

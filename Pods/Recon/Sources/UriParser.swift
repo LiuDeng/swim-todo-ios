@@ -17,14 +17,14 @@ struct UriParser: Iteratee {
   }
 }
 
-struct UriRestSchemeParser: Iteratee {
-  let scheme: Iteratee
+private struct UriRestSchemeParser: Iteratee {
+  private let scheme: Iteratee
 
-  init(_ scheme: Iteratee = UriSchemeParser()) {
+  private init(_ scheme: Iteratee = UriSchemeParser()) {
     self.scheme = scheme
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var output = cont(scheme, input)
     while case IterateeOutput.Cont(let next, let remaining) = output where !remaining.isEmpty || remaining.isDone {
       output = next.feed(remaining)
@@ -32,7 +32,7 @@ struct UriRestSchemeParser: Iteratee {
     switch output {
     case IterateeOutput.Cont(let next, let remaining):
       return cont(UriRestSchemeParser(next), remaining)
-    case IterateeOutput.Done(let scheme as Uri.Scheme, let remaining):
+    case IterateeOutput.Done(let scheme as String, let remaining):
       if remaining.isDone {
         return unexpected(input)
       } else {
@@ -44,14 +44,14 @@ struct UriRestSchemeParser: Iteratee {
   }
 }
 
-struct UriRestSchemeRestParser: Iteratee {
-  let scheme: Uri.Scheme?
+private struct UriRestSchemeRestParser: Iteratee {
+  private let scheme: String?
 
-  init(_ scheme: Uri.Scheme?) {
+  private init(_ scheme: String?) {
     self.scheme = scheme
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c = input.head where c == ":" {
       return cont(UriRestAuthorityPathQueryFragmentParser(scheme), input.tail)
     } else if !input.isEmpty {
@@ -63,14 +63,14 @@ struct UriRestSchemeRestParser: Iteratee {
   }
 }
 
-struct UriRestAuthorityPathQueryFragmentParser: Iteratee {
-  let scheme: Uri.Scheme?
+private struct UriRestAuthorityPathQueryFragmentParser: Iteratee {
+  private let scheme: String?
 
-  init(_ scheme: Uri.Scheme? = nil) {
+  private init(_ scheme: String? = nil) {
     self.scheme = scheme
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c = input.head {
       switch c {
       case "/":
@@ -89,14 +89,14 @@ struct UriRestAuthorityPathQueryFragmentParser: Iteratee {
   }
 }
 
-struct UriRestAuthorityPathParser: Iteratee {
-  let scheme: Uri.Scheme?
+private struct UriRestAuthorityPathParser: Iteratee {
+  private let scheme: String?
 
-  init(_ scheme: Uri.Scheme? = nil) {
+  private init(_ scheme: String? = nil) {
     self.scheme = scheme
   }
 
-  func feed(input_: IterateeInput) -> IterateeOutput {
+  private func feed(input_: IterateeInput) -> IterateeOutput {
     var input = input_
     if let c = input.head {
       if c == "/" {
@@ -116,16 +116,16 @@ struct UriRestAuthorityPathParser: Iteratee {
   }
 }
 
-struct UriRestAuthorityParser: Iteratee {
-  let scheme: Uri.Scheme?
-  let authority: Iteratee
+private struct UriRestAuthorityParser: Iteratee {
+  private let scheme: String?
+  private let authority: Iteratee
 
-  init(_ scheme: Uri.Scheme? = nil, _ authority: Iteratee = UriAuthorityParser()) {
+  private init(_ scheme: String? = nil, _ authority: Iteratee = UriAuthorityParser()) {
     self.scheme = scheme
     self.authority = authority
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var output = cont(authority, input)
     while case IterateeOutput.Cont(let next, let remaining) = output where !remaining.isEmpty || remaining.isDone {
       output = next.feed(remaining)
@@ -145,16 +145,16 @@ struct UriRestAuthorityParser: Iteratee {
   }
 }
 
-struct UriRestAuthorityRestParser: Iteratee {
-  let scheme: Uri.Scheme?
-  let authority: Uri.Authority?
+private struct UriRestAuthorityRestParser: Iteratee {
+  private let scheme: String?
+  private let authority: Uri.Authority?
 
-  init(_ scheme: Uri.Scheme?, _ authority: Uri.Authority?) {
+  private init(_ scheme: String?, _ authority: Uri.Authority?) {
     self.scheme = scheme
     self.authority = authority
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c = input.head {
       switch c {
       case "?":
@@ -171,18 +171,18 @@ struct UriRestAuthorityRestParser: Iteratee {
   }
 }
 
-struct UriRestPathParser: Iteratee {
-  let scheme: Uri.Scheme?
-  let authority: Uri.Authority?
-  let path: Iteratee
+private struct UriRestPathParser: Iteratee {
+  private let scheme: String?
+  private let authority: Uri.Authority?
+  private let path: Iteratee
 
-  init(_ scheme: Uri.Scheme? = nil, _ authority: Uri.Authority? = nil, _ path: Iteratee = UriPathParser()) {
+  private init(_ scheme: String? = nil, _ authority: Uri.Authority? = nil, _ path: Iteratee = UriPathParser()) {
     self.scheme = scheme
     self.authority = authority
     self.path = path
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var output = cont(path, input)
     while case IterateeOutput.Cont(let next, let remaining) = output where !remaining.isEmpty || remaining.isDone {
       output = next.feed(remaining)
@@ -202,18 +202,18 @@ struct UriRestPathParser: Iteratee {
   }
 }
 
-struct UriRestPathRestParser: Iteratee {
-  let scheme: Uri.Scheme?
-  let authority: Uri.Authority?
-  let path: Uri.Path
+private struct UriRestPathRestParser: Iteratee {
+  private let scheme: String?
+  private let authority: Uri.Authority?
+  private let path: Uri.Path
 
-  init(_ scheme: Uri.Scheme?, _ authority: Uri.Authority?, _ path: Uri.Path) {
+  private init(_ scheme: String?, _ authority: Uri.Authority?, _ path: Uri.Path) {
     self.scheme = scheme
     self.authority = authority
     self.path = path
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c = input.head {
       switch c {
       case "?":
@@ -230,20 +230,20 @@ struct UriRestPathRestParser: Iteratee {
   }
 }
 
-struct UriRestQueryParser: Iteratee {
-  let scheme: Uri.Scheme?
-  let authority: Uri.Authority?
-  let path: Uri.Path
-  let query: Iteratee
+private struct UriRestQueryParser: Iteratee {
+  private let scheme: String?
+  private let authority: Uri.Authority?
+  private let path: Uri.Path
+  private let query: Iteratee
 
-  init(_ scheme: Uri.Scheme? = nil, _ authority: Uri.Authority? = nil, _ path: Uri.Path = Uri.Path.Empty, _ query: Iteratee = UriQueryParser()) {
+  private init(_ scheme: String? = nil, _ authority: Uri.Authority? = nil, _ path: Uri.Path = Uri.Path.Empty, _ query: Iteratee = UriQueryParser()) {
     self.scheme = scheme
     self.authority = authority
     self.path = path
     self.query = query
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var output = cont(query, input)
     while case IterateeOutput.Cont(let next, let remaining) = output where !remaining.isEmpty || remaining.isDone {
       output = next.feed(remaining)
@@ -263,20 +263,20 @@ struct UriRestQueryParser: Iteratee {
   }
 }
 
-struct UriRestQueryRestParser: Iteratee {
-  let scheme: Uri.Scheme?
-  let authority: Uri.Authority?
-  let path: Uri.Path
-  let query: Uri.Query
+private struct UriRestQueryRestParser: Iteratee {
+  private let scheme: String?
+  private let authority: Uri.Authority?
+  private let path: Uri.Path
+  private let query: Uri.Query
 
-  init(_ scheme: Uri.Scheme?, _ authority: Uri.Authority?, _ path: Uri.Path, _ query: Uri.Query) {
+  private init(_ scheme: String?, _ authority: Uri.Authority?, _ path: Uri.Path, _ query: Uri.Query) {
     self.scheme = scheme
     self.authority = authority
     self.path = path
     self.query = query
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c = input.head {
       if c == "#" {
         return cont(UriRestFragmentParser(scheme, authority, path, query), input.tail)
@@ -290,14 +290,14 @@ struct UriRestQueryRestParser: Iteratee {
   }
 }
 
-struct UriRestFragmentParser: Iteratee {
-  let scheme: Uri.Scheme?
-  let authority: Uri.Authority?
-  let path: Uri.Path
-  let query: Uri.Query?
-  let fragment: Iteratee
+private struct UriRestFragmentParser: Iteratee {
+  private let scheme: String?
+  private let authority: Uri.Authority?
+  private let path: Uri.Path
+  private let query: Uri.Query?
+  private let fragment: Iteratee
 
-  init(_ scheme: Uri.Scheme? = nil, _ authority: Uri.Authority? = nil, _ path: Uri.Path = Uri.Path.Empty, _ query: Uri.Query? = nil, _ fragment: Iteratee = UriFragmentParser()) {
+  private init(_ scheme: String? = nil, _ authority: Uri.Authority? = nil, _ path: Uri.Path = Uri.Path.Empty, _ query: Uri.Query? = nil, _ fragment: Iteratee = UriFragmentParser()) {
     self.scheme = scheme
     self.authority = authority
     self.path = path
@@ -305,7 +305,7 @@ struct UriRestFragmentParser: Iteratee {
     self.fragment = fragment
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var output = cont(fragment, input)
     while case IterateeOutput.Cont(let next, let remaining) = output where !remaining.isEmpty || remaining.isDone {
       output = next.feed(remaining)
@@ -333,14 +333,14 @@ struct UriSchemeParser: Iteratee {
   }
 }
 
-struct UriSchemeRestParser: Iteratee {
-  let scheme: String
+private struct UriSchemeRestParser: Iteratee {
+  private let scheme: String
 
-  init(_ scheme: String) {
+  private init(_ scheme: String) {
     self.scheme = scheme;
   }
 
-  func feed(input_: IterateeInput) -> IterateeOutput {
+  private func feed(input_: IterateeInput) -> IterateeOutput {
     var input = input_
     var scheme = self.scheme
     while let c = input.head where isSchemeChar(c) {
@@ -348,7 +348,7 @@ struct UriSchemeRestParser: Iteratee {
       input = input.tail
     }
     if !input.isEmpty || input.isDone {
-      return done(Uri.Scheme(scheme), input)
+      return done(scheme, input)
     }
     return cont(UriSchemeRestParser(scheme), input)
   }
@@ -374,14 +374,14 @@ struct UriAuthorityParser: Iteratee {
   }
 }
 
-struct UriAuthorityUserInfoParser: Iteratee {
-  let userInfo: Iteratee
+private struct UriAuthorityUserInfoParser: Iteratee {
+  private let userInfo: Iteratee
 
-  init(_ userInfo: Iteratee = UriUserInfoParser()) {
+  private init(_ userInfo: Iteratee = UriUserInfoParser()) {
     self.userInfo = userInfo
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var output = cont(userInfo, input)
     while case IterateeOutput.Cont(let next, let remaining) = output where !remaining.isEmpty || remaining.isDone {
       output = next.feed(remaining)
@@ -401,14 +401,14 @@ struct UriAuthorityUserInfoParser: Iteratee {
   }
 }
 
-struct UriAuthorityUserInfoRestParser: Iteratee {
-  let userInfo: Uri.UserInfo
+private struct UriAuthorityUserInfoRestParser: Iteratee {
+  private let userInfo: Uri.UserInfo
 
-  init(_ userInfo: Uri.UserInfo) {
+  private init(_ userInfo: Uri.UserInfo) {
     self.userInfo = userInfo
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c = input.head {
       if c == "@" {
         return cont(UriAuthorityHostParser(userInfo), input.tail)
@@ -422,16 +422,16 @@ struct UriAuthorityUserInfoRestParser: Iteratee {
   }
 }
 
-struct UriAuthorityHostParser: Iteratee {
-  let userInfo: Uri.UserInfo?
-  let host: Iteratee
+private struct UriAuthorityHostParser: Iteratee {
+  private let userInfo: Uri.UserInfo?
+  private let host: Iteratee
 
-  init(_ userInfo: Uri.UserInfo? = nil, _ host: Iteratee = UriHostParser()) {
+  private init(_ userInfo: Uri.UserInfo? = nil, _ host: Iteratee = UriHostParser()) {
     self.userInfo = userInfo
     self.host = host
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var output = cont(host, input)
     while case IterateeOutput.Cont(let next, let remaining) = output where !remaining.isEmpty || remaining.isDone {
       output = next.feed(remaining)
@@ -451,16 +451,16 @@ struct UriAuthorityHostParser: Iteratee {
   }
 }
 
-struct UriAuthorityHostRestParser: Iteratee {
-  let userInfo: Uri.UserInfo?
-  let host: Uri.Host
+private struct UriAuthorityHostRestParser: Iteratee {
+  private let userInfo: Uri.UserInfo?
+  private let host: Uri.Host
 
-  init(_ userInfo: Uri.UserInfo?, _ host: Uri.Host) {
+  private init(_ userInfo: Uri.UserInfo?, _ host: Uri.Host) {
     self.userInfo = userInfo
     self.host = host
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c = input.head where c == ":" {
       return cont(UriAuthorityPortParser(userInfo, host), input.tail)
     }
@@ -471,18 +471,18 @@ struct UriAuthorityHostRestParser: Iteratee {
   }
 }
 
-struct UriAuthorityPortParser: Iteratee {
-  let userInfo: Uri.UserInfo?
-  let host: Uri.Host
-  let port: Iteratee
+private struct UriAuthorityPortParser: Iteratee {
+  private let userInfo: Uri.UserInfo?
+  private let host: Uri.Host
+  private let port: Iteratee
 
-  init(_ userInfo: Uri.UserInfo? = nil, _ host: Uri.Host, _ port: Iteratee = UriPortParser()) {
+  private init(_ userInfo: Uri.UserInfo? = nil, _ host: Uri.Host, _ port: Iteratee = UriPortParser()) {
     self.userInfo = userInfo
     self.host = host
     self.port = port
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var output = cont(port, input)
     while case IterateeOutput.Cont(let next, let remaining) = output where !remaining.isEmpty || remaining.isDone {
       output = next.feed(remaining)
@@ -490,7 +490,7 @@ struct UriAuthorityPortParser: Iteratee {
     switch output {
     case IterateeOutput.Cont(let next, let remaining):
       return cont(UriAuthorityPortParser(userInfo, host, next), remaining)
-    case IterateeOutput.Done(let port as Uri.Port, let remaining):
+    case IterateeOutput.Done(let port as UInt16, let remaining):
       return done(Uri.Authority(userInfo: userInfo, host: host, port: port), remaining)
     default:
       return output
@@ -500,7 +500,7 @@ struct UriAuthorityPortParser: Iteratee {
 
 
 struct UriUserInfoParser: Iteratee {
-  let part: String
+  private let part: String
 
   init(_ part: String = "") {
     self.part = part
@@ -529,14 +529,14 @@ struct UriUserInfoParser: Iteratee {
   }
 }
 
-struct UriUserInfoEscape1Parser: Iteratee {
-  let part: String
+private struct UriUserInfoEscape1Parser: Iteratee {
+  private let part: String
 
-  init(_ part: String) {
+  private init(_ part: String) {
     self.part = part
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c1 = input.head where isHexChar(c1) {
       return cont(UriUserInfoEscape2Parser(part, c1), input.tail)
     } else if !input.isEmpty || input.isDone {
@@ -546,16 +546,16 @@ struct UriUserInfoEscape1Parser: Iteratee {
   }
 }
 
-struct UriUserInfoEscape2Parser: Iteratee {
-  let part: String
-  let c1: UnicodeScalar
+private struct UriUserInfoEscape2Parser: Iteratee {
+  private let part: String
+  private let c1: UnicodeScalar
 
-  init(_ part: String, _ c1: UnicodeScalar) {
+  private init(_ part: String, _ c1: UnicodeScalar) {
     self.part = part
     self.c1 = c1
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var part = self.part
     if let c2 = input.head where isHexChar(c2) {
       part.append(UnicodeScalar((decodeHex(c1) << 4) + decodeHex(c2)))
@@ -567,16 +567,16 @@ struct UriUserInfoEscape2Parser: Iteratee {
   }
 }
 
-struct UriUserInfoPasswordParser: Iteratee {
-  let username: String
-  let password: String
+private struct UriUserInfoPasswordParser: Iteratee {
+  private let username: String
+  private let password: String
 
-  init(_ username: String, _ password: String = "") {
+  private init(_ username: String, _ password: String = "") {
     self.username = username
     self.password = password
   }
 
-  func feed(input_: IterateeInput) -> IterateeOutput {
+  private func feed(input_: IterateeInput) -> IterateeOutput {
     var input = input_
     var password = self.password
     while let c = input.head where isUserInfoChar(c) {
@@ -592,16 +592,16 @@ struct UriUserInfoPasswordParser: Iteratee {
   }
 }
 
-struct UriUserInfoPasswordEscape1Parser: Iteratee {
-  let username: String
-  let password: String
+private struct UriUserInfoPasswordEscape1Parser: Iteratee {
+  private let username: String
+  private let password: String
 
-  init(_ username: String, _ password: String) {
+  private init(_ username: String, _ password: String) {
     self.username = username
     self.password = password
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c1 = input.head where isHexChar(c1) {
       return cont(UriUserInfoPasswordEscape2Parser(username, password, c1), input.tail)
     } else if !input.isEmpty || input.isDone {
@@ -611,18 +611,18 @@ struct UriUserInfoPasswordEscape1Parser: Iteratee {
   }
 }
 
-struct UriUserInfoPasswordEscape2Parser: Iteratee {
-  let username: String
-  let password: String
-  let c1: UnicodeScalar
+private struct UriUserInfoPasswordEscape2Parser: Iteratee {
+  private let username: String
+  private let password: String
+  private let c1: UnicodeScalar
 
-  init(_ username: String, _ password: String, _ c1: UnicodeScalar) {
+  private init(_ username: String, _ password: String, _ c1: UnicodeScalar) {
     self.username = username
     self.password = password
     self.c1 = c1
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var password = self.password
     if let c2 = input.head where isHexChar(c2) {
       password.append(UnicodeScalar((decodeHex(c1) << 4) + decodeHex(c2)))
@@ -650,18 +650,18 @@ struct UriHostParser: Iteratee {
   }
 }
 
-struct UriHostAddressParser: Iteratee {
-  let address: String
-  let x: UInt32
-  let i: UInt32
+private struct UriHostAddressParser: Iteratee {
+  private let address: String
+  private let x: UInt32
+  private let i: UInt32
 
-  init(_ address: String = "", _ x: UInt32 = 0, _ i: UInt32 = 1) {
+  private init(_ address: String = "", _ x: UInt32 = 0, _ i: UInt32 = 1) {
     self.address = address
     self.x = x
     self.i = i
   }
 
-  func feed(input_: IterateeInput) -> IterateeOutput {
+  private func feed(input_: IterateeInput) -> IterateeOutput {
     var input = input_
     var address = self.address
     var x = self.x
@@ -690,14 +690,14 @@ struct UriHostAddressParser: Iteratee {
   }
 }
 
-struct UriHostNameParser: Iteratee {
-  let name: String
+private struct UriHostNameParser: Iteratee {
+  private let name: String
 
-  init(_ name: String) {
+  private init(_ name: String) {
     self.name = name
   }
 
-  func feed(input_: IterateeInput) -> IterateeOutput {
+  private func feed(input_: IterateeInput) -> IterateeOutput {
     var input = input_
     var name = self.name
     while let c = input.head where isHostChar(c) {
@@ -713,14 +713,14 @@ struct UriHostNameParser: Iteratee {
   }
 }
 
-struct UriHostNameEscape1Parser: Iteratee {
-  let name: String
+private struct UriHostNameEscape1Parser: Iteratee {
+  private let name: String
 
-  init(_ name: String) {
+  private init(_ name: String) {
     self.name = name
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c1 = input.head where isHexChar(c1) {
       return cont(UriHostNameEscape2Parser(name, c1), input.tail)
     } else if !input.isEmpty || input.isDone {
@@ -730,16 +730,16 @@ struct UriHostNameEscape1Parser: Iteratee {
   }
 }
 
-struct UriHostNameEscape2Parser: Iteratee {
-  let name: String
-  let c1: UnicodeScalar
+private struct UriHostNameEscape2Parser: Iteratee {
+  private let name: String
+  private let c1: UnicodeScalar
 
-  init(_ name: String, _ c1: UnicodeScalar) {
+  private init(_ name: String, _ c1: UnicodeScalar) {
     self.name = name
     self.c1 = c1
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var name = self.name
     if let c2 = input.head where isHexChar(c2) {
       name.append(UnicodeScalar((decodeHex(c1) << 4) + decodeHex(c2)))
@@ -751,14 +751,14 @@ struct UriHostNameEscape2Parser: Iteratee {
   }
 }
 
-struct UriHostIPv6RestParser: Iteratee {
+private struct UriHostIPv6RestParser: Iteratee {
   let address: String
 
-  init(_ address: String = "") {
+  private init(_ address: String = "") {
     self.address = address
   }
 
-  func feed(input_: IterateeInput) -> IterateeOutput {
+  private func feed(input_: IterateeInput) -> IterateeOutput {
     var input = input_
     var address = self.address
     while let c = input.head where isHostChar(c) || c == ":" {
@@ -776,7 +776,7 @@ struct UriHostIPv6RestParser: Iteratee {
 
 
 struct UriPortParser: Iteratee {
-  let port: UInt16
+  private let port: UInt16
 
   init(_ port: UInt16 = 0) {
     self.port = port
@@ -790,7 +790,7 @@ struct UriPortParser: Iteratee {
       input = input.tail
     }
     if !input.isEmpty || input.isDone {
-      return done(Uri.Port(port), input)
+      return done(port, input)
     }
     return cont(UriPortParser(port), input)
   }
@@ -798,15 +798,15 @@ struct UriPortParser: Iteratee {
 
 
 struct UriPathParser: Iteratee {
-  let segments: [String]
-  let segment: String
+  private let segments: [String]
+  private let segment: String
 
   init(_ segments: [String] = [], _ segment: String = "") {
     self.segments = segments
     self.segment = segment
   }
 
-  init(_ segment: String) {
+  private init(_ segment: String) {
     self.init([segment])
   }
 
@@ -840,16 +840,16 @@ struct UriPathParser: Iteratee {
   }
 }
 
-struct UriPathEscape1Parser: Iteratee {
-  let segments: [String]
-  let segment: String
+private struct UriPathEscape1Parser: Iteratee {
+  private let segments: [String]
+  private let segment: String
 
-  init(_ segments: [String], _ segment: String) {
+  private init(_ segments: [String], _ segment: String) {
     self.segments = segments
     self.segment = segment
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c1 = input.head where isHexChar(c1) {
       return cont(UriPathEscape2Parser(segments, segment, c1), input.tail)
     } else if !input.isEmpty || input.isDone {
@@ -859,18 +859,18 @@ struct UriPathEscape1Parser: Iteratee {
   }
 }
 
-struct UriPathEscape2Parser: Iteratee {
-  let segments: [String]
-  let segment: String
-  let c1: UnicodeScalar
+private struct UriPathEscape2Parser: Iteratee {
+  private let segments: [String]
+  private let segment: String
+  private let c1: UnicodeScalar
 
-  init(_ segments: [String], _ segment: String, _ c1: UnicodeScalar) {
+  private init(_ segments: [String], _ segment: String, _ c1: UnicodeScalar) {
     self.segments = segments
     self.segment = segment
     self.c1 = c1
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var segment = self.segment
     if let c2 = input.head where isHexChar(c2) {
       segment.append(UnicodeScalar((decodeHex(c1) << 4) + decodeHex(c2)))
@@ -884,8 +884,8 @@ struct UriPathEscape2Parser: Iteratee {
 
 
 struct UriQueryParser: Iteratee {
-  let params: [(String?, String)]
-  let part: String
+  private let params: [(String?, String)]
+  private let part: String
 
   init(_ params: [(String?, String)] = [], _ part: String = "") {
     self.params = params
@@ -922,16 +922,16 @@ struct UriQueryParser: Iteratee {
   }
 }
 
-struct UriQueryEscape1Parser: Iteratee {
-  let params: [(String?, String)]
-  let part: String
+private struct UriQueryEscape1Parser: Iteratee {
+  private let params: [(String?, String)]
+  private let part: String
 
-  init(_ params: [(String?, String)], _ part: String) {
+  private init(_ params: [(String?, String)], _ part: String) {
     self.params = params
     self.part = part
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c1 = input.head where isHexChar(c1) {
       return cont(UriQueryEscape2Parser(params, part, c1), input.tail)
     } else if !input.isEmpty || input.isDone {
@@ -941,18 +941,18 @@ struct UriQueryEscape1Parser: Iteratee {
   }
 }
 
-struct UriQueryEscape2Parser: Iteratee {
-  let params: [(String?, String)]
-  let part: String
-  let c1: UnicodeScalar
+private struct UriQueryEscape2Parser: Iteratee {
+  private let params: [(String?, String)]
+  private let part: String
+  private let c1: UnicodeScalar
 
-  init(_ params: [(String?, String)], _ part: String, _ c1: UnicodeScalar) {
+  private init(_ params: [(String?, String)], _ part: String, _ c1: UnicodeScalar) {
     self.params = params
     self.part = part
     self.c1 = c1
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var part = self.part
     if let c2 = input.head where isHexChar(c2) {
       part.append(UnicodeScalar((decodeHex(c1) << 4) + decodeHex(c2)))
@@ -964,18 +964,18 @@ struct UriQueryEscape2Parser: Iteratee {
   }
 }
 
-struct UriQueryValueParser: Iteratee {
-  let params: [(String?, String)]
-  let key: String
-  let value: String
+private struct UriQueryValueParser: Iteratee {
+  private let params: [(String?, String)]
+  private let key: String
+  private let value: String
 
-  init(_ params: [(String?, String)], _ key: String, _ value: String = "") {
+  private init(_ params: [(String?, String)], _ key: String, _ value: String = "") {
     self.params = params
     self.key = key
     self.value = value
   }
 
-  func feed(input_: IterateeInput) -> IterateeOutput {
+  private func feed(input_: IterateeInput) -> IterateeOutput {
     var input = input_
     var params = self.params
     var value = self.value
@@ -999,18 +999,18 @@ struct UriQueryValueParser: Iteratee {
   }
 }
 
-struct UriQueryValueEscape1Parser: Iteratee {
-  let params: [(String?, String)]
-  let key: String
-  let value: String
+private struct UriQueryValueEscape1Parser: Iteratee {
+  private let params: [(String?, String)]
+  private let key: String
+  private let value: String
 
-  init(_ params: [(String?, String)], _ key: String, _ value: String) {
+  private init(_ params: [(String?, String)], _ key: String, _ value: String) {
     self.params = params
     self.key = key
     self.value = value
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c1 = input.head where isHexChar(c1) {
       return cont(UriQueryValueEscape2Parser(params, key, value, c1), input.tail)
     } else if !input.isEmpty || input.isDone {
@@ -1020,20 +1020,20 @@ struct UriQueryValueEscape1Parser: Iteratee {
   }
 }
 
-struct UriQueryValueEscape2Parser: Iteratee {
-  let params: [(String?, String)]
-  let key: String
-  let value: String
-  let c1: UnicodeScalar
+private struct UriQueryValueEscape2Parser: Iteratee {
+  private let params: [(String?, String)]
+  private let key: String
+  private let value: String
+  private let c1: UnicodeScalar
 
-  init(_ params: [(String?, String)], _ key: String, _ value: String, _ c1: UnicodeScalar) {
+  private init(_ params: [(String?, String)], _ key: String, _ value: String, _ c1: UnicodeScalar) {
     self.params = params
     self.key = key
     self.value = value
     self.c1 = c1
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var value = self.value
     if let c2 = input.head where isHexChar(c2) {
       value.append(UnicodeScalar((decodeHex(c1) << 4) + decodeHex(c2)))
@@ -1047,7 +1047,7 @@ struct UriQueryValueEscape2Parser: Iteratee {
 
 
 struct UriFragmentParser: Iteratee {
-  let fragment: String
+  private let fragment: String
 
   init(_ fragment: String = "") {
     self.fragment = fragment
@@ -1069,14 +1069,14 @@ struct UriFragmentParser: Iteratee {
   }
 }
 
-struct UriFragmentEscape1Parser: Iteratee {
-  let fragment: String
+private struct UriFragmentEscape1Parser: Iteratee {
+  private let fragment: String
 
-  init(_ fragment: String) {
+  private init(_ fragment: String) {
     self.fragment = fragment
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     if let c1 = input.head where isHexChar(c1) {
       return cont(UriFragmentEscape2Parser(fragment, c1), input.tail)
     } else if !input.isEmpty || input.isDone {
@@ -1086,16 +1086,16 @@ struct UriFragmentEscape1Parser: Iteratee {
   }
 }
 
-struct UriFragmentEscape2Parser: Iteratee {
-  let fragment: String
-  let c1: UnicodeScalar
+private struct UriFragmentEscape2Parser: Iteratee {
+  private let fragment: String
+  private let c1: UnicodeScalar
 
-  init(_ fragment: String, _ c1: UnicodeScalar) {
+  private init(_ fragment: String, _ c1: UnicodeScalar) {
     self.fragment = fragment
     self.c1 = c1
   }
 
-  func feed(input: IterateeInput) -> IterateeOutput {
+  private func feed(input: IterateeInput) -> IterateeOutput {
     var fragment = self.fragment
     if let c2 = input.head where isHexChar(c2) {
       fragment.append(UnicodeScalar((decodeHex(c1) << 4) + decodeHex(c2)))
@@ -1108,7 +1108,7 @@ struct UriFragmentEscape2Parser: Iteratee {
 }
 
 
-func isUnreservedChar(c: UnicodeScalar) -> Bool {
+private func isUnreservedChar(c: UnicodeScalar) -> Bool {
   return c == "-" || c == "." ||
     c >= "0" && c <= "9" ||
     c >= "A" && c <= "Z" ||
@@ -1117,7 +1117,7 @@ func isUnreservedChar(c: UnicodeScalar) -> Bool {
     c == "~"
 }
 
-func isSubDelimChar(c: UnicodeScalar) -> Bool {
+private func isSubDelimChar(c: UnicodeScalar) -> Bool {
   return c == "!" || c == "$" ||
     c == "&" || c == "'" ||
     c == "(" || c == ")" ||
@@ -1126,34 +1126,34 @@ func isSubDelimChar(c: UnicodeScalar) -> Bool {
     c == "="
 }
 
-internal func isSchemeChar(c: UnicodeScalar) -> Bool {
+func isSchemeChar(c: UnicodeScalar) -> Bool {
   return c == "+" || c == "-" || c == "." ||
     c >= "0" && c <= "9" ||
     c >= "A" && c <= "Z" ||
     c >= "a" && c <= "z"
 }
 
-internal func isUserInfoChar(c: UnicodeScalar) -> Bool {
+func isUserInfoChar(c: UnicodeScalar) -> Bool {
   return isUnreservedChar(c) || isSubDelimChar(c) || c == ":"
 }
 
-internal func isUserChar(c: UnicodeScalar) -> Bool {
+func isUserChar(c: UnicodeScalar) -> Bool {
   return isUnreservedChar(c) || isSubDelimChar(c)
 }
 
-internal func isHostChar(c: UnicodeScalar) -> Bool {
+func isHostChar(c: UnicodeScalar) -> Bool {
   return isUnreservedChar(c) || isSubDelimChar(c)
 }
 
-internal func isPathChar(c: UnicodeScalar) -> Bool {
+func isPathChar(c: UnicodeScalar) -> Bool {
   return isUnreservedChar(c) || isSubDelimChar(c) || c == ":" || c == "@"
 }
 
-internal func isQueryChar(c: UnicodeScalar) -> Bool {
+func isQueryChar(c: UnicodeScalar) -> Bool {
   return isUnreservedChar(c) || isSubDelimChar(c) || c == "/" || c == ":" || c == "?" || c == "@"
 }
 
-internal func isParamChar(c: UnicodeScalar) -> Bool {
+func isParamChar(c: UnicodeScalar) -> Bool {
   return isUnreservedChar(c) ||
     c == "!" || c == "$" ||
     c == "'" || c == "(" ||
@@ -1164,25 +1164,25 @@ internal func isParamChar(c: UnicodeScalar) -> Bool {
     c == "@"
 }
 
-internal func isFragmentChar(c: UnicodeScalar) -> Bool {
+func isFragmentChar(c: UnicodeScalar) -> Bool {
   return isUnreservedChar(c) || isSubDelimChar(c) || c == "/" || c == ":" || c == "?" || c == "@"
 }
 
-internal func isAlpha(c: UnicodeScalar) -> Bool {
+func isAlpha(c: UnicodeScalar) -> Bool {
   return c >= "A" && c <= "Z" || c >= "a" && c <= "z"
 }
 
-func isDigit(c: UnicodeScalar) -> Bool {
+private func isDigit(c: UnicodeScalar) -> Bool {
   return c >= "0" && c <= "9"
 }
 
-func isHexChar(c: UnicodeScalar) -> Bool {
+private func isHexChar(c: UnicodeScalar) -> Bool {
   return c >= "0" && c <= "9" ||
     c >= "A" && c <= "F" ||
     c >= "a" && c <= "f"
 }
 
-func toLowerCase(c: UnicodeScalar) -> UnicodeScalar {
+private func toLowerCase(c: UnicodeScalar) -> UnicodeScalar {
   if c >= "A" && c <= "Z" {
     return UnicodeScalar(c.value + (UnicodeScalar("a").value - UnicodeScalar("A").value))
   } else {
@@ -1190,7 +1190,7 @@ func toLowerCase(c: UnicodeScalar) -> UnicodeScalar {
   }
 }
 
-func decodeDigit(c: UnicodeScalar) -> UInt32 {
+private func decodeDigit(c: UnicodeScalar) -> UInt32 {
   if c >= "0" && c <= "9" {
     return c.value - UnicodeScalar("0").value
   } else {
@@ -1198,7 +1198,7 @@ func decodeDigit(c: UnicodeScalar) -> UInt32 {
   }
 }
 
-func decodeHex(c: UnicodeScalar) -> UInt32 {
+private func decodeHex(c: UnicodeScalar) -> UInt32 {
   if c >= "0" && c <= "9" {
     return c.value - UnicodeScalar("0").value
   } else if c >= "A" && c <= "F" {

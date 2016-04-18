@@ -79,7 +79,7 @@ class RemoteMapDownlink: RemoteSyncedDownlink, MapDownlink {
 
     func removeValueForKey(key: SwimValue) -> SwimValue? {
         if let oldValue = state.removeValueForKey(key) {
-            var body = Record()
+            let body = Record()
             body.append(Item.Attr("remove"))
             if let oldRecord = oldValue.record {
                 body.appendContentsOf(oldRecord)

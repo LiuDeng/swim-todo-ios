@@ -56,10 +56,10 @@ public class SyncedResponse: Envelope, Equatable, CustomStringConvertible {
   }
 
   public var reconValue: Value {
-    var heading = Record()
+    let heading = Record()
     heading.append(Slot("node", Value(node)))
     heading.append(Slot("lane", Value(lane)))
-    var record = Record(Attr("synced", Value(heading)))
+    let record = Record(Attr("synced", Value(heading)))
     if let body = self.body.record {
       record.appendContentsOf(body)
     } else if body != Value.Absent {

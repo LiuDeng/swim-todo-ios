@@ -332,24 +332,38 @@ private extension NSError {
 
 
 private extension Connection {
+
+    /**
+     - returns: A task which will have a Statement as the result.
+     */
     private func runTask(statement: String, _ bindings: Binding?...) -> BFTask {
         return backgroundTask {
             return try self.run(statement, bindings)
         }
     }
 
+    /**
+     - returns: A task which will have rowId: NSNumber as the result.
+     */
     private func runTask(query: Insert) -> BFTask {
         return backgroundTask {
             return NSNumber(longLong: try self.run(query))
         }
     }
 
+    /**
+     - returns: A task which will have affectedRowCount: NSNumber as the
+       result.
+     */
     private func runTask(query: Delete) -> BFTask {
         return backgroundTask {
             return NSNumber(long: try self.run(query))
         }
     }
 
+    /**
+     - returns: A task which will have [Statement] as the result.
+     */
     private func runTasks(statements: [String], _ bindings: Binding?...) -> BFTask {
         func f() throws -> NSArray {
             return try statements.map { statement in

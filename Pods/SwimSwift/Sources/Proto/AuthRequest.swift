@@ -25,7 +25,7 @@ public class AuthRequest: Envelope, Equatable, CustomStringConvertible {
   }
 
   private var reconValue: Value {
-    var record = Record(Attr("auth"))
+    let record = Record(Attr("auth"))
     if let body = self.body.record {
       record.appendContentsOf(body)
     } else if body != Value.Absent {

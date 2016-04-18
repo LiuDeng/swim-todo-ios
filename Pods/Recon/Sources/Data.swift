@@ -4,7 +4,7 @@ import Foundation
 
 public typealias ReconData = Data
 
-public struct Data: CustomStringConvertible, Comparable, Hashable {
+public class Data: CustomStringConvertible, Comparable, Hashable {
   var buffer: ManagedBuffer<(Int, Int), UInt8>
 
   public init(capacity: Int) {
@@ -23,7 +23,7 @@ public struct Data: CustomStringConvertible, Comparable, Hashable {
   }
 #endif
 
-  public init?(base64 string: String) {
+  public convenience init?(base64 string: String) {
     let cs = string.unicodeScalars
     var size = (cs.count / 4) * 3
     switch cs.count % 3 {
@@ -31,7 +31,8 @@ public struct Data: CustomStringConvertible, Comparable, Hashable {
     case 3: size += 2
     default: break
     }
-    var decoder = Base64Decoder(capacity: size)
+    self.init(capacity: size)
+    let decoder = Base64Decoder(data: self)
     do {
       for c in cs {
         try decoder.append(c)
@@ -39,10 +40,9 @@ public struct Data: CustomStringConvertible, Comparable, Hashable {
     } catch {
       return nil
     }
-    self = decoder.state
   }
 
-  public init() {
+  public convenience init() {
     self.init(capacity: Data.initialCapacity)
   }
 
@@ -148,12 +148,12 @@ public struct Data: CustomStringConvertible, Comparable, Hashable {
     return buffer.withUnsafeMutablePointerToElements { body(UnsafePointer($0)) }
   }
 
-  public mutating func withUnsafeMutablePointer<R>(body: (UnsafeMutablePointer<UInt8>) -> R) -> R {
+  public func withUnsafeMutablePointer<R>(body: (UnsafeMutablePointer<UInt8>) -> R) -> R {
     dealias()
     return buffer.withUnsafeMutablePointerToElements { body($0) }
   }
 
-  public mutating func appendByte(byte: UInt8) {
+  public func appendByte(byte: UInt8) {
     prepare(1)
     let i = size
     buffer.withUnsafeMutablePointerToElements { pointer in
@@ -162,7 +162,7 @@ public struct Data: CustomStringConvertible, Comparable, Hashable {
     size = i + 1
   }
 
-  public mutating func appendBytes(bytes: UInt8...) {
+  public func appendBytes(bytes: UInt8...) {
     let n = bytes.count
     prepare(n)
     let i = size
@@ -172,7 +172,7 @@ public struct Data: CustomStringConvertible, Comparable, Hashable {
     size = i + n
   }
 
-  mutating func prepare(count: Int) {
+  func prepare(count: Int) {
     let newSize = size + count
     if newSize >= capacity {
       resize(Data.expand(newSize))
@@ -181,7 +181,7 @@ public struct Data: CustomStringConvertible, Comparable, Hashable {
     }
   }
 
-  mutating func resize(newCapacity: Int) {
+  func resize(newCapacity: Int) {
     let size = self.size
     buffer = ManagedBuffer<(Int, Int), UInt8>.create(newCapacity, initialValue: { buffer in
       buffer.withUnsafeMutablePointerToElements { newBytes in
@@ -193,7 +193,7 @@ public struct Data: CustomStringConvertible, Comparable, Hashable {
     })
   }
 
-  mutating func dealias() {
+  func dealias() {
     resize(capacity)
   }
 
@@ -247,7 +247,7 @@ public func < (lhs: Data, rhs: Data) -> Bool {
 }
 
 
-struct Base64Decoder {
+class Base64Decoder {
   private var data: Data
   private var p: UnicodeScalar = "\0"
   private var q: UnicodeScalar = "\0"
@@ -258,15 +258,7 @@ struct Base64Decoder {
     self.data = data
   }
 
-  init(capacity: Int) {
-    self.init(data: Data(capacity: capacity))
-  }
-
-  init() {
-    self.init(data: Data())
-  }
-
-  func decodeDigit(c: UnicodeScalar) throws -> UInt8 {
+  private func decodeDigit(c: UnicodeScalar) throws -> UInt8 {
     if c >= "A" && c <= "Z" {
       return UInt8(c.value - UnicodeScalar("A").value)
     } else if c >= "a" && c <= "z" {
@@ -282,7 +274,7 @@ struct Base64Decoder {
     }
   }
 
-  mutating func decodeQuantum() throws {
+  private func decodeQuantum() throws {
     let x = try decodeDigit(p)
     let y = try decodeDigit(q)
     if r != "=" {
@@ -299,7 +291,7 @@ struct Base64Decoder {
     }
   }
 
-  mutating func append(c: UnicodeScalar) throws {
+  func append(c: UnicodeScalar) throws {
     if self.p == "\0" {
       self.p = c
     } else if self.q == "\0" {
@@ -314,10 +306,6 @@ struct Base64Decoder {
       q = "\0"
       p = "\0"
     }
-  }
-
-  var state: Data {
-    return data
   }
 }
 

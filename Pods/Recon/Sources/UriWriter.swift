@@ -106,7 +106,7 @@ extension String {
     }
   }
 
-  mutating func writeUriEscaped(c: UInt32) {
+  private mutating func writeUriEscaped(c: UInt32) {
     if c == 0x00 { // modified UTF-8
       writeUriPercentEncoded(0xC0)
       writeUriPercentEncoded(0x80)

@@ -25,7 +25,7 @@ public class AuthedResponse: Envelope, Equatable, CustomStringConvertible {
   }
 
   private var reconValue: Value {
-    var record = Record(Attr("authed"))
+    let record = Record(Attr("authed"))
     if let body = self.body.record {
       record.appendContentsOf(body)
     } else if body != Value.Absent {

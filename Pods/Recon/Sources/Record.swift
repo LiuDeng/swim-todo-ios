@@ -1,6 +1,6 @@
 public typealias ReconRecord = Record
 
-public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConvertible, Comparable, Hashable {
+public class Record: CollectionType, ArrayLiteralConvertible, CustomStringConvertible, Comparable, Hashable {
   public typealias Element = Item
   public typealias Index = Int
 
@@ -14,30 +14,30 @@ public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConve
     self.fields = fields
   }
 
-  public init(_ items: [Item]) {
+  public convenience init(_ items: [Item]) {
     self.init(items: items, fields: nil)
   }
 
-  public init(_ items: ArraySlice<Item>) {
+  public convenience init(_ items: ArraySlice<Item>) {
     self.init(items: Array(items), fields: nil)
     reindex()
   }
 
-  public init(arrayLiteral items: Item...) {
+  public required convenience init(arrayLiteral items: Item...) {
     self.init(items: items, fields: nil)
     reindex()
   }
 
-  public init(_ items: Item...) {
+  public convenience init(_ items: Item...) {
     self.init(items: items, fields: nil)
     reindex()
   }
 
-  public init(_ item: Item) {
+  public convenience init(_ item: Item) {
     self.init(items: [item], fields: nil)
   }
 
-  public init() {
+  public convenience init() {
     self.init(items: [], fields: nil)
   }
 
@@ -54,7 +54,7 @@ public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConve
    Keys in dictionaries are sorted before being added to the corresponding
    ReconRecord, so that the results are reproducible.
    */
-  public init(json: AnyObject) {
+  public convenience init(json: AnyObject) {
     if let arr = json as? [AnyObject] {
       let newItems = arr.map { Item(reconValue: Value(json: $0)) }
       self.init(newItems)
@@ -163,7 +163,7 @@ public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConve
     }
   }
 
-  public mutating func append(item: Item) {
+  public func append(item: Item) {
     items.append(item)
     if case .Field(let field) = item {
       if var fields = self.fields {
@@ -175,17 +175,17 @@ public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConve
     }
   }
 
-  public mutating func appendContentsOf<C: CollectionType where C.Generator.Element == Element>(newItems: C) {
+  public func appendContentsOf<C: CollectionType where C.Generator.Element == Element>(newItems: C) {
     items.appendContentsOf(newItems)
     reindex()
   }
 
-  public mutating func appendContentsOf<S: SequenceType where S.Generator.Element == Element>(newItems: S) {
+  public func appendContentsOf<S: SequenceType where S.Generator.Element == Element>(newItems: S) {
     items.appendContentsOf(newItems)
     reindex()
   }
 
-  public mutating func removeValueForKey(key: Value) {
+  public func removeValueForKey(key: Value) {
     fields?.removeValueForKey(key)
     for i in 0 ..< items.count {
       let item = items[i]
@@ -196,16 +196,12 @@ public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConve
     }
   }
 
-  public mutating func popFirst() -> Item? {
-    let first = items.first
-    self = Record(items.dropFirst())
-    return first
+  public func popFirst() -> Item? {
+    return (items.count > 0 ? items.removeFirst() : nil)
   }
 
-  public mutating func popLast() -> Item? {
-    let last = items.last
-    self = Record(items.dropLast())
-    return last
+  public func popLast() -> Item? {
+    return (items.count > 0 ? items.removeLast() : nil)
   }
 
   public func dropFirst() -> Record {
@@ -380,7 +376,7 @@ public struct Record: CollectionType, ArrayLiteralConvertible, CustomStringConve
     return string
   }
 
-  mutating func reindex() {
+  func reindex() {
     if items.count > Record.indexThreshold || self.fields != nil {
       var fields = [Value: Value]()
       for item in items {

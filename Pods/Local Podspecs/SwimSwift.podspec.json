@@ -1,6 +1,6 @@
 {
   "name": "SwimSwift",
-  "version": "0.2.12",
+  "version": "0.2.14",
   "summary": "Swim",
   "homepage": "https://github.com/swimit/swim-swift",
   "license": {
@@ -12,7 +12,7 @@
   },
   "source": {
     "git": "https://github.com/swimit/swim-swift.git",
-    "tag": "0.2.12"
+    "tag": "0.2.14"
   },
   "requires_arc": true,
   "platforms": {

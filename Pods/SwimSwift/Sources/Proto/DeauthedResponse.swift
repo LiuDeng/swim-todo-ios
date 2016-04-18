@@ -25,7 +25,7 @@ public class DeauthedResponse: Envelope, Equatable, CustomStringConvertible {
   }
 
   private var reconValue: Value {
-    var record = Record(Attr("deauthed"))
+    let record = Record(Attr("deauthed"))
     if let body = self.body.record {
       record.appendContentsOf(body)
     } else if body != Value.Absent {

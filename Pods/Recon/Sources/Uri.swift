@@ -1,11 +1,11 @@
 public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
-  public var scheme: Scheme?
+  public var scheme: String?
   public var authority: Authority?
   public var path: Path
   public var query: Query?
   public var fragment: Fragment?
 
-  public init(scheme: Scheme? = nil, authority: Authority? = nil, path: Path = Path.Empty, query: Query? = nil, fragment: Fragment? = nil) {
+  public init(scheme: String? = nil, authority: Authority? = nil, path: Path = Path.Empty, query: Query? = nil, fragment: Fragment? = nil) {
     self.scheme = scheme
     self.authority = authority
     self.path = path
@@ -68,7 +68,7 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
 
   public func writeUri(inout string: String) throws {
     if let scheme = self.scheme {
-      try scheme.writeUri(&string)
+      try string.writeUriScheme(scheme)
       string.append(":" as UnicodeScalar)
     }
     if let authority = self.authority {
@@ -124,49 +124,12 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
   }
 
 
-  public struct Scheme: StringLiteralConvertible, CustomStringConvertible, Hashable {
-    public let name: String
-
-    public init(_ name: String) {
-      self.name = name
-    }
-
-    public init(stringLiteral string: String) {
-      self = Scheme.parse(string)!
-    }
-
-    public init(extendedGraphemeClusterLiteral string: String) {
-      self = Scheme.parse(string)!
-    }
-
-    public init(unicodeScalarLiteral string: String) {
-      self = Scheme.parse(string)!
-    }
-
-    public func writeUri(inout string: String) throws {
-      try string.writeUriScheme(name)
-    }
-
-    public var hashValue: Int {
-      return MurmurHash3.hash(Int(bitPattern: 0x81fd556a), name)
-    }
-
-    public var description: String {
-      return name
-    }
-
-    public static func parse(string: String) -> Scheme? {
-      return UriSchemeParser().parse(string).value as? Scheme
-    }
-  }
-
-
   public struct Authority: StringLiteralConvertible, CustomStringConvertible, Hashable {
     public var userInfo: UserInfo?
     public var host: Host
-    public var port: Port?
+    public var port: UInt16?
 
-    public init(userInfo: UserInfo? = nil, host: Host, port: Port? = nil) {
+    public init(userInfo: UserInfo? = nil, host: Host, port: UInt16? = nil) {
       self.userInfo = userInfo
       self.host = host
       self.port = port
@@ -192,7 +155,7 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       host.writeUri(&string)
       if let port = self.port {
         string.append(":" as UnicodeScalar)
-        port.writeUri(&string)
+        string.writeUriPort(port)
       }
     }
 
@@ -342,49 +305,6 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
   }
 
 
-  public struct Port: IntegerLiteralConvertible, CustomStringConvertible, Hashable {
-    public let number: UInt16
-
-    public init(_ number: UInt16) {
-      self.number = number
-    }
-
-    public init(integerLiteral number: UInt16) {
-      self.init(number)
-    }
-
-    public init(stringLiteral string: String) {
-      self = Port.parse(string)!
-    }
-
-    public init(extendedGraphemeClusterLiteral string: String) {
-      self = Port.parse(string)!
-    }
-
-    public init(unicodeScalarLiteral string: String) {
-      self = Port.parse(string)!
-    }
-
-    public func writeUri(inout string: String) {
-      string.writeUriPort(number)
-    }
-
-    public var hashValue: Int {
-      return MurmurHash3.hash(Int(bitPattern: 0x335a7c54), number)
-    }
-
-    public var description: String {
-      var string = ""
-      writeUri(&string)
-      return string
-    }
-
-    public static func parse(string: String) -> Port? {
-      return UriPortParser().parse(string).value as? Port
-    }
-  }
-
-
   public indirect enum Path: SequenceType, ArrayLiteralConvertible, StringLiteralConvertible, CustomStringConvertible, Hashable {
     case Segment(String, Path)
     case Slash(Path)
@@ -425,7 +345,7 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       self = Path.parse(string)!
     }
 
-    public var isAbsolute: Bool {
+    private var isAbsolute: Bool {
       switch self {
       case Slash:
         return true
@@ -434,7 +354,7 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       }
     }
 
-    public var isRelative: Bool {
+    private var isRelative: Bool {
       switch self {
       case Segment, Empty:
         return true
@@ -443,7 +363,7 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       }
     }
 
-    public var isEmpty: Bool {
+    private var isEmpty: Bool {
       switch self {
       case Segment, Slash:
         return false
@@ -452,7 +372,7 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       }
     }
 
-    public var head: String? {
+    private var head: String? {
       switch self {
       case Segment(let head, _):
         return head
@@ -463,7 +383,7 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       }
     }
 
-    public var tail: Path {
+    private var tail: Path {
       switch self {
       case Segment(_, let tail):
         return tail
@@ -474,7 +394,7 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       }
     }
 
-    public var removeDotSegments: Path {
+    private var removeDotSegments: Path {
       var path = self
       var segments = [String]()
       while let head = path.head {
@@ -517,7 +437,7 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       return Path(segments)
     }
 
-    func merge(path_: Path) -> Path {
+    private func merge(path_: Path) -> Path {
       var path = path_
       var segments = [String]()
       var head = self.head!
@@ -537,11 +457,11 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       return Path(segments)
     }
 
-    func unmerge(path: Path) -> Path {
+    private func unmerge(path: Path) -> Path {
       return unmerge(self, relative: path, root: path)
     }
 
-    func unmerge(base_: Path, relative relative_: Path, root: Path) -> Path {
+    private func unmerge(base_: Path, relative relative_: Path, root: Path) -> Path {
       var base = base_
       var relative = relative_
       while true {
@@ -576,7 +496,7 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       }
     }
 
-    public func writeUri(inout string: String) {
+    private func writeUri(inout string: String) {
       var path = self
       while !path.isEmpty {
         switch path {
@@ -588,111 +508,6 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
           path = tail
         default: break
         }
-      }
-    }
-
-    public mutating func append(segment: String) {
-      switch self {
-      case Segment(let head, var tail):
-        tail.append(segment)
-        self = Segment(head, tail)
-      case Slash(var tail):
-        tail.append(segment)
-        self = Slash(tail)
-      case Empty:
-        if segment == "/" {
-          self = Slash(Empty)
-        } else {
-          self = Segment(segment, Empty)
-        }
-      }
-    }
-
-    public mutating func prepend(segment: String) {
-      if segment == "/" {
-        self = Slash(self)
-      } else {
-        self = Segment(segment, self)
-      }
-    }
-
-    public var first: String? {
-      return head
-    }
-
-    public var last: String? {
-      var path = self
-      var last = nil as String?
-      while !path.isEmpty {
-        switch path {
-        case Segment(let head, let tail):
-          last = head
-          path = tail
-        case Slash(let tail):
-          last = "/"
-          path = tail
-        default: break
-        }
-      }
-      return last
-    }
-
-    public mutating func popFirst() -> String? {
-      switch self {
-      case Segment(let head, let tail):
-        self = tail
-        return head
-      case Slash(let tail):
-        self = tail
-        return "/"
-      default:
-        return nil
-      }
-    }
-
-    public mutating func popLast() -> String? {
-      var segments = [String]()
-      var last = nil as String?
-      var path = self
-      while !path.isEmpty {
-        switch path {
-        case Segment(let head, let tail) where tail.isEmpty:
-          last = head
-          path = Empty
-        case Segment(let head, let tail):
-          segments.append(head)
-          path = tail
-        case Slash(let tail) where tail.isEmpty:
-          last = "/"
-          path = Empty
-        case Slash(let tail):
-          segments.append("/")
-          path = tail
-        case Empty: break
-        }
-      }
-      self = Path(segments)
-      return last
-    }
-
-    public func dropFirst() -> Path {
-      return tail
-    }
-
-    public func dropLast() -> Path {
-      switch self {
-      case Segment(_, let tail) where tail.isEmpty:
-        return Empty
-      case Segment(let head, var tail):
-        tail = tail.dropLast()
-        return Segment(head, tail)
-      case Slash(let tail) where tail.isEmpty:
-        return Empty
-      case Slash(var tail):
-        tail = tail.dropLast()
-        return Slash(tail)
-      case Empty:
-        fatalError("dropLast of empty path")
       }
     }
 
@@ -818,70 +633,13 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       self = Query.parse(string)!
     }
 
-    public var isEmpty: Bool {
+    private var isEmpty: Bool {
       switch self {
       case Param, Part:
         return false
       case Empty:
         return true
       }
-    }
-
-    public var head: (String?, String)? {
-      switch self {
-      case Param(let key, let value, _):
-        return (key, value)
-      case Part(let part, _):
-        return (nil, part)
-      case Empty:
-        return nil
-      }
-    }
-
-    public var headParam: (String, String)? {
-      switch self {
-      case Param(let key, let value, _):
-        return (key, value)
-      case Part, Empty:
-        return nil
-      }
-    }
-
-    public var headPart: String? {
-      switch self {
-      case Part(let part, _):
-        return part
-      case Param, Empty:
-        return nil
-      }
-    }
-
-    public var tail: Query {
-      switch self {
-      case Param(_, _, let tail):
-        return tail
-      case Part(_, let tail):
-        return tail
-      case Empty:
-        fatalError("tail of empty query")
-      }
-    }
-
-    public func contains(key: String) -> Bool {
-      var query = self
-      while !query.isEmpty {
-        switch query {
-        case Param(let k, _, let tail):
-          if key == k {
-            return true
-          }
-          query = tail
-        case Part(_, let tail):
-          query = tail
-        default: break
-        }
-      }
-      return false
     }
 
     public subscript(key: String) -> String? {
@@ -901,7 +659,7 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
       return nil
     }
 
-    public func writeUri(inout string: String) {
+    private func writeUri(inout string: String) {
       var query = self
       var first = true
       while !query.isEmpty {
@@ -920,120 +678,6 @@ public struct Uri: StringLiteralConvertible, CustomStringConvertible, Hashable {
         default: break
         }
         first = false
-      }
-    }
-
-    public mutating func append(key: String, _ value: String) {
-      switch self {
-      case Param(let k, let v, var tail):
-        tail.append(key, value)
-        self = Param(k, v, tail)
-      case Part(let p, var tail):
-        tail.append(key, value)
-        self = Part(p, tail)
-      case Empty:
-        self = Param(key, value, Empty)
-      }
-    }
-
-    public mutating func append(part: String) {
-      switch self {
-      case Param(let k, let v, var tail):
-        tail.append(part)
-        self = Param(k, v, tail)
-      case Part(let p, var tail):
-        tail.append(part)
-        self = Part(p, tail)
-      case Empty:
-        self = Part(part, Empty)
-      }
-    }
-
-    public mutating func prepend(key: String, _ value: String) {
-      self = Param(key, value, self)
-    }
-
-    public mutating func prepend(part: String) {
-      self = Part(part, self)
-    }
-
-    public var first: (String?, String)? {
-      return head
-    }
-
-    public var last: (String?, String)? {
-      var query = self
-      var last = nil as (String?, String)?
-      while !query.isEmpty {
-        switch query {
-        case Param(let key, let value, let tail):
-          last = (key, value)
-          query = tail
-        case Part(let part, let tail):
-          last = (nil, part)
-          query = tail
-        default: break
-        }
-      }
-      return last
-    }
-
-    public mutating func popFirst() -> (String?, String)? {
-      switch self {
-      case Param(let key, let value, let tail):
-        self = tail
-        return (key, value)
-      case Part(let part, let tail):
-        self = tail
-        return (nil, part)
-      default:
-        return nil
-      }
-    }
-
-    public mutating func popLast() -> (String?, String)? {
-      var params = [(String?, String)]()
-      var last = nil as (String?, String)?
-      var query = self
-      while !query.isEmpty {
-        switch query {
-        case Param(let key, let value, let tail) where tail.isEmpty:
-          last = (key, value)
-          query = Empty
-        case Param(let key, let value, let tail):
-          params.append((key, value))
-          query = tail
-        case Part(let part, let tail) where tail.isEmpty:
-          last = (nil, part)
-          query = Empty
-        case Part(let part, let tail):
-          params.append((nil, part))
-          query = tail
-        case Empty: break
-        }
-      }
-      self = Query(params)
-      return last
-    }
-
-    public func dropFirst() -> Query {
-      return tail
-    }
-
-    public func dropLast() -> Query {
-      switch self {
-      case Param(_, _, let tail) where tail.isEmpty:
-        return Empty
-      case Param(let key, let value, var tail):
-        tail = tail.dropLast()
-        return Param(key, value, tail)
-      case Part(_, let tail) where tail.isEmpty:
-        return Empty
-      case Part(let part, var tail):
-        tail = tail.dropLast()
-        return Part(part, tail)
-      case Empty:
-        fatalError("dropLast of empty path")
       }
     }
 
@@ -1149,10 +793,6 @@ public func == (lhs: Uri, rhs: Uri) -> Bool {
     lhs.fragment == rhs.fragment
 }
 
-public func == (lhs: Uri.Scheme, rhs: Uri.Scheme) -> Bool {
-  return lhs.name == rhs.name
-}
-
 public func == (lhs: Uri.Authority, rhs: Uri.Authority) -> Bool {
   return lhs.userInfo == rhs.userInfo &&
     lhs.host == rhs.host &&
@@ -1181,10 +821,6 @@ public func == (lhs: Uri.Host, rhs: Uri.Host) -> Bool {
   default:
     return false
   }
-}
-
-public func == (lhs: Uri.Port, rhs: Uri.Port) -> Bool {
-  return lhs.number == rhs.number
 }
 
 public func == (lhs: Uri.Path, rhs: Uri.Path) -> Bool {

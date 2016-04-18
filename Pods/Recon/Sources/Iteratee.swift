@@ -1,4 +1,4 @@
-public protocol Iteratee {
+protocol Iteratee {
   func feed(input: IterateeInput) -> IterateeOutput
 
   func cont(parser: Iteratee, _ input: IterateeInput) -> IterateeOutput
@@ -64,7 +64,7 @@ extension Iteratee {
 }
 
 
-public protocol IterateeInput {
+protocol IterateeInput {
   var isEmpty: Bool { get }
 
   var isDone: Bool { get }
@@ -74,66 +74,66 @@ public protocol IterateeInput {
   var tail: IterateeInput { get }
 }
 
-public struct IterateeInputEmpty: IterateeInput {
-  public var isEmpty: Bool {
+struct IterateeInputEmpty: IterateeInput {
+  var isEmpty: Bool {
     return true
   }
 
-  public var isDone: Bool {
+  var isDone: Bool {
     return false
   }
 
-  public var head: UnicodeScalar? {
+  var head: UnicodeScalar? {
     return nil
   }
 
-  public var tail: IterateeInput {
+  var tail: IterateeInput {
     fatalError("tail of empty input")
   }
 }
 
-public struct IterateeInputDone: IterateeInput {
-  public var isEmpty: Bool {
+struct IterateeInputDone: IterateeInput {
+  var isEmpty: Bool {
     return true
   }
 
-  public var isDone: Bool {
+  var isDone: Bool {
     return true
   }
 
-  public var head: UnicodeScalar? {
+  var head: UnicodeScalar? {
     return nil
   }
 
-  public var tail: IterateeInput {
+  var tail: IterateeInput {
     fatalError("tail of done input")
   }
 }
 
-public struct IterateeInputString: IterateeInput {
+struct IterateeInputString: IterateeInput {
   var scalars: String.UnicodeScalarView
   var index: String.UnicodeScalarView.Index
 
-  public init(scalars: String.UnicodeScalarView, index: String.UnicodeScalarView.Index) {
+  init(scalars: String.UnicodeScalarView, index: String.UnicodeScalarView.Index) {
     self.scalars = scalars
     self.index = index
   }
 
-  public init(_ string: String) {
+  init(_ string: String) {
     let scalars = string.unicodeScalars
     let index = scalars.startIndex
     self.init(scalars: scalars, index: index)
   }
 
-  public var isEmpty: Bool {
+  var isEmpty: Bool {
     return self.index >= self.scalars.endIndex
   }
 
-  public var isDone: Bool {
+  var isDone: Bool {
     return false
   }
 
-  public var head: UnicodeScalar? {
+  var head: UnicodeScalar? {
     if (self.index < self.scalars.endIndex) {
       return self.scalars[self.index]
     }
@@ -142,7 +142,7 @@ public struct IterateeInputString: IterateeInput {
     }
   }
 
-  public var tail: IterateeInput {
+  var tail: IterateeInput {
     if (self.index < self.scalars.endIndex) {
       return IterateeInputString(scalars: self.scalars, index: self.index.successor())
     }
@@ -153,14 +153,14 @@ public struct IterateeInputString: IterateeInput {
 }
 
 
-public enum IterateeOutput {
+enum IterateeOutput {
   case Cont(Iteratee, IterateeInput)
 
   case Done(Any, IterateeInput)
 
   case Fail(String, IterateeInput)
 
-  public var isCont: Bool {
+  var isCont: Bool {
     if case Cont = self {
       return true
     } else {
@@ -168,7 +168,7 @@ public enum IterateeOutput {
     }
   }
 
-  public var isDone: Bool {
+  var isDone: Bool {
     if case Done = self {
       return true
     } else {
@@ -176,7 +176,7 @@ public enum IterateeOutput {
     }
   }
 
-  public var isFail: Bool {
+  var isFail: Bool {
     if case Fail = self {
       return true
     } else {
@@ -184,7 +184,7 @@ public enum IterateeOutput {
     }
   }
 
-  public var value: Any? {
+  var value: Any? {
     if case Done(let value, _) = self {
       return value
     } else {
@@ -192,7 +192,7 @@ public enum IterateeOutput {
     }
   }
 
-  public var remaining: IterateeInput {
+  var remaining: IterateeInput {
     switch self {
     case Cont(_, let remaining):
       return remaining

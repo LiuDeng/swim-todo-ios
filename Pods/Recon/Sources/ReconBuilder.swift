@@ -86,9 +86,9 @@ extension ReconBuilder {
 }
 
 class RecordBuilder: ReconBuilder {
-  var record: Record
+  private var record: Record
 
-  init(_ record: Record) {
+  private init(_ record: Record) {
     self.record = record
   }
 
@@ -106,8 +106,8 @@ class RecordBuilder: ReconBuilder {
 }
 
 class ValueBuilder: ReconBuilder {
-  var record: Record?
-  var value: Value?
+  private var record: Record?
+  private var value: Value?
 
   init() {
     self.record = nil
@@ -120,7 +120,7 @@ class ValueBuilder: ReconBuilder {
     } else if case .Value(let value) = item where self.value == nil {
       self.value = value
     } else {
-      var record = Record()
+      let record = Record()
       if let value = self.value {
         record.append(Item.Value(value))
         self.value = nil

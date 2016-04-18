@@ -25,7 +25,7 @@ public class DeauthRequest: Envelope, Equatable, CustomStringConvertible {
   }
 
   private var reconValue: Value {
-    var record = Record(Attr("deauth"))
+    let record = Record(Attr("deauth"))
     if let body = self.body.record {
       record.appendContentsOf(body)
     } else if body != Value.Absent {

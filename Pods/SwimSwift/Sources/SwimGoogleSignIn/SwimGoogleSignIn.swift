@@ -67,7 +67,7 @@ private class SwimGoogleSignInDelegate: NSObject, GIDSignInDelegate {
 
         if (error == nil) {
             let idToken = user.authentication.idToken
-            var credentials = ReconRecord()
+            let credentials = ReconRecord()
             credentials["googleIdToken"] = SwimValue(idToken)
             log.verbose("Signing in as \(user.userID)")
             swimClient.auth(credentials: SwimValue(credentials))
