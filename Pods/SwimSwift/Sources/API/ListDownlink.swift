@@ -14,7 +14,7 @@ public protocol ListDownlink: Downlink {
 
     subscript(index: Int) -> SwimModelProtocolBase { get }
 
-    func insert(object: SwimModelProtocolBase, atIndex: Int) -> BFTask
+    func insert(object: SwimModelProtocolBase, atIndex index: Int) -> BFTask
 
     func moveFromIndex(from: Int, toIndex to: Int) -> BFTask
 
@@ -22,7 +22,7 @@ public protocol ListDownlink: Downlink {
 
     func removeAll() -> BFTask
 
-    func replace(object: SwimModelProtocolBase, atIndex: Int) -> BFTask
+    func replace(object: SwimModelProtocolBase, atIndex index: Int) -> BFTask
 
     func updateObjectAtIndex(index: Int) -> BFTask
 }

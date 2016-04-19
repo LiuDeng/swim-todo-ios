@@ -10,6 +10,7 @@ import Recon
 
 
 public typealias SwimUri = Recon.Uri
+public typealias SwimRecord = Recon.ReconRecord
 public typealias SwimValue = Recon.ReconValue
 
 

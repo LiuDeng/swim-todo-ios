@@ -3,9 +3,6 @@ import Recon
 import SwiftWebSocket
 
 
-private let EnablePersistentDownlinks = false
-
-
 private let log = SwimLogging.log
 
 
@@ -92,7 +89,7 @@ class Channel: WebSocketDelegate {
         let nodeUri = resolve(node)
         let remoteDownlink = RemoteDownlink(channel: self, host: hostUri, node: nodeUri, lane: lane, laneProperties: properties)
 
-        if properties.isTransient || !EnablePersistentDownlinks {
+        if properties.isTransient {
             let listDownlink = ListDownlinkAdapter(downlink: remoteDownlink, objectMaker: objectMaker)
             return (remoteDownlink, listDownlink)
         }
@@ -101,18 +98,11 @@ class Channel: WebSocketDelegate {
         if globals.dbManager == nil {
             globals.dbManager = SwimDBManager()
         }
-        let laneFQUri = hostUri.resolve(nodeUri).resolve(lane)
-        globals.dbManager?.openAsync(laneFQUri, persistenceType: .List).continueWithBlock { task in
-            if let err = task.error {
-                log.error("Failed to open DB connection to \(laneFQUri): \(err).  Lane is broken now.")
-            }
-            if let exn = task.exception {
-                log.error("Failed to open DB connection to \(laneFQUri): \(exn).  Lane is broken now.")
-            }
-            return task
-        }
+        let laneFQUri = Uri("\(nodeUri)/\(lane)")!
+        let listDownlink = PersistentListDownlink(downlink: remoteDownlink, objectMaker: objectMaker, laneFQUri: laneFQUri)
+        listDownlink.loadFromDBAsync()
 
-        return (remoteDownlink, PersistentListDownlink(downlink: remoteDownlink, objectMaker: objectMaker, laneFQUri: laneFQUri))
+        return (remoteDownlink, listDownlink)
     }
 
 

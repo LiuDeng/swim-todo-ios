@@ -7,6 +7,7 @@
 //
 
 import Bolts
+import Recon
 import SQLite
 
 
@@ -22,6 +23,8 @@ private let colSwimValue = Expression<String>("swimValue")
 
 private let tableList = Table("list")
 private let colIndex = Expression<Int>("index")
+
+private let oneBillion = 1000000000
 
 
 public class SwimDBManager {
@@ -128,7 +131,7 @@ public class SwimDBManager {
 
     private func createTables(db: Connection, _ persistenceType: PersistenceType) -> BFTask {
         var tasks = [
-            tableOplog.create() { t in
+            tableOplog.create(ifNotExists: true) { t in
                 t.column(colId, primaryKey: .Autoincrement)
                 t.column(colTimestamp)
                 t.column(colCounter)
@@ -209,7 +212,66 @@ public class SwimDBManager {
     }
 
 
-    public func insertOrUpdateListEntry(lane: SwimUri, timestamp: NSDate, swimValue: SwimValue, index index_: Int) -> BFTask {
+    /**
+     - returns: A task that will have a NSArray as the result.  The contents
+     of that array will SwimRecord instances if the value is a record.
+     TODO: Unimplemented: returning primitive types.
+     */
+    public func loadListContents(lane: SwimUri) -> BFTask {
+        guard let db = connectionForLane(lane) else {
+            return BFTask(error: NSError(errorCode: .NotConnected))
+        }
+        var expectedIdx = 1
+        return db.runQueryTask(tableList.select(colSwimValue, colIndex).order(colIndex)) { row -> SwimRecord? in
+            let reconStr = row.get(colSwimValue)
+            let idx = row.get(colIndex)
+            guard idx == expectedIdx else {
+                log.error("DB row index \(idx) out of sync.  Ignoring row.")
+                return nil
+            }
+            guard let value = recon(reconStr)?.record else {
+                log.error("Unparsable value \(reconStr) in database!  Ignoring row.")
+                return nil
+            }
+            log.verbose("Loaded row \(idx) \(reconStr)")
+            expectedIdx = expectedIdx + 1
+            return value
+        }
+    }
+
+
+    public func insertListEntry(lane: SwimUri, timestamp: NSDate, swimValue: SwimValue, index index_: Int) -> BFTask {
+        precondition(index_ >= 0)
+        let index = index_ + 1
+
+        guard let db = connectionForLane(lane) else {
+            return BFTask(error: NSError(errorCode: .NotConnected))
+        }
+        // colIndex is the primary key, so we need to renumber all rows
+        // after the insertion point.  This has to be done by leaping
+        // them to index + oneBillion and then back down again, to avoid
+        // primary key conflicts during the update.
+        return backgroundTask { () -> NSNumber in
+            var rowId = Int64(0)
+            try db.transaction {
+                let others = tableList.filter(colIndex >= index)
+                try db.run(others.update(colIndex <- colIndex + oneBillion))
+
+                rowId = try db.run(tableList.insert(
+                    colIndex <- index,
+                    colTimestamp <- timestamp,
+                    colSwimValue <- swimValue.recon
+                    ))
+
+                let adjustedOthers = tableList.filter(colIndex >= (index + oneBillion))
+                try db.run(adjustedOthers.update(colIndex <- colIndex - (oneBillion - 1)))
+            }
+            return NSNumber(longLong: rowId)
+        }
+    }
+
+
+    public func updateListEntry(lane: SwimUri, timestamp: NSDate, swimValue: SwimValue, index index_: Int) -> BFTask {
         precondition(index_ >= 0)
         let index = index_ + 1
 
@@ -237,8 +299,9 @@ public class SwimDBManager {
 
         // Moving down the list, everything in the gap moves to index - 1.
         // Moving up the list, everything in the gap moves to index + 1.
-        // Since index is the primary key, we have to delete the row,
-        // move everything, and then re-insert the row.
+        // This has to be done by leaping them to index + oneBillion and
+        // then back down again, to avoid primary key conflicts during the
+        // update.
         let gapOffset = (fromIndex < toIndex ? -1 : 1)
         func f() throws -> NSNumber {
             var rowId = Int64(0)
@@ -249,12 +312,14 @@ public class SwimDBManager {
 
                 tableList.filter(colIndex == fromIndex).delete()
                 let gap = tableList.filter(colIndex > fromIndex && colIndex <= toIndex)
-                try db.run(gap.update(colIndex <- colIndex + gapOffset))
+                try db.run(gap.update(colIndex <- colIndex + oneBillion))
                 rowId = try db.run(tableList.insert(
                     colTimestamp <- timestamp,
                     colIndex <- toIndex,
                     colSwimValue <- oldValue
                 ))
+                let offsetGap = tableList.filter(colIndex > fromIndex + oneBillion)
+                try db.run(offsetGap.update(colIndex <- colIndex - oneBillion + gapOffset))
             }
             return NSNumber(longLong: rowId)
         }
@@ -269,8 +334,27 @@ public class SwimDBManager {
         guard let db = connectionForLane(lane) else {
             return BFTask(error: NSError(errorCode: .NotConnected))
         }
-        let entry = tableList.filter(colIndex == index)
-        return db.runTask(entry.delete())
+        // Remove the specified row, and change all the rows after that one
+        // to adjust the index.
+        return backgroundTask { () -> NSNumber in
+            var affectedRowCount = 0
+            try db.transaction {
+                let entry = tableList.filter(colIndex == index)
+                affectedRowCount = try db.run(entry.delete())
+                if affectedRowCount == 0 {
+                    return
+                }
+
+                // This has to be done by leaping them to index + oneBillion and
+                // then back down again, to avoid primary key conflicts during the
+                // update.
+                let others = tableList.filter(colIndex > index)
+                try db.run(others.update(colIndex <- colIndex + oneBillion))
+                let movedOthers = tableList.filter(colIndex > index)
+                try db.run(movedOthers.update(colIndex <- colIndex - oneBillion - 1))
+            }
+            return NSNumber(long: affectedRowCount)
+        }
     }
 
 
@@ -290,7 +374,7 @@ public class SwimDBManager {
     }
 
 
-    private func dbPath(lane: SwimUri) -> NSURL {
+    public func dbPath(lane: SwimUri) -> NSURL {
         let u = (userId ?? "ANONYMOUS")
         return (
             rootDir.URLByAppendingPathComponent(u.stringBySanitizingFilename)
@@ -332,6 +416,14 @@ private extension NSError {
 
 
 private extension Connection {
+    /**
+     - returns: A task which will have [T] as the result.
+     */
+    private func runQueryTask<T: AnyObject>(query: QueryType, f: Row -> T?) -> BFTask {
+        return backgroundTask {
+            return try self.prepare(query).flatMap(f) as NSArray
+        }
+    }
 
     /**
      - returns: A task which will have a Statement as the result.

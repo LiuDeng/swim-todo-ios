@@ -17,9 +17,84 @@ class PersistentListDownlink: ListDownlinkAdapter {
     private let laneFQUri: SwimUri
 
 
+    private var dbPath: String {
+        return SwimGlobals.instance.dbManager!.dbPath(laneFQUri).path!
+    }
+
+
     init(downlink: Downlink, objectMaker: (SwimValue -> SwimModelProtocolBase?), laneFQUri: SwimUri) {
         self.laneFQUri = laneFQUri
         super.init(downlink: downlink, objectMaker: objectMaker)
+    }
+
+
+    func loadFromDBAsync() -> BFTask {
+        let laneUri = laneFQUri
+        let dbManager = SwimGlobals.instance.dbManager!
+        return dbManager.openAsync(laneUri, persistenceType: .List).continueWithSuccessBlock { _ in
+            return dbManager.loadListContents(laneUri).continueWithSuccessBlock { [weak self] task in
+                let contents = task.result as! [SwimRecord]
+                dispatch_async(dispatch_get_main_queue()) {
+                    self?.loadContents(contents)
+                }
+                return nil
+            }
+        }.continueWithBlock(handleDBErrors)
+    }
+
+
+    private func loadContents(contents: [SwimRecord]) {
+        guard count == 0 else {
+            log.verbose("\(laneFQUri) Not loading from DB; the server has already sent us some rows")
+            return
+        }
+
+        sendWillChangeObjects()
+
+        var idx = 0
+        for content in contents {
+            // Note, calling super because we don't want to try and insert
+            // these rows into the DB, because that's where they just came
+            // from.
+            guard super.remoteInsert(SwimValue(content), atIndex: idx) else {
+                log.error("Aborting loadContents; insert has failed")
+                return
+            }
+            idx = idx + 1
+        }
+
+        sendDidChangeObjects()
+    }
+
+
+    override func insert(object: SwimModelProtocolBase, value: SwimValue, atIndex index: Int) -> BFTask {
+        // Note that we're not inserting yet (matches the other hack in SwimListAdapter).
+//        dbInsert(value, atIndex: index)
+        return super.insert(object, value: value, atIndex: index)
+    }
+
+
+    override func replace(value: SwimValue, atIndex index: Int) -> BFTask {
+        dbUpdate(value, atIndex: index)
+        return super.replace(value, atIndex: index)
+    }
+
+
+    override func moveFromIndex(from: Int, toIndex to: Int) -> BFTask {
+        dbMove(fromIndex: from, toIndex: to)
+        return super.moveFromIndex(from, toIndex: to)
+    }
+
+
+    override func removeAtIndex(index: Int) -> (SwimModelProtocolBase, BFTask) {
+        dbRemoveAtIndex(index)
+        return super.removeAtIndex(index)
+    }
+
+
+    override func removeAll() -> BFTask {
+        dbRemoveAll()
+        return super.removeAll()
     }
 
 
@@ -27,7 +102,7 @@ class PersistentListDownlink: ListDownlinkAdapter {
         guard super.remoteInsert(value, atIndex: index) else {
             return false
         }
-        dbInsertOrUpdate(value, atIndex: index)
+        dbInsert(value, atIndex: index)
         return true
     }
 
@@ -36,7 +111,7 @@ class PersistentListDownlink: ListDownlinkAdapter {
         guard super.remoteUpdate(value, atIndex: index) else {
             return false
         }
-        dbInsertOrUpdate(value, atIndex: index)
+        dbUpdate(value, atIndex: index)
         return true
     }
 
@@ -80,10 +155,16 @@ class PersistentListDownlink: ListDownlinkAdapter {
     }
 
 
-    private func dbInsertOrUpdate(value: SwimValue, atIndex index: Int) {
+    private func dbInsert(value: SwimValue, atIndex index: Int) {
         let dbManager = SwimGlobals.instance.dbManager!
         let now = NSDate()
-        dbManager.insertOrUpdateListEntry(laneFQUri, timestamp: now, swimValue: value, index: index).continueWithBlock(handleDBErrors)
+        dbManager.insertListEntry(laneFQUri, timestamp: now, swimValue: value, index: index).continueWithBlock(handleDBErrors)
+    }
+
+    private func dbUpdate(value: SwimValue, atIndex index: Int) {
+        let dbManager = SwimGlobals.instance.dbManager!
+        let now = NSDate()
+        dbManager.updateListEntry(laneFQUri, timestamp: now, swimValue: value, index: index).continueWithBlock(handleDBErrors)
     }
 
     private func dbMove(fromIndex from: Int, toIndex to: Int) {
@@ -119,10 +200,10 @@ class PersistentListDownlink: ListDownlinkAdapter {
     private func handleDBErrors(task: BFTask) -> BFTask {
         // TODO: Better error response, trigger reset
         if let err = task.error {
-            log.error("DB operation to \(laneFQUri) failed: \(err).  Lane is broken now.")
+            log.error("DB operation to \(laneFQUri) \(dbPath) failed: \(err).  Lane is broken now.")
         }
         if let exn = task.exception {
-            log.error("DB operation to \(laneFQUri) failed: \(exn).  Lane is broken now.")
+            log.error("DB operation to \(laneFQUri) \(dbPath) failed: \(exn).  Lane is broken now.")
         }
         return task
     }

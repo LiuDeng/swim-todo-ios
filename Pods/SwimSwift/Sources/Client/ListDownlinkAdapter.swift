@@ -6,7 +6,7 @@ private let log = SwimLogging.log
 
 
 class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
-    var state = [Value]()
+    var state = [SwimValue]()
     var objects = [SwimModelProtocolBase]()
 
     private let objectMaker: (SwimValue -> SwimModelProtocolBase?)
@@ -39,6 +39,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
                 else {
                     log.warning("Received update with no index!")
                 }
+
             case "insert"?:
                 let header = message.body.first.value
                 if let index = header["index"].integer {
@@ -48,6 +49,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
                 else {
                     log.warning("Received insert with no index!")
                 }
+
             case "move"?:
                 let header = message.body.first.value
                 if let from = header["from"].integer, let to = header["to"].integer {
@@ -57,6 +59,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
                 else {
                     log.warning("Received move without from or to index!")
                 }
+
             case "remove"?, "delete"?:
                 let header = message.body.first.value
                 if let index = header["index"].integer {
@@ -66,6 +69,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
                 else {
                     log.warning("Received \(message.body.tag) with no index!")
                 }
+
             case "clear"?:
                 if message.body.record?.count == 1 {
                     remoteRemoveAll()
@@ -85,8 +89,8 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
     }
 
 
-    private func remoteAppend(value: SwimValue) {
-        remoteInsert(value, atIndex: state.count)
+    private func remoteAppend(value: SwimValue) -> Bool {
+        return remoteInsert(value, atIndex: state.count)
     }
 
 
@@ -136,7 +140,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
             return false
         }
 
-        if state[index] == value {
+        if index < state.count && state[index] == value {
             log.warning("Ignoring duplicate insert!")
             return false
         }
@@ -182,6 +186,11 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
     func remoteRemove(value: SwimValue, atIndex index: Int) -> Bool {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
+
+        guard 0 <= index && index < state.count else {
+            log.verbose("Ignoring remove out of range, presumably this was a local change at the end of the list")
+            return false
+        }
 
         if state[index] != value {
             log.verbose("Ignoring remove, presumably this was a local change")
@@ -232,16 +241,20 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 
 
     func replace(object: SwimModelProtocolBase, atIndex index: Int) -> BFTask {
+        return replace(wrapValueAsItem(object.swim_toSwimValue()), atIndex: index)
+    }
+
+    func replace(value: SwimValue, atIndex index: Int) -> BFTask {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
-        log.verbose("Replaced \(index): \(object)")
+        log.verbose("Replaced \(index): \(value)")
 
-        let value = object.swim_toSwimValue()
-        let task = sendCommand("update", item: value, index: index)
+        let task = sendCommand("update", value: value, index: index)
 
+        let item = value["item"]
         state[index] = value
-        objects[index].swim_updateWithSwimValue(value)
+        objects[index].swim_updateWithSwimValue(item)
         return task
     }
 
@@ -254,13 +267,16 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
     }
 
     func insert(object: SwimModelProtocolBase, atIndex index: Int) -> BFTask {
+        return insert(object, value: wrapValueAsItem(object.swim_toSwimValue()), atIndex: index)
+    }
+
+    func insert(object: SwimModelProtocolBase, value: SwimValue, atIndex index: Int) -> BFTask {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
         log.verbose("Inserted object at \(index): \(object)")
 
-        let value = object.swim_toSwimValue()
-        let task = sendCommand("insert", item: value, index: index)
+        let task = sendCommand("insert", value: value, index: index)
 
         // We're not inserting into objects right now -- we're waiting for it to come back from the server instead.
         // TODO: This is a dirty hack and needs fixing properly.  We need a sessionId on messages so that we don't
@@ -282,7 +298,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 
         log.verbose("Moved \(from) -> \(to): \(object)")
 
-        return sendCommand("move", item: value, from: from, to: to)
+        return sendCommand("move", value: value, from: from, to: to)
     }
 
     func removeAtIndex(index: Int) -> (SwimModelProtocolBase, BFTask) {
@@ -294,7 +310,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 
         log.verbose("Removed object at \(index)")
 
-        let task = sendCommand("remove", item: value, index: index)
+        let task = sendCommand("remove", value: value, index: index)
 
         return (object, task)
     }
@@ -309,31 +325,35 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         return command(body: SwimValue(Item.Attr("clear")))
     }
 
-    private func sendCommand(cmd: String, item: SwimValue, index: Int) -> BFTask {
+    private func wrapValueAsItem(value: SwimValue) -> SwimValue {
+        return SwimValue(Slot("item", value))
+    }
+
+    private func sendCommand(cmd: String, value: SwimValue, index: Int) -> BFTask {
         let indexValue = Value(Slot("index", Value(index)))
-        return command(body: bodyWithCommand(cmd, item: item, indexValue: indexValue))
+        return command(body: bodyWithCommand(cmd, value: value, indexValue: indexValue))
     }
 
-    private func sendCommand(cmd: String, item: SwimValue, from: Int, to: Int) -> BFTask {
+    private func sendCommand(cmd: String, value: SwimValue, from: Int, to: Int) -> BFTask {
         let indexValue = Value(Slot("from", Value(from)), Slot("to", Value(to)))
-        return command(body: bodyWithCommand(cmd, item: item, indexValue: indexValue))
+        return command(body: bodyWithCommand(cmd, value: value, indexValue: indexValue))
     }
 
-    private func sendCommand(cmd: String, item: SwimValue, indexValue: SwimValue) -> BFTask {
-        return command(body: bodyWithCommand(cmd, item: item, indexValue: indexValue))
+    private func sendCommand(cmd: String, value: SwimValue, indexValue: SwimValue) -> BFTask {
+        return command(body: bodyWithCommand(cmd, value: value, indexValue: indexValue))
     }
 
     override func sendSyncRequest() -> BFTask {
         preconditionFailure("You do not need to call this, this list is automatically synched.")
     }
 
-    private func sendWillChangeObjects() {
+    func sendWillChangeObjects() {
         SwimAssertOnMainThread()
 
         listDownlinkDelegate?.downlinkWillChangeObjects(self)
     }
 
-    private func sendDidChangeObjects() {
+    func sendDidChangeObjects() {
         SwimAssertOnMainThread()
 
         listDownlinkDelegate?.downlinkDidChangeObjects(self)
@@ -346,10 +366,10 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 }
 
 
-private func bodyWithCommand(command: String, item: SwimValue, indexValue: SwimValue) -> SwimValue {
+private func bodyWithCommand(command: String, value: SwimValue, indexValue: SwimValue) -> SwimValue {
     let body = Record()
     body.append(Item.Attr(command, indexValue))
-    body.append(Slot("item", item))
+    body["item"] = value["item"]
     return Value(body)
 }
 
