@@ -483,7 +483,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     // MARK: Helpers
 
     private func indexOfObject(object: TodoEntry) -> Int? {
-        return swimObjects.indexOf { ($0 as! TodoEntry) == object }
+        return swimObjects.indexOf { $0 === object }
     }
 
     private func fixColors() {
