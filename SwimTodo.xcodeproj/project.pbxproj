@@ -16,6 +16,10 @@
 		4048D7B31C73BF91002B490C /* TableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7B01C73BF91002B490C /* TableViewCell.swift */; };
 		4048D7B41C73BF91002B490C /* StrikeThroughText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7B11C73BF91002B490C /* StrikeThroughText.swift */; };
 		4048D7BD1C73D844002B490C /* CollectionType+Misc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */; };
+		409DD2411CC6E3F10000D366 /* GuruModeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409DD2401CC6E3F10000D366 /* GuruModeViewController.swift */; };
+		409DD2451CC6E5A30000D366 /* DetailTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409DD2441CC6E5A30000D366 /* DetailTableViewCell.swift */; };
+		409DD2471CC6E5CE0000D366 /* DetailTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 409DD2461CC6E5CE0000D366 /* DetailTableViewCell.xib */; };
+		409DD2491CC6E7980000D366 /* UITableViewCell+Misc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409DD2481CC6E7980000D366 /* UITableViewCell+Misc.swift */; };
 		40A0B3C61CA1FE5800F17BEA /* LoginManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */; };
 		40AE52EB1CA1FAD000A878F3 /* SwimTodoGlobals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */; };
 		40C975C51CAD94A900407B67 /* PersonImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C975C41CAD94A900407B67 /* PersonImageView.swift */; };
@@ -71,6 +75,10 @@
 		4048D7B01C73BF91002B490C /* TableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableViewCell.swift; sourceTree = "<group>"; };
 		4048D7B11C73BF91002B490C /* StrikeThroughText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StrikeThroughText.swift; sourceTree = "<group>"; };
 		4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CollectionType+Misc.swift"; sourceTree = "<group>"; };
+		409DD2401CC6E3F10000D366 /* GuruModeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GuruModeViewController.swift; sourceTree = "<group>"; };
+		409DD2441CC6E5A30000D366 /* DetailTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailTableViewCell.swift; sourceTree = "<group>"; };
+		409DD2461CC6E5CE0000D366 /* DetailTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DetailTableViewCell.xib; sourceTree = "<group>"; };
+		409DD2481CC6E7980000D366 /* UITableViewCell+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITableViewCell+Misc.swift"; sourceTree = "<group>"; };
 		40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginManager.swift; sourceTree = "<group>"; };
 		40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimTodoGlobals.swift; sourceTree = "<group>"; };
 		40C975C41CAD94A900407B67 /* PersonImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PersonImageView.swift; sourceTree = "<group>"; };
@@ -135,6 +143,7 @@
 				4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */,
 				40C975EF1CADE0C700407B67 /* RTLLayout.swift */,
 				40C975FB1CB19B0200407B67 /* UINib+Misc.swift */,
+				409DD2481CC6E7980000D366 /* UITableViewCell+Misc.swift */,
 				40C975F71CAE113800407B67 /* UIView+Misc.swift */,
 			);
 			path = Utils;
@@ -170,6 +179,9 @@
 				403100CC1CA730BD00C12F4E /* Resources */,
 				403100CB1CA7308900C12F4E /* Utils */,
 				85553D381C6B31BA005D613B /* AppDelegate.swift */,
+				409DD2441CC6E5A30000D366 /* DetailTableViewCell.swift */,
+				409DD2461CC6E5CE0000D366 /* DetailTableViewCell.xib */,
+				409DD2401CC6E3F10000D366 /* GuruModeViewController.swift */,
 				40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */,
 				4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */,
 				402203111CA1FD1200D6B5E1 /* LoginViewController.xib */,
@@ -342,6 +354,7 @@
 				85553D431C6B31BA005D613B /* Assets.xcassets in Resources */,
 				40C975EE1CAD9F7200407B67 /* TodoListViewController.xib in Resources */,
 				40C975F41CADE79600407B67 /* PersonImageCollectionViewCell.xib in Resources */,
+				409DD2471CC6E5CE0000D366 /* DetailTableViewCell.xib in Resources */,
 				400648E31C72680000701533 /* TodoEntryTableViewCell.xib in Resources */,
 				85553D451C6B31BA005D613B /* Main.storyboard in Resources */,
 				400268241CA20F6200335AC7 /* GoogleService-Info.plist in Resources */,
@@ -414,10 +427,12 @@
 				40C975C51CAD94A900407B67 /* PersonImageView.swift in Sources */,
 				400648E51C7268DB00701533 /* TodoEntry.swift in Sources */,
 				85553D481C6B31BA005D613B /* MasterViewController.swift in Sources */,
+				409DD2411CC6E3F10000D366 /* GuruModeViewController.swift in Sources */,
 				40C975F01CADE0C700407B67 /* RTLLayout.swift in Sources */,
 				40F583C21CBCDCAF001BCDCC /* UserPresenceModel.swift in Sources */,
 				4048D7B31C73BF91002B490C /* TableViewCell.swift in Sources */,
 				4048D7B41C73BF91002B490C /* StrikeThroughText.swift in Sources */,
+				409DD2491CC6E7980000D366 /* UITableViewCell+Misc.swift in Sources */,
 				40A0B3C61CA1FE5800F17BEA /* LoginManager.swift in Sources */,
 				40AE52EB1CA1FAD000A878F3 /* SwimTodoGlobals.swift in Sources */,
 				40C975FC1CB19B0200407B67 /* UINib+Misc.swift in Sources */,
@@ -427,6 +442,7 @@
 				85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */,
 				40C975F31CADE79600407B67 /* PersonImageCollectionViewCell.swift in Sources */,
 				40C975F81CAE113800407B67 /* UIView+Misc.swift in Sources */,
+				409DD2451CC6E5A30000D366 /* DetailTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -30,18 +30,36 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
     // MARK: - Table View
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1
+        return 2
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return objects.count
+        switch section {
+        case 0:
+            return objects.count
+
+        case 1:
+            return 1
+
+        default:
+            preconditionFailure()
+        }
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
 
-        let object = objects[indexPath.row]
-        cell.textLabel!.text = object.nodeUri.path.description
+        switch indexPath.section {
+        case 0:
+            let object = objects[indexPath.row]
+            cell.textLabel!.text = object.nodeUri.path.description
+
+        case 1:
+            cell.textLabel!.text = "Guru mode"
+
+        default:
+            preconditionFailure()
+        }
         return cell
     }
 
@@ -51,16 +69,31 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
 
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let indexPath = tableView.indexPathForSelectedRow!
-        let object = objects[indexPath.row]
-
         let splitVC = splitViewController!
-        let listVC = TodoListViewController()
-        listVC.detailItem = object
-        listVC.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
-        listVC.navigationItem.leftItemsSupplementBackButton = true
 
-        let listNav = UINavigationController(rootViewController: listVC)
-        splitVC.showDetailViewController(listNav, sender: self)
+        switch indexPath.section {
+        case 0:
+            let object = objects[indexPath.row]
+
+            let listVC = TodoListViewController()
+            listVC.detailItem = object
+            listVC.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
+            listVC.navigationItem.leftItemsSupplementBackButton = true
+
+            let listNav = UINavigationController(rootViewController: listVC)
+            splitVC.showDetailViewController(listNav, sender: self)
+
+        case 1:
+            let vc = GuruModeViewController()
+            vc.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
+            vc.navigationItem.leftItemsSupplementBackButton = true
+
+            let nav = UINavigationController(rootViewController: vc)
+            splitVC.showDetailViewController(nav, sender: self)
+
+        default:
+            preconditionFailure()
+        }
     }
 
 
