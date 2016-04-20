@@ -6,13 +6,19 @@
 //  Copyright © 2016 swim.it. All rights reserved.
 //
 
+import Crashlytics
 import Foundation
+import SwiftyBeaver
 import SwimSwift
 import UIKit
 
 
+private let log = SwiftyBeaver.self
+
+
 class GuruModeViewController: UITableViewController {
     private enum Row {
+        case Crash
         case DBSize(NSURL)
     }
 
@@ -32,6 +38,12 @@ class GuruModeViewController: UITableViewController {
     private func configureRows() {
         rows.removeAll()
 
+        configureDBRows()
+
+        rows.append(.Crash)
+    }
+
+    private func configureDBRows() {
         guard let dbManager = SwimGlobals.instance.dbManager else {
             return
         }
@@ -59,6 +71,12 @@ class GuruModeViewController: UITableViewController {
         let row = rows[indexPath.row]
 
         switch row {
+        case .Crash:
+            let cell: DetailTableViewCell = DetailTableViewCell.dequeueFromTableView(tableView, forIndexPath: indexPath)
+            cell.label = "Crash!"
+            cell.value = ""
+            return cell
+
         case .DBSize(let url):
             let cell: DetailTableViewCell = DetailTableViewCell.dequeueFromTableView(tableView, forIndexPath: indexPath)
             cell.label = "DB size: \(trimmedDBPath(url))"
@@ -83,5 +101,33 @@ class GuruModeViewController: UITableViewController {
         }
         let trimmedPath = path.substringFromIndex(rootPath.endIndex)
         return trimmedPath.substringFromIndex(trimmedPath.startIndex.successor())
+    }
+
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+
+        let row = rows[indexPath.row]
+
+        switch row {
+        case .Crash:
+            crash()
+
+        case .DBSize(_):
+            break
+        }
+    }
+
+    private func crash() {
+        let prompt = UIAlertController(title: "Are you sure you want to crash?", message: "This will crash the app!  This is used to test the crash reporting features.", preferredStyle: .Alert)
+        prompt.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+        prompt.addAction(UIAlertAction(title: "Crash!", style: .Destructive, handler: { _ in
+            log.error("Crash requested by user!")
+            let when = dispatch_time(DISPATCH_TIME_NOW, Int64(0.5 * NSTimeInterval(NSEC_PER_SEC)))
+            dispatch_after(when, dispatch_get_main_queue()) {
+                Crashlytics.sharedInstance().crash()
+            }
+        }))
+
+        presentViewController(prompt, animated: true, completion: nil)
     }
 }
