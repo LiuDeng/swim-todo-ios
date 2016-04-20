@@ -40,6 +40,9 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         }
     }
 
+
+    // MARK: - Lifecycle
+
     required init() {
         self.presenceListManager = TodoListViewController.createPresenceListManager()
         self.presenceListHelper = TodoListViewController.createPresenceListHelper(presenceListManager)
@@ -147,93 +150,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
 
-    // MARK: - add, delete, edit methods
-
-    func toDoItemAdded() {
-        toDoItemAddedAtIndex(0)
-    }
-
-    func toDoItemAddedAtIndex(index: Int) {
-        let newObjectOrNil = swimListManager.insertNewObjectAtIndex(index) as? TodoEntry
-        tableView.reloadData()
-        fixColors()
-        guard let newObject = newObjectOrNil else {
-            return
-        }
-        // enter edit mode
-        let visibleCells = tableView.visibleCells as! [TableViewCell]
-        let editCell = visibleCells.find { $0.toDoItem === newObject }
-        editCell?.label.becomeFirstResponder()
-    }
-
-    func toDoItemDeleted(toDoItem: TodoEntry) {
-        guard let index = indexOfObject(toDoItem) else {
-            log.warning("Couldn't find deleted item \(toDoItem)!")
-            return
-        }
-        toDoItemDeleted(toDoItem, atIndex: index)
-    }
-
-    func toDoItemDeleted(toDoItem: TodoEntry, atIndex index: Int) {
-        swimListManager.removeObjectAtIndex(index)
-
-        // loop over the visible cells to animate delete
-        let visibleCells = tableView.visibleCells as! [TableViewCell]
-        let lastView = visibleCells[visibleCells.count - 1] as TableViewCell
-        var delay = 0.0
-        var startAnimating = false
-        for i in 0..<visibleCells.count {
-            let cell = visibleCells[i]
-            if startAnimating {
-                UIView.animateWithDuration(0.3, delay: delay, options: .CurveEaseInOut,
-                    animations: {() in
-                        cell.frame = CGRectOffset(cell.frame, 0.0, -cell.frame.size.height)},
-                    completion: {(finished: Bool) in if (cell == lastView) {
-                        self.tableView.reloadData()
-                        }
-                    }
-                )
-                delay += 0.03
-            }
-            if cell.toDoItem === toDoItem {
-                startAnimating = true
-                cell.hidden = true
-            }
-        }
-
-        // use the UITableView to animate the removal of this row
-        tableView.beginUpdates()
-        let indexPathForRow = NSIndexPath(forRow: index, inSection: 0)
-        tableView.deleteRowsAtIndexPaths([indexPathForRow], withRowAnimation: .Fade)
-        tableView.endUpdates()
-    }
-    
-
-    func toDoItemCompleted(toDoItem: TodoEntry) {
-        guard let index = indexOfObject(toDoItem) else {
-            log.warning("Couldn't find completed item \(toDoItem)!")
-            return
-        }
-        swimListManager.updateObjectAtIndex(index)
-    }
-
-
-    // MARK: UITableViewDataSource / UITableViewDelegate
-
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(kCellIdentifier, forIndexPath: indexPath) as! TableViewCell
-        cell.selectionStyle = .None
-        cell.textLabel?.backgroundColor = UIColor.clearColor()
-        let object = swimObjects[indexPath.row] as! TodoEntry
-        cell.delegate = self
-        cell.toDoItem = object
-
-        return cell
-    }
-
-    func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
-        cell.backgroundColor = colorForIndex(indexPath.row)
-    }
+    // MARK: - TableViewCellDelegate
 
     func cellDidBeginEditing(editingCell: TableViewCell) {
         let visibleCells = tableView.visibleCells as! [TableViewCell]
@@ -250,6 +167,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         }
         swimListManager.setHighlightAtIndex(path.row, isHighlighted: true)
     }
+
 
     func cellDidEndEditing(editingCell: TableViewCell) {
         let visibleCells = tableView.visibleCells as! [TableViewCell]
@@ -271,7 +189,94 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
 
-    // MARK: UICollectionViewDataSource, UICollectionViewDelegate
+    func toDoItemDeleted(toDoItem: TodoEntry) {
+        guard let index = indexOfObject(toDoItem) else {
+            log.warning("Couldn't find deleted item \(toDoItem)!")
+            return
+        }
+        deleteTodoEntry(toDoItem, atIndex: index)
+    }
+
+
+    func toDoItemCompleted(toDoItem: TodoEntry) {
+        guard let index = indexOfObject(toDoItem) else {
+            log.warning("Couldn't find completed item \(toDoItem)!")
+            return
+        }
+        swimListManager.updateObjectAtIndex(index)
+    }
+
+
+    // MARK: - List manipulation
+
+    private func addTodoEntryAtIndex(index: Int) {
+        let newObjectOrNil = swimListManager.insertNewObjectAtIndex(index) as? TodoEntry
+        tableView.reloadData()
+        fixColors()
+        guard let newObject = newObjectOrNil else {
+            return
+        }
+        // enter edit mode
+        let visibleCells = tableView.visibleCells as! [TableViewCell]
+        let editCell = visibleCells.find { $0.toDoItem === newObject }
+        editCell?.label.becomeFirstResponder()
+    }
+
+
+    private func deleteTodoEntry(toDoItem: TodoEntry, atIndex index: Int) {
+        swimListManager.removeObjectAtIndex(index)
+
+        // loop over the visible cells to animate delete
+        let visibleCells = tableView.visibleCells as! [TableViewCell]
+        let lastView = visibleCells[visibleCells.count - 1] as TableViewCell
+        var delay = 0.0
+        var startAnimating = false
+        for i in 0 ..< visibleCells.count {
+            let cell = visibleCells[i]
+            if startAnimating {
+                UIView.animateWithDuration(0.3, delay: delay, options: .CurveEaseInOut, animations: {
+                    cell.frame = CGRectOffset(cell.frame, 0.0, -cell.frame.size.height)
+                },
+                completion: { finished in
+                    if (cell === lastView) {
+                        self.tableView.reloadData()
+                    }
+                })
+                delay += 0.03
+            }
+            if cell.toDoItem === toDoItem {
+                startAnimating = true
+                cell.hidden = true
+            }
+        }
+
+        // use the UITableView to animate the removal of this row
+        tableView.beginUpdates()
+        let indexPathForRow = NSIndexPath(forRow: index, inSection: 0)
+        tableView.deleteRowsAtIndexPaths([indexPathForRow], withRowAnimation: .Fade)
+        tableView.endUpdates()
+    }
+
+
+    // MARK: - UITableViewDataSource / UITableViewDelegate
+
+    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCellWithIdentifier(kCellIdentifier, forIndexPath: indexPath) as! TableViewCell
+        cell.selectionStyle = .None
+        cell.textLabel?.backgroundColor = UIColor.clearColor()
+        let object = swimObjects[indexPath.row] as! TodoEntry
+        cell.delegate = self
+        cell.toDoItem = object
+
+        return cell
+    }
+
+    func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
+        cell.backgroundColor = colorForIndex(indexPath.row)
+    }
+
+
+    // MARK: - UICollectionViewDataSource, UICollectionViewDelegate
 
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
         return 1
@@ -296,7 +301,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
 
-    // MARK: UIScrollViewDelegate methods
+    // MARK: - UIScrollViewDelegate methods
 
     // a cell that is rendered as a placeholder to indicate where a new item is added
     private let placeHolderCell = TableViewCell(style: .Default, reuseIdentifier: kCellIdentifier)
@@ -331,12 +336,12 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         // check whether the user pulled down far enough
         if pullDownInProgress && -scrollView.contentOffset.y > tableView.rowHeight + tableView.contentInset.top {
-            toDoItemAdded()
+            addTodoEntryAtIndex(0)
         }
         pullDownInProgress = false
         placeHolderCell.removeFromSuperview()
     }
-    
+
 
     // MARK: - pinch-to-add methods
 
@@ -448,7 +453,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
             // add a new item
             let indexOffset = Int(floor(tableView.contentOffset.y / tableView.rowHeight))
-            toDoItemAddedAtIndex(lowerCellIndex + indexOffset)
+            addTodoEntryAtIndex(lowerCellIndex + indexOffset)
         } else {
             // otherwise, animate back to position
             UIView.animateWithDuration(0.2, delay: 0.0, options: .CurveEaseInOut, animations: {() in
@@ -480,7 +485,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
 
-    // MARK: Helpers
+    // MARK: - Helpers
 
     private func indexOfObject(object: TodoEntry) -> Int? {
         return swimObjects.indexOf { $0 === object }
