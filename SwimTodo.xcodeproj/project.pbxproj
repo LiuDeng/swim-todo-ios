@@ -271,6 +271,7 @@
 				85553D9D1C6B3D9D005D613B /* Embed Frameworks */,
 				4501B68623B074D9BA4C18CE /* 📦 Embed Pods Frameworks */,
 				E394C705249348D3F434C555 /* 📦 Copy Pods Resources */,
+				4076263B1CC8030B008E0904 /* Build number */,
 				40CEBD2B1CC748FA00D6E736 /* Crashlytics */,
 			);
 			buildRules = (
@@ -372,6 +373,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		4076263B1CC8030B008E0904 /* Build number */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 8;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build number";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+			shellPath = /bin/sh;
+			shellScript = "githash=$(git rev-parse --short HEAD)\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $githash\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n";
+		};
 		40CEBD2B1CC748FA00D6E736 /* Crashlytics */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
