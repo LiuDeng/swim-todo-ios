@@ -33,6 +33,7 @@ extension NSFileManager {
         }
 
         var result = [NSURL: UInt64]()
+        var grandTotal: UInt64 = 0
         while let url = enumerator.nextObject() as? NSURL {
             var isDir: AnyObject?
             try! url.getResourceValue(&isDir, forKey: NSURLIsDirectoryKey)
@@ -51,14 +52,18 @@ extension NSFileManager {
                 }
 
                 result[url] = total
+                grandTotal += total
             }
             else {
-                var size: AnyObject?
-                try! url.getResourceValue(&size, forKey: NSURLFileSizeKey)
-                result[url] = (size as! NSNumber).unsignedLongLongValue
+                var sizeNum: AnyObject?
+                try! url.getResourceValue(&sizeNum, forKey: NSURLFileSizeKey)
+                let size = (sizeNum as! NSNumber).unsignedLongLongValue
+                result[url] = size
+                grandTotal += size
             }
         }
 
+        result[dir] = grandTotal
         return result
     }
 }

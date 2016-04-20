@@ -111,7 +111,9 @@ public class SwimDBManager {
 
             connections[lane] = db
 
-            return createTables(db, persistenceType).continueWithSuccessBlock { [weak self] _ in
+            return db.runConfigureConnection().continueWithSuccessBlock { [weak self] _ in
+                self?.createTables(db, persistenceType)
+            }.continueWithSuccessBlock { [weak self] _ in
                 self?.loadStats(path)
             }.continueWithSuccessBlock { [weak self] _ in
                 self?.loadTotalStats()
@@ -181,7 +183,7 @@ public class SwimDBManager {
         objc_sync_enter(self)
         for (url, size) in sizes {
             let str = url.absoluteString
-            if str.hasSuffix("/") || str.hasSuffix(".sqlite") {
+            if str.hasSuffix("/") || str.hasSuffix(".sqlite") || str.hasSuffix(".sqlite-shm") || str.hasSuffix(".sqlite-wal") {
                 setFileSize(url, size)
             }
         }
@@ -374,6 +376,24 @@ public class SwimDBManager {
     }
 
 
+    func applicationWillResignActive() {
+        for (_, conn) in connections {
+            conn.runIncrementalVacuum().continueWithBlock(logFailures)
+        }
+    }
+
+
+    private func logFailures(task: BFTask) -> BFTask {
+        if let err = task.error {
+            log.warning("Operation failed: \(err).")
+        }
+        if let exn = task.exception {
+            log.warning("Operation failed: \(exn).")
+        }
+        return task
+    }
+
+
     public func dbPath(lane: SwimUri) -> NSURL {
         let u = (userId ?? "ANONYMOUS")
         return (
@@ -416,6 +436,18 @@ private extension NSError {
 
 
 private extension Connection {
+    private func runConfigureConnection() -> BFTask {
+        return backgroundTask {
+            try self.execute("PRAGMA journal_mode=WAL; PRAGMA auto_vacuum=INCREMENTAL")
+        }
+    }
+
+    private func runIncrementalVacuum() -> BFTask {
+        return backgroundTask {
+            try self.execute("PRAGMA incremental_vacuum")
+        }
+    }
+
     /**
      - returns: A task which will have [T] as the result.
      */

@@ -90,6 +90,8 @@ public class SwimClient {
      */
     public static func applicationWillResignActive() {
         log.verbose("applicationWillResignActive")
+
+        SwimGlobals.instance.dbManager?.applicationWillResignActive()
     }
 
 
