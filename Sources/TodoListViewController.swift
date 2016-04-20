@@ -275,6 +275,11 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         cell.backgroundColor = colorForIndex(indexPath.row)
     }
 
+    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        // The cell has its own swipe handling, so we don't want to allow the native one.
+        return false
+    }
+
 
     // MARK: - UICollectionViewDataSource, UICollectionViewDelegate
 
