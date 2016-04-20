@@ -6,6 +6,5 @@ target 'SwimTodo' do
   pod 'Fabric'
   pod 'Google/SignIn'
   pod 'SwimSwift'
-  pod 'SwimSwift/GoogleSignIn'
   pod 'SwimSwift/SwiftyBeaver'
 end

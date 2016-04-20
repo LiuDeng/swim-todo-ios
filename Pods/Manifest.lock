@@ -51,12 +51,6 @@ PODS:
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-  - SwimSwift/GoogleSignIn (0.3.2):
-    - Bolts (>= 1.7.0)
-    - ReachabilitySwift (>= 2.3.3)
-    - Recon (>= 0.2.0)
-    - SQLite.swift (>= 0.10.0)
-    - SwiftWebSocket (>= 2.6.0)
   - SwimSwift/SwiftyBeaver (0.3.2):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
@@ -70,7 +64,6 @@ DEPENDENCIES:
   - Fabric
   - Google/SignIn
   - SwimSwift
-  - SwimSwift/GoogleSignIn
   - SwimSwift/SwiftyBeaver
 
 SPEC CHECKSUMS:
@@ -92,6 +85,6 @@ SPEC CHECKSUMS:
   SwiftyBeaver: 3a03b25c7102b792e67821a481610ef0f28185c7
   SwimSwift: addb8dac7f93dd6a093af4dd783cbd213f2b5453
 
-PODFILE CHECKSUM: 6970e59971c1fc6f1c92782232162b745e8401c6
+PODFILE CHECKSUM: f718b023ce62c4081fe5c305492a20dea45b2948
 
 COCOAPODS: 1.0.0.beta.8

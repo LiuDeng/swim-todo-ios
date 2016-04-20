@@ -16,9 +16,9 @@ class LoginManager {
         // Register Google's GIDSignIn with SwimClient.
         // This will register as GIDSignIn's delegate, and handle all of
         // Google's sign-in events from then on.
-        let gidSignIn = GIDSignIn.sharedInstance()
-        let swimClient = SwimClient.sharedInstance
-        swimClient.registerGoogleSignIn(gidSignIn)
+//        let gidSignIn = GIDSignIn.sharedInstance()
+//        let swimClient = SwimClient.sharedInstance
+//        swimClient.registerGoogleSignIn(gidSignIn)
     }
 
     /**
@@ -30,8 +30,9 @@ class LoginManager {
         // Use GIDSignIn to tell us whether the user is signed in.
         // If you have more than one auth provider, you will need to check
         // them all here, or maintain your own user identity details.
-        let gidSignIn = GIDSignIn.sharedInstance()
-        return (gidSignIn.currentUser != nil)
+//        let gidSignIn = GIDSignIn.sharedInstance()
+//        return (gidSignIn.currentUser != nil)
+        return true
     }
 
     /**
@@ -45,7 +46,7 @@ class LoginManager {
         //
         // If you have more than one auth provider, you will need to
         // refresh the correct one here, of course.
-        let gidSignIn = GIDSignIn.sharedInstance()
-        gidSignIn.signInSilently()
+//        let gidSignIn = GIDSignIn.sharedInstance()
+//        gidSignIn.signInSilently()
     }
 }
