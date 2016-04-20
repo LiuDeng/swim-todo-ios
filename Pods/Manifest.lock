@@ -5,6 +5,9 @@ PODS:
   - Bolts/AppLinks (1.7.0):
     - Bolts/Tasks
   - Bolts/Tasks (1.7.0)
+  - Crashlytics (3.7.0):
+    - Fabric (~> 1.6.3)
+  - Fabric (1.6.7)
   - Google/Core (2.0.4):
     - GoogleInterchangeUtilities (~> 1.0)
     - GoogleNetworkingUtilities (~> 1.0)
@@ -63,6 +66,8 @@ PODS:
     - SwiftyBeaver (>= 0.4.2)
 
 DEPENDENCIES:
+  - Crashlytics
+  - Fabric
   - Google/SignIn
   - SwimSwift
   - SwimSwift/GoogleSignIn
@@ -70,6 +75,8 @@ DEPENDENCIES:
 
 SPEC CHECKSUMS:
   Bolts: a0058fa3b331c5a1e4402d534f2dae36dbff31e4
+  Crashlytics: c3a2333dea9e2733d2777f730910321fc9e25c0d
+  Fabric: caf7580c725e64db144f610ac65cd60956911dc7
   Google: d0932824c5b97c96be489aa6f4e8cd6c294d637d
   GoogleAppUtilities: 974598e8ed618c74ead33541d9caffbc3d144266
   GoogleAuthUtilities: 79e4143c77a08081a480b08df27a066cc8944f43
@@ -85,6 +92,6 @@ SPEC CHECKSUMS:
   SwiftyBeaver: 3a03b25c7102b792e67821a481610ef0f28185c7
   SwimSwift: addb8dac7f93dd6a093af4dd783cbd213f2b5453
 
-PODFILE CHECKSUM: c4450464167ca8851e348322bbea7e9799ba20d5
+PODFILE CHECKSUM: 6970e59971c1fc6f1c92782232162b745e8401c6
 
 COCOAPODS: 1.0.0.beta.8

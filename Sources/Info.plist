@@ -41,19 +41,33 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>Fabric</key>
+	<dict>
+		<key>APIKey</key>
+		<string>c1f0fa666e4353630fea032b7df89ef85eeb85f1</string>
+		<key>Kits</key>
+		<array>
+			<dict>
+				<key>KitInfo</key>
+				<dict/>
+				<key>KitName</key>
+				<string>Crashlytics</string>
+			</dict>
+		</array>
+	</dict>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-        <key>NSAppTransportSecurity</key>
-        <dict>
-                <key>NSExceptionDomains</key>
-                <dict>
-                        <key>swim.services</key>
-                        <dict>
-                                <key>NSExceptionAllowsInsecureHTTPLoads</key>
-                                <true/>
-                        </dict>
-                </dict>
-        </dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>swim.services</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

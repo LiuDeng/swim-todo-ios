@@ -1,3 +1,5 @@
+import Crashlytics
+import Fabric
 import Google
 import SwiftyBeaver
 import SwimSwift
@@ -17,6 +19,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+
+        startCrashlytics()
 
         // Configure the SwiftyBeaver logging to use the Xcode console.
         // You can optionally add a log level.  Use .Verbose to see every
@@ -50,6 +54,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        }
 
         return true
+    }
+
+    private func startCrashlytics() {
+        Fabric.with([Crashlytics.self])
     }
 
     private func userSignedIn() {
