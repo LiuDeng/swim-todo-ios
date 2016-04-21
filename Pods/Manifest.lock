@@ -33,6 +33,7 @@ PODS:
   - GoogleSymbolUtilities (1.1.0)
   - GoogleUtilities (1.3.0):
     - GoogleSymbolUtilities (~> 1.0)
+  - JLToast (1.4.0)
   - ReachabilitySwift (2.3.3)
   - Recon (0.3.0)
   - SQLite.swift (0.10.1)
@@ -63,6 +64,7 @@ DEPENDENCIES:
   - Crashlytics
   - Fabric
   - Google/SignIn
+  - JLToast
   - SwimSwift
   - SwimSwift/SwiftyBeaver
 
@@ -78,6 +80,7 @@ SPEC CHECKSUMS:
   GoogleSignIn: 3d571172b8603be39dcb1705d8217146bb76fe62
   GoogleSymbolUtilities: eb3965ea12710569c7b80db198a39e39b18613f7
   GoogleUtilities: 5c653f7df2eedf0ce0efdfe5afe4f831f375fd7a
+  JLToast: 1599854ade65dddce01dca5bbe61d6119479ff7e
   ReachabilitySwift: e0f6b6f280effb47731acfaaa2d5ffe223703793
   Recon: 320d8c3c981dd5f804effd8da4041a3cb2c19a8b
   SQLite.swift: 6a6e4b034efc317ce4e203b6af2d3024fee2b570
@@ -85,6 +88,6 @@ SPEC CHECKSUMS:
   SwiftyBeaver: 3a03b25c7102b792e67821a481610ef0f28185c7
   SwimSwift: 09b98dd064ce06e1e718f86fb291455ac8e280c3
 
-PODFILE CHECKSUM: f718b023ce62c4081fe5c305492a20dea45b2948
+PODFILE CHECKSUM: acc804528cabe7601b088a17bedce052c0b7964e
 
 COCOAPODS: 1.0.0.beta.8
