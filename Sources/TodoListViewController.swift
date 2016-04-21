@@ -1,6 +1,8 @@
-import UIKit
+import JLToast
 import SwimSwift
 import SwiftyBeaver
+import UIKit
+
 
 private let listLaneUri: SwimUri = "todo/list"
 private let presenceLaneUri: SwimUri = "todo/presence"
@@ -131,15 +133,29 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     // MARK: - SwimListManagerDelegate
 
-    func swimDidStartSynching() {
-        configureView()
+    func swimListDidStartSynching(manager: SwimListManagerProtocol) {
+        if manager === swimListManager {
+            configureView()
+        }
     }
 
-    func swimDidChangeObjects() {
-        fixColors()
+    func swimListDidChangeObjects(manager: SwimListManagerProtocol) {
+        if manager === swimListManager {
+            fixColors()
+        }
     }
 
-    func swimDidUpdate(index: Int, object: SwimModelProtocolBase) {
+    func swimList(manager: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int) {
+        if manager === swimListManager {
+            todoListDidUpdateObject(object, atIndex: index)
+        }
+        else {
+            precondition(manager === presenceListManager)
+            presenceListDidUpdateObject(object, atIndex: index)
+        }
+    }
+
+    private func todoListDidUpdateObject(object: SwimModelProtocolBase, atIndex index: Int) {
         let indexPath = NSIndexPath(forRow: index, inSection: swimObjectSection)
         guard let visiblePaths = tableView.indexPathsForVisibleRows where visiblePaths.contains(indexPath) else {
             return
@@ -147,6 +163,37 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         let cell = tableView.cellForRowAtIndexPath(indexPath) as! TableViewCell
         precondition(swimObjects.contains { $0 === object })
         cell.toDoItem = (object as! TodoEntry)
+    }
+
+    private func presenceListDidUpdateObject(object: SwimModelProtocolBase, atIndex index: Int) {
+        let indexPath = NSIndexPath(forRow: index, inSection: 0)
+        let visiblePaths = presenceView.indexPathsForVisibleItems()
+        guard visiblePaths.contains(indexPath) else {
+            return
+        }
+        let _ = presenceView.cellForItemAtIndexPath(indexPath) as! PersonImageCollectionViewCell
+        // TODO: Refresh cell
+    }
+
+    func swimList(manager: SwimListManagerProtocol, didReceiveError error: ErrorType) {
+        var message = "Unknown error"
+        switch error {
+        case SwimError.NodeNotFound:
+            if manager === swimListManager {
+                message = "This list is not present on the server!"
+            }
+            else {
+                log.error("Presence list is not on the server!  Ignoring")
+                return
+            }
+
+        default:
+            break
+        }
+
+        log.error("Showing on-screen error \(message)")
+        let toast = JLToast.makeText(message)
+        toast.show()
     }
 
 
