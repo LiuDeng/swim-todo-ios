@@ -178,7 +178,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     func swimList(manager: SwimListManagerProtocol, didReceiveError error: ErrorType) {
         var message = "Unknown error"
         switch error {
-        case SwimError.NodeNotFound:
+        case SwimError.NodeNotFound, SwimError.LaneNotFound:
             if manager === swimListManager {
                 message = "This list is not present on the server!"
             }
