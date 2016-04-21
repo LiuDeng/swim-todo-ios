@@ -23,7 +23,7 @@ public class SwimListCollectionViewHelper: SwimListManagerDelegate {
         collectionView?.reloadData()
     }
 
-    public func swimDidInsert(object: SwimModelProtocolBase, atIndex index: Int) {
+    public func swimList(_: SwimListManagerProtocol, didInsertObject: SwimModelProtocolBase, atIndex index: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -31,7 +31,7 @@ public class SwimListCollectionViewHelper: SwimListManagerDelegate {
         collectionView?.insertItemsAtIndexPaths([indexPath])
     }
 
-    public func swimDidMove(fromIndex: Int, toIndex: Int) {
+    public func swimList(_: SwimListManagerProtocol, didMoveObjectFromIndex fromIndex: Int, toIndex: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -40,7 +40,7 @@ public class SwimListCollectionViewHelper: SwimListManagerDelegate {
         collectionView?.moveItemAtIndexPath(fromIndexPath, toIndexPath: toIndexPath)
     }
 
-    public func swimDidRemove(index: Int, object: SwimModelProtocolBase) {
+    public func swimList(_: SwimListManagerProtocol, didRemoveObject _: SwimModelProtocolBase, atIndex index: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -48,7 +48,7 @@ public class SwimListCollectionViewHelper: SwimListManagerDelegate {
         collectionView?.deleteItemsAtIndexPaths([indexPath])
     }
 
-    public func swimDidUpdate(index: Int, object: SwimModelProtocolBase) {
+    public func swimList(_: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }

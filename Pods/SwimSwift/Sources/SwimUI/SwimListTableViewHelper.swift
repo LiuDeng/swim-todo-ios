@@ -32,13 +32,13 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
         }
     }
 
-    public func swimWillChangeObjects() {
+    public func swimListWillChangeObjects(_: SwimListManagerProtocol) {
         if !firstSync {
             tableView?.beginUpdates()
         }
     }
 
-    public func swimDidChangeObjects() {
+    public func swimListDidChangeObjects(_: SwimListManagerProtocol) {
         if firstSync {
             log.debug("First sync added \(delegate?.swimObjects.count ?? 0) objects")
             firstSync = false
@@ -48,11 +48,11 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
         }
     }
 
-    public func swimDidStopSynching() {
+    public func swimListDidStopSynching(_: SwimListManagerProtocol) {
         tableView?.reloadData()
     }
 
-    public func swimDidInsert(object: SwimModelProtocolBase, atIndex index: Int) {
+    public func swimList(_: SwimListManagerProtocol, didInsertObject _: SwimModelProtocolBase, atIndex index: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -60,7 +60,7 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: (firstSync ? .None : .Fade))
     }
 
-    public func swimDidMove(fromIndex: Int, toIndex: Int) {
+    public func swimList(_: SwimListManagerProtocol, didMoveObjectFromIndex fromIndex: Int, toIndex: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -69,7 +69,7 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.moveRowAtIndexPath(fromIndexPath, toIndexPath: toIndexPath)
     }
 
-    public func swimDidRemove(index: Int, object: SwimModelProtocolBase) {
+    public func swimList(_: SwimListManagerProtocol, didRemoveObject _: SwimModelProtocolBase, atIndex index: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -77,7 +77,7 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
     }
 
-    public func swimDidUpdate(index: Int, object: SwimModelProtocolBase) {
+    public func swimList(_: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }

@@ -52,37 +52,41 @@ public protocol SwimListManagerDelegate: class {
 
     In other words, this indicates the start of a batch of calls to swimDid{Insert,Move,Remove,Replace}.
      */
-    func swimWillChangeObjects()
+    func swimListWillChangeObjects(manager: SwimListManagerProtocol)
 
     /**
      Will be called after a batch of changes to SwimListManagerProtocol.objects has been processed.
 
      In other words, this indicates the end of a batch of calls to swimDid{Insert,Move,Remove,Replace}.
      */
-    func swimDidChangeObjects()
+    func swimListDidChangeObjects(manager: SwimListManagerProtocol)
 
-    func swimDidInsert(object: SwimModelProtocolBase, atIndex: Int)
-    func swimDidMove(fromIndex: Int, toIndex: Int)
-    func swimDidRemove(index: Int, object: SwimModelProtocolBase)
-    func swimDidUpdate(index: Int, object: SwimModelProtocolBase)
+    func swimList(manager: SwimListManagerProtocol, didInsertObject object: SwimModelProtocolBase, atIndex index: Int)
+    func swimList(manager: SwimListManagerProtocol, didMoveObjectFromIndex fromIndex: Int, toIndex: Int)
+    func swimList(manager: SwimListManagerProtocol, didRemoveObject object: SwimModelProtocolBase, atIndex index: Int)
+    func swimList(manager: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int)
 
-    func swimDidStartSynching()
-    func swimDidLink()
-    func swimDidStopSynching()
+    func swimListDidStartSynching(manager: SwimListManagerProtocol)
+    func swimListDidLink(manager: SwimListManagerProtocol)
+    func swimListDidStopSynching(manager: SwimListManagerProtocol)
+
+    func swimList(manager: SwimListManagerProtocol, didReceiveError error: ErrorType)
 }
 
 public extension SwimListManagerDelegate {
-    public func swimWillChangeObjects() {}
-    public func swimDidChangeObjects() {}
+    func swimListWillChangeObjects(manager: SwimListManagerProtocol) {}
+    func swimListDidChangeObjects(manager: SwimListManagerProtocol) {}
 
-    public func swimDidInsert(object: SwimModelProtocolBase, atIndex: Int) {}
-    public func swimDidMove(fromIndex: Int, toIndex: Int) {}
-    public func swimDidRemove(index: Int, object: SwimModelProtocolBase) {}
-    public func swimDidUpdate(index: Int, object: SwimModelProtocolBase) {}
+    func swimList(manager: SwimListManagerProtocol, didInsertObject object: SwimModelProtocolBase, atIndex index: Int) {}
+    func swimList(manager: SwimListManagerProtocol, didMoveObjectFromIndex fromIndex: Int, toIndex: Int) {}
+    func swimList(manager: SwimListManagerProtocol, didRemoveObject object: SwimModelProtocolBase, atIndex index: Int) {}
+    func swimList(manager: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int) {}
 
-    public func swimDidStartSynching() {}
-    public func swimDidLink() {}
-    public func swimDidStopSynching() {}
+    func swimListDidStartSynching(manager: SwimListManagerProtocol) {}
+    func swimListDidLink(manager: SwimListManagerProtocol) {}
+    func swimListDidStopSynching(manager: SwimListManagerProtocol) {}
+
+    public func swimList(manager: SwimListManagerProtocol, didReceiveError error: ErrorType) {}
 }
 
 
@@ -125,7 +129,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         downLink = dl
 
         forEachDelegate {
-            $0.swimDidStartSynching()
+            $0.swimListDidStartSynching(self)
         }
     }
 
@@ -137,7 +141,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         downLink = nil
 
         forEachDelegate {
-            $0.swimDidStopSynching()
+            $0.swimListDidStopSynching(self)
         }
     }
 
@@ -208,48 +212,60 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
 
     public func downlink(_: ListDownlink, didInsert object: SwimModelProtocolBase, atIndex index: Int) {
         forEachDelegate {
-            $0.swimDidInsert(object, atIndex: index)
+            $0.swimList(self, didInsertObject: object, atIndex: index)
         }
     }
 
     public func downlink(_: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex index: Int) {
         forEachDelegate {
-            $0.swimDidUpdate(index, object: object)
+            $0.swimList(self, didUpdateObject: object, atIndex: index)
         }
     }
 
     public func downlink(_: ListDownlink, didMove _: SwimModelProtocolBase, fromIndex: Int, toIndex: Int) {
         forEachDelegate {
-            $0.swimDidMove(fromIndex, toIndex: toIndex)
+            $0.swimList(self, didMoveObjectFromIndex: fromIndex, toIndex: toIndex)
         }
     }
 
     public func downlink(_: ListDownlink, didRemove object: SwimModelProtocolBase, atIndex index: Int) {
         forEachDelegate {
-            $0.swimDidRemove(index, object: object)
+            $0.swimList(self, didRemoveObject: object, atIndex: index)
         }
     }
 
     public func downlinkWillChangeObjects(_: ListDownlink) {
         forEachDelegate {
-            $0.swimWillChangeObjects()
+            $0.swimListWillChangeObjects(self)
         }
     }
 
     public func downlinkDidChangeObjects(_: ListDownlink) {
         forEachDelegate {
-            $0.swimDidChangeObjects()
+            $0.swimListDidChangeObjects(self)
         }
     }
 
     public func downlink(_: Downlink, didLink _: LinkedResponse) {
         forEachDelegate {
-            $0.swimDidLink()
+            $0.swimListDidLink(self)
         }
     }
 
-    public func downlink(_: Downlink, didUnlink _: UnlinkedResponse) {
+    public func downlink(_: Downlink, didUnlink response: UnlinkedResponse) {
+        let tag = response.body.tag
+        if tag == "nodeNotFound" {
+            sendDidReceiveError(.NodeNotFound)
+        }
+
         stopSynching()
+    }
+
+
+    private func sendDidReceiveError(err: SwimError) {
+        forEachDelegate {
+            $0.swimList(self, didReceiveError: err)
+        }
     }
 
 

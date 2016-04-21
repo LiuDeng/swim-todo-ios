@@ -15,4 +15,5 @@ public let SwimErrorDomain = "SwimSwift.SwimError"
 public enum SwimError: Int, ErrorType {
     case Unknown = 0
     case DownlinkIsClientReadOnly = 1
+    case NodeNotFound = 2
 }
