@@ -20,7 +20,10 @@ class GuruModeViewController: UITableViewController {
     private enum Row {
         case Crash
         case DBSize(NSURL)
+        case DeleteDB(SwimUri?)
     }
+
+    var knownLanes: [SwimUri]!
 
     private var rows = [Row]()
 
@@ -57,6 +60,11 @@ class GuruModeViewController: UITableViewController {
             }
             rows.append(.DBSize(url))
         }
+
+        rows.append(.DeleteDB(nil))
+        for lane in knownLanes {
+            rows.append(.DeleteDB(lane))
+        }
     }
 
 
@@ -89,6 +97,12 @@ class GuruModeViewController: UITableViewController {
                 cell.value = "---"
             }
             return cell
+
+        case .DeleteDB(let uri):
+            let cell: DetailTableViewCell = DetailTableViewCell.dequeueFromTableView(tableView, forIndexPath: indexPath)
+            cell.label = (uri == nil ? "Delete All DBs" : "Delete DB \(uri!)")
+            cell.value = ""
+            return cell
         }
     }
 
@@ -112,7 +126,13 @@ class GuruModeViewController: UITableViewController {
         case .Crash:
             crash()
 
-        case .DBSize(_):
+        case .DeleteDB(let uri?):
+            SwimGlobals.instance.dbManager?.deleteBackingFile(uri)
+
+        case .DeleteDB:
+            SwimGlobals.instance.dbManager?.deleteAllBackingFiles()
+
+        case .DBSize:
             break
         }
     }

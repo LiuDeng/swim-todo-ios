@@ -85,6 +85,8 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
 
         case 1:
             let vc = GuruModeViewController()
+            let hostUri = SwimClient.sharedInstance.hostUri
+            vc.knownLanes = objects.map { hostUri.resolve(SwimUri("\($0.nodeUri)/todo/list")!) }
             vc.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
             vc.navigationItem.leftItemsSupplementBackButton = true
 
