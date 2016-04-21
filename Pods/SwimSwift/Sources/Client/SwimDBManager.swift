@@ -79,9 +79,7 @@ public class SwimDBManager {
      */
     private var userId: String? {
         didSet {
-            objc_sync_enter(self)
-            connections.removeAll()
-            objc_sync_exit(self)
+            closeAllConnections()
         }
     }
 
@@ -376,6 +374,26 @@ public class SwimDBManager {
     }
 
 
+    public func deleteAllBackingFiles() {
+        closeAllConnections()
+
+        let fm = NSFileManager.defaultManager()
+        let _ = try? fm.removeItemAtURL(rootDir)
+    }
+
+
+    public func deleteBackingFile(lane: SwimUri) {
+        closeConnection(lane)
+
+        let path = dbPath(lane)
+        let extlessPath = path.URLByDeletingPathExtension!
+        let fm = NSFileManager.defaultManager()
+        let _ = try? fm.removeItemAtURL(path)
+        let _ = try? fm.removeItemAtURL(extlessPath.URLByAppendingPathExtension("sqlite-shm"))
+        let _ = try? fm.removeItemAtURL(extlessPath.URLByAppendingPathExtension("sqlite-wal"))
+    }
+
+
     func applicationWillResignActive() {
         for (_, conn) in connections {
             conn.runIncrementalVacuum().continueWithBlock(logFailures)
@@ -407,6 +425,20 @@ public class SwimDBManager {
     private func connectionForLane(lane: SwimUri) -> Connection? {
         return withSelfLock {
             return self.connections[lane]
+        }
+    }
+
+
+    func closeAllConnections() {
+        withSelfLock {
+            self.connections.removeAll()
+        }
+    }
+
+
+    func closeConnection(lane: SwimUri) {
+        withSelfLock {
+            self.connections.removeValueForKey(lane)
         }
     }
 

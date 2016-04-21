@@ -248,6 +248,10 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
+        if laneProperties.isClientReadOnly {
+            return BFTask(swimError: .DownlinkIsClientReadOnly)
+        }
+
         log.verbose("Replaced \(index): \(value)")
 
         let task = sendCommand("update", value: value, index: index)
@@ -261,6 +265,10 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
     func updateObjectAtIndex(index: Int) -> BFTask {
         SwimAssertOnMainThread()
 
+        if laneProperties.isClientReadOnly {
+            return BFTask(swimError: .DownlinkIsClientReadOnly)
+        }
+
         let object = objects[index]
         log.verbose("Updated \(index): \(object)")
         return replace(object, atIndex: index)
@@ -273,6 +281,10 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
     func insert(object: SwimModelProtocolBase, value: SwimValue, atIndex index: Int) -> BFTask {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
+
+        if laneProperties.isClientReadOnly {
+            return BFTask(swimError: .DownlinkIsClientReadOnly)
+        }
 
         log.verbose("Inserted object at \(index): \(object)")
 
@@ -291,6 +303,10 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
+        if laneProperties.isClientReadOnly {
+            return BFTask(swimError: .DownlinkIsClientReadOnly)
+        }
+
         let value = state.removeAtIndex(from)
         state.insert(value, atIndex: to)
         let object = objects.removeAtIndex(from)
@@ -301,9 +317,13 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         return sendCommand("move", value: value, from: from, to: to)
     }
 
-    func removeAtIndex(index: Int) -> (SwimModelProtocolBase, BFTask) {
+    func removeAtIndex(index: Int) -> (SwimModelProtocolBase?, BFTask) {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
+
+        if laneProperties.isClientReadOnly {
+            return (nil, BFTask(swimError: .DownlinkIsClientReadOnly))
+        }
 
         let value = state.removeAtIndex(index)
         let object = objects.removeAtIndex(index)
@@ -318,6 +338,10 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
     func removeAll() -> BFTask {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
+
+        if laneProperties.isClientReadOnly {
+            return BFTask(swimError: .DownlinkIsClientReadOnly)
+        }
 
         state.removeAll()
         objects.removeAll()

@@ -18,7 +18,7 @@ public protocol ListDownlink: Downlink {
 
     func moveFromIndex(from: Int, toIndex to: Int) -> BFTask
 
-    func removeAtIndex(index: Int) -> (SwimModelProtocolBase, BFTask)
+    func removeAtIndex(index: Int) -> (SwimModelProtocolBase?, BFTask)
 
     func removeAll() -> BFTask
 

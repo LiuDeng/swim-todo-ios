@@ -98,7 +98,7 @@ class Channel: WebSocketDelegate {
         if globals.dbManager == nil {
             globals.dbManager = SwimDBManager()
         }
-        let laneFQUri = Uri("\(nodeUri)/\(lane)")!
+        let laneFQUri = SwimUri("\(nodeUri)/\(lane)")!
         let listDownlink = PersistentListDownlink(downlink: remoteDownlink, objectMaker: objectMaker, laneFQUri: laneFQUri)
         listDownlink.loadFromDBAsync()
 

@@ -68,6 +68,10 @@ class PersistentListDownlink: ListDownlinkAdapter {
 
 
     override func insert(object: SwimModelProtocolBase, value: SwimValue, atIndex index: Int) -> BFTask {
+        if laneProperties.isClientReadOnly {
+            return BFTask(swimError: .DownlinkIsClientReadOnly)
+        }
+
         // Note that we're not inserting yet (matches the other hack in SwimListAdapter).
 //        dbInsert(value, atIndex: index)
         return super.insert(object, value: value, atIndex: index)
@@ -75,24 +79,40 @@ class PersistentListDownlink: ListDownlinkAdapter {
 
 
     override func replace(value: SwimValue, atIndex index: Int) -> BFTask {
+        if laneProperties.isClientReadOnly {
+            return BFTask(swimError: .DownlinkIsClientReadOnly)
+        }
+
         dbUpdate(value, atIndex: index)
         return super.replace(value, atIndex: index)
     }
 
 
     override func moveFromIndex(from: Int, toIndex to: Int) -> BFTask {
+        if laneProperties.isClientReadOnly {
+            return BFTask(swimError: .DownlinkIsClientReadOnly)
+        }
+
         dbMove(fromIndex: from, toIndex: to)
         return super.moveFromIndex(from, toIndex: to)
     }
 
 
-    override func removeAtIndex(index: Int) -> (SwimModelProtocolBase, BFTask) {
+    override func removeAtIndex(index: Int) -> (SwimModelProtocolBase?, BFTask) {
+        if laneProperties.isClientReadOnly {
+            return (nil, BFTask(swimError: .DownlinkIsClientReadOnly))
+        }
+
         dbRemoveAtIndex(index)
         return super.removeAtIndex(index)
     }
 
 
     override func removeAll() -> BFTask {
+        if laneProperties.isClientReadOnly {
+            return BFTask(swimError: .DownlinkIsClientReadOnly)
+        }
+
         dbRemoveAll()
         return super.removeAll()
     }

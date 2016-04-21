@@ -91,6 +91,10 @@ class RemoteDownlink: Downlink, Hashable {
     }
 
     func command(body body: SwimValue) -> BFTask {
+        if laneProperties.isClientReadOnly {
+            return BFTask(swimError: .DownlinkIsClientReadOnly)
+        }
+
         let task = BFTaskCompletionSource()
         channel.command(node: nodeUri, lane: laneUri, body: body)
         inFlightCommands.append(task)
