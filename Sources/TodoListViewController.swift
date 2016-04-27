@@ -203,6 +203,15 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
                 return
             }
 
+        case SwimError.NetworkError:
+            if manager === swimListManager {
+                message = "Network error"
+            }
+            else {
+                log.verbose("Ignoring network error with presence list")
+                return
+            }
+
         default:
             break
         }
