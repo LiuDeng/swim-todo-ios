@@ -22,6 +22,8 @@ protocol TableViewCellDelegate {
 
 class TableViewCell: UITableViewCell, UITextFieldDelegate {
     
+    private var lblWriteInProgress: UILabel!
+
     let gradientLayer = CAGradientLayer()
     var originalCenter = CGPoint()
     var deleteOnDragRelease = false, completeOnDragRelease = false
@@ -70,13 +72,20 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
         crossLabel = createCueLabel()
         crossLabel.text = "\u{2717}"
         crossLabel.textAlignment = .Left
-        
+
+        lblWriteInProgress = UILabel()
+        lblWriteInProgress.text = "..."
+        lblWriteInProgress.font = UIFont.boldSystemFontOfSize(16)
+        lblWriteInProgress.textColor = UIColor.whiteColor()
+        lblWriteInProgress.backgroundColor = UIColor.clearColor()
+
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         label.delegate = self
         label.contentVerticalAlignment = .Center
         
         addSubview(label)
+        addSubview(lblWriteInProgress)
         addSubview(tickLabel)
         addSubview(crossLabel)
         // remove the default blue highlight for selected cells
@@ -103,8 +112,18 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
         recognizer.delegate = self
         addGestureRecognizer(recognizer)
     }
-    
+
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+
+        lblWriteInProgress.layer.opacity = 0.0
+        lblWriteInProgress.layer.removeAllAnimations()
+    }
+
+
     let kLabelLeftMargin: CGFloat = 15.0
+    let kLblWriteInProgressRightMargin: CGFloat = 25.0
     let kUICuesMargin: CGFloat = 10.0, kUICuesWidth: CGFloat = 50.0
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -113,12 +132,24 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
         itemCompleteLayer.frame = bounds
         label.frame = CGRect(x: kLabelLeftMargin, y: 0,
             width: bounds.size.width - kLabelLeftMargin, height: bounds.size.height)
+        lblWriteInProgress.frame = CGRect(x: bounds.size.width - kLblWriteInProgressRightMargin, y: 0,
+            width: kLblWriteInProgressRightMargin, height: bounds.size.height)
         tickLabel.frame = CGRect(x: -kUICuesWidth - kUICuesMargin, y: 0,
             width: kUICuesWidth, height: bounds.size.height)
         crossLabel.frame = CGRect(x: bounds.size.width + kUICuesMargin, y: 0,
             width: kUICuesWidth, height: bounds.size.height)
     }
-    
+
+
+    func didCompleteServerWrite() {
+        let fade = CABasicAnimation(keyPath: "opacity")
+        fade.fromValue = 1.0
+        fade.toValue = 0.0
+        fade.duration = 0.5
+        lblWriteInProgress.layer.addAnimation(fade, forKey: "fade")
+    }
+
+
     //MARK: - horizontal pan gesture methods
     func handlePan(recognizer: UIPanGestureRecognizer) {
         // 1
@@ -154,6 +185,8 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
                 if let item = toDoItem {
                     let done = !item.completed
                     item.completed = done
+                    lblWriteInProgress.layer.opacity = 1.0
+                    lblWriteInProgress.layer.removeAllAnimations()
                     delegate?.toDoItemCompleted(item)
                     label.strikeThrough = done
                     itemCompleteLayer.hidden = !done
@@ -194,6 +227,8 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
     
     func textFieldDidEndEditing(textField: UITextField) {
         toDoItem?.name = (textField.text ?? "")
+        lblWriteInProgress.layer.opacity = 1.0
+        lblWriteInProgress.layer.removeAllAnimations()
         delegate?.cellDidEndEditing(self)
     }
     

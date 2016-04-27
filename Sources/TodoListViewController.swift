@@ -175,6 +175,22 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         // TODO: Refresh cell
     }
 
+
+    func swimList(manager: SwimListManagerProtocol, didCompleteServerWriteOfObject object: SwimModelProtocolBase) {
+        precondition(manager === swimListManager)
+
+        guard let index = swimObjects.indexOf({ $0 === object }) else {
+            return
+        }
+        let indexPath = NSIndexPath(forRow: index, inSection: swimObjectSection)
+        guard let visiblePaths = tableView.indexPathsForVisibleRows where visiblePaths.contains(indexPath) else {
+            return
+        }
+        let cell = tableView.cellForRowAtIndexPath(indexPath) as! TableViewCell
+        cell.didCompleteServerWrite()
+    }
+
+
     func swimList(manager: SwimListManagerProtocol, didReceiveError error: ErrorType) {
         var message = "Unknown error"
         switch error {
