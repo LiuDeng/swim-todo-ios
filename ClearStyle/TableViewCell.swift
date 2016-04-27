@@ -6,33 +6,20 @@
 //  Copyright (c) 2014 Ray Wenderlich. All rights reserved.
 //
 
-import UIKit
 import QuartzCore
+import UIKit
 
-// A protocol that the TableViewCell uses to inform its delegate of state change
+
 protocol TableViewCellDelegate {
-    // indicates that the given item has been deleted
     func toDoItemDeleted(todoItem: TodoEntry)
     func toDoItemCompleted(todoItem: TodoEntry)
-    // Indicates that the edit process has begun for the given cell
     func cellDidBeginEditing(editingCell: TableViewCell)
-    // Indicates that the edit process has committed for the given cell
     func cellDidEndEditing(editingCell: TableViewCell)
 }
 
+
 class TableViewCell: UITableViewCell, UITextFieldDelegate {
     
-    private var lblWriteInProgress: UILabel!
-
-    let gradientLayer = CAGradientLayer()
-    var originalCenter = CGPoint()
-    var deleteOnDragRelease = false, completeOnDragRelease = false
-    var tickLabel: UILabel, crossLabel: UILabel
-    let label: StrikeThroughText
-    var itemCompleteLayer = CALayer()
-    // The object that acts as delegate for this cell.
-    var delegate: TableViewCellDelegate?
-    // The item that this cell renders.
     var toDoItem: TodoEntry? {
         didSet {
             CATransaction.begin()
@@ -43,7 +30,24 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
             CATransaction.commit()
         }
     }
-    
+
+    var delegate: TableViewCellDelegate?
+
+    let label: StrikeThroughText
+
+    private var lblWriteInProgress: UILabel!
+
+    private var tickLabel: UILabel
+    private var crossLabel: UILabel
+
+    private let gradientLayer = CAGradientLayer()
+    private var itemCompleteLayer = CALayer()
+
+    private var originalCenter = CGPoint()
+    private var deleteOnDragRelease = false
+    private var completeOnDragRelease = false
+
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("NSCoding not supported")
     }
@@ -123,9 +127,11 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
     }
 
 
-    let kLabelLeftMargin: CGFloat = 15.0
-    let kLblWriteInProgressRightMargin: CGFloat = 25.0
-    let kUICuesMargin: CGFloat = 10.0, kUICuesWidth: CGFloat = 50.0
+    private let kLabelLeftMargin: CGFloat = 15.0
+    private let kLblWriteInProgressRightMargin: CGFloat = 25.0
+    private let kUICuesMargin: CGFloat = 10.0
+    private let kUICuesWidth: CGFloat = 50.0
+
     override func layoutSubviews() {
         super.layoutSubviews()
         // ensure the gradient layer occupies the full bounds
@@ -153,6 +159,7 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
 
 
     //MARK: - horizontal pan gesture methods
+
     func handlePan(recognizer: UIPanGestureRecognizer) {
         // 1
         if recognizer.state == .Began {
