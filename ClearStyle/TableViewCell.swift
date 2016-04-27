@@ -78,6 +78,7 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
         lblWriteInProgress.font = UIFont.boldSystemFontOfSize(16)
         lblWriteInProgress.textColor = UIColor.whiteColor()
         lblWriteInProgress.backgroundColor = UIColor.clearColor()
+        lblWriteInProgress.layer.opacity = 0.0
 
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
@@ -146,6 +147,7 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
         fade.fromValue = 1.0
         fade.toValue = 0.0
         fade.duration = 0.5
+        lblWriteInProgress.layer.opacity = 0.0
         lblWriteInProgress.layer.addAnimation(fade, forKey: "fade")
     }
 
