@@ -141,7 +141,7 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
     }
 
 
-    func didCompleteServerWrite() {
+    func didCompleteServerWrites() {
         let fade = CABasicAnimation(keyPath: "opacity")
         fade.fromValue = 1.0
         fade.toValue = 0.0

@@ -176,7 +176,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
 
-    func swimList(manager: SwimListManagerProtocol, didCompleteServerWriteOfObject object: SwimModelProtocolBase) {
+    func swimList(manager: SwimListManagerProtocol, didCompleteServerWritesOfObject object: SwimModelProtocolBase) {
         precondition(manager === swimListManager)
 
         guard let index = swimObjects.indexOf({ $0 === object }) else {
@@ -187,7 +187,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
             return
         }
         let cell = tableView.cellForRowAtIndexPath(indexPath) as! TableViewCell
-        cell.didCompleteServerWrite()
+        cell.didCompleteServerWrites()
     }
 
 
