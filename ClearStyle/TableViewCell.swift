@@ -14,7 +14,7 @@ protocol TableViewCellDelegate {
     func toDoItemDeleted(todoItem: TodoEntry)
     func toDoItemCompleted(todoItem: TodoEntry)
     func cellDidBeginEditing(editingCell: TableViewCell)
-    func cellDidEndEditing(editingCell: TableViewCell)
+    func cellDidEndEditing(editingCell: TableViewCell, changed: Bool)
 }
 
 
@@ -235,14 +235,17 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
     }
     
     func textFieldDidEndEditing(textField: UITextField) {
-        toDoItem?.name = (textField.text ?? "")
-        lblWriteInProgress.layer.opacity = 1.0
-        lblWriteInProgress.layer.removeAllAnimations()
-        delegate?.cellDidEndEditing(self)
+        let newName = (textField.text ?? "")
+        let changed = (toDoItem?.name != newName)
+        if changed {
+            toDoItem?.name = newName
+            lblWriteInProgress.layer.opacity = 1.0
+            lblWriteInProgress.layer.removeAllAnimations()
+        }
+        delegate?.cellDidEndEditing(self, changed: changed)
     }
     
     func textFieldDidBeginEditing(textField: UITextField) {
         delegate?.cellDidBeginEditing(self)
     }
-
 }

@@ -241,7 +241,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
 
-    func cellDidEndEditing(editingCell: TableViewCell) {
+    func cellDidEndEditing(editingCell: TableViewCell, changed: Bool) {
         let visibleCells = tableView.visibleCells as! [TableViewCell]
         for cell: TableViewCell in visibleCells {
             UIView.animateWithDuration(0.3, animations: {() in
@@ -256,8 +256,11 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
             preconditionFailure("Cannot find cell when we're editing it!")
         }
 
-        swimListManager.setHighlightAtIndex(path.row, isHighlighted: false)
-        swimListManager.updateObjectAtIndex(path.row)
+        let index = path.row
+        swimListManager.setHighlightAtIndex(index, isHighlighted: false)
+        if changed {
+            swimListManager.updateObjectAtIndex(index)
+        }
     }
 
 
