@@ -42,13 +42,12 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 
             case "insert"?:
                 let header = message.body.first.value
-                if let index = header["index"].integer {
-                    let body = message.body.dropFirst()
-                    remoteInsert(body, atIndex: index)
-                }
-                else {
+                guard let index = header["index"].integer else {
                     log.warning("Received insert with no index!")
+                    return
                 }
+                let body = message.body.dropFirst()
+                remoteInsert(body, atIndex: index)
 
             case "move"?:
                 let header = message.body.first.value
@@ -128,6 +127,12 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
     func remoteInsert(value: SwimValue, atIndex index: Int) -> Bool {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
+
+        let swimId = value["item"]["swimId"].text ?? ""
+        if objects.indexOf({ $0.swimId == swimId }) != nil {
+            log.verbose("Ignoring insert of object that we already have (it's hopefully one that we just inserted).")
+            return false
+        }
 
         guard 0 <= index && index <= state.count else {
             log.warning("Ignoring insert out of range!")
@@ -281,6 +286,9 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
     func insert(object: SwimModelProtocolBase, value: SwimValue, atIndex index: Int) -> BFTask {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
+        precondition(!object.swimId.isEmpty)
+        precondition(index >= 0)
+        precondition(index <= objects.count)
 
         if laneProperties.isClientReadOnly {
             return BFTask(swimError: .DownlinkIsClientReadOnly)
@@ -290,11 +298,8 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 
         let task = sendCommand("insert", value: value, index: index)
 
-        // We're not inserting into objects right now -- we're waiting for it to come back from the server instead.
-        // TODO: This is a dirty hack and needs fixing properly.  We need a sessionId on messages so that we don't
-        // respond to our own.
-//        objects.insert(object, atIndex: index)
-//        state.insert(value, atIndex: index)
+        objects.insert(object, atIndex: index)
+        state.insert(value, atIndex: index)
 
         return task
     }

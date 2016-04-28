@@ -84,7 +84,9 @@ class RemoteDownlink: Downlink, Hashable {
         }
     }
 
-    func onError(error: NSError) {}
+    func onError(error: NSError) {
+        failAllInFlight(error)
+    }
 
     func onClose() {
         delegate?.downlinkDidClose(self)
@@ -110,12 +112,12 @@ class RemoteDownlink: Downlink, Hashable {
     }
 
     func close() {
-        failAllInFlight()
+        let err = NSError(domain: NSURLErrorDomain, code: NSURLErrorNetworkConnectionLost, userInfo: nil)
+        failAllInFlight(err)
         channel.unregisterDownlink(self)
     }
 
-    private func failAllInFlight() {
-        let err = NSError(domain: NSURLErrorDomain, code: NSURLErrorNetworkConnectionLost, userInfo: nil)
+    private func failAllInFlight(err: NSError) {
         inFlightCommands.failAll(err)
         inFlightSyncRequests.failAll(err)
     }

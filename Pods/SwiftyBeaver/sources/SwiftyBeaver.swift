@@ -11,6 +11,11 @@ import Foundation
 
 public class SwiftyBeaver {
 
+    /// version string of framework
+    public static let version = "0.5.1"  // UPDATE ON RELEASE!
+    /// build number of framework
+    public static let build = 510 // version 0.7.0 -> 700, UPDATE ON RELEASE!
+
     public enum Level: Int {
         case Verbose = 0
         case Debug = 1
@@ -20,34 +25,26 @@ public class SwiftyBeaver {
     }
 
     // a set of active destinations
-    static var destinations = Set<BaseDestination>() //[BaseDestination]()
-
+    static var destinations = Set<BaseDestination>()
 
     // MARK: Destination Handling
 
     /// returns boolean about success
-    public class func addDestination(destination: AnyObject) -> Bool {
-		guard let dest = destination as? BaseDestination else {
-			print("SwiftyBeaver: adding of destination failed")
-			return false
-		}
-
-		//print("insert hashValue \(dest.hashValue)")
-		destinations.insert(dest)  // if not already in (it’s a set)
-		return true
-
+    public class func addDestination(destination: BaseDestination) -> Bool {
+        if destinations.contains(destination) {
+            return false
+        }
+        destinations.insert(destination)
+        return true
     }
 
     /// returns boolean about success
-    public class func removeDestination(destination: AnyObject) -> Bool {
-		guard let dest = destination as? BaseDestination else {
-			print("SwiftyBeaver: removing of destination failed")
-			return false
-		}
-
-		destinations.remove(dest)
-		return true
-
+    public class func removeDestination(destination: BaseDestination) -> Bool {
+        if destinations.contains(destination) == false {
+            return false
+        }
+        destinations.remove(destination)
+        return true
     }
 
     /// if you need to start fresh
@@ -121,15 +118,13 @@ public class SwiftyBeaver {
                 // try to convert msg object to String and put it on queue
                 let msgStr = "\(message())"
 
-                if !msgStr.isEmpty {
-                    if dest.asynchronously {
-                        dispatch_async(queue) {
-                            dest.send(level, msg: msgStr, thread: thread, path: path, function: function, line: line)
-                        }
-                    } else {
-                        dispatch_sync(queue) {
-                            dest.send(level, msg: msgStr, thread: thread, path: path, function: function, line: line)
-                        }
+                if dest.asynchronously {
+                    dispatch_async(queue) {
+                        dest.send(level, msg: msgStr, thread: thread, path: path, function: function, line: line)
+                    }
+                } else {
+                    dispatch_sync(queue) {
+                        dest.send(level, msg: msgStr, thread: thread, path: path, function: function, line: line)
                     }
                 }
             }

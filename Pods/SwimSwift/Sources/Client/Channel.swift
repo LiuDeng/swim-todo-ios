@@ -273,8 +273,13 @@ class Channel: WebSocketDelegate {
         }
     }
 
-    private func onError(error: NSError) {
-        log.info("\(error)")
+    private func onError(error_: NSError) {
+        log.info("\(error_)")
+
+        var error = error_
+        if error.domain == "SwiftWebSocket.WebSocketError" {
+            error = SwimError.NetworkError as NSError
+        }
 
         for nodeDownlinks in downlinks.values {
             for laneDownlinks in nodeDownlinks.values {

@@ -66,6 +66,8 @@ public protocol SwimListManagerDelegate: class {
     func swimList(manager: SwimListManagerProtocol, didRemoveObject object: SwimModelProtocolBase, atIndex index: Int)
     func swimList(manager: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int)
 
+    func swimList(manager: SwimListManagerProtocol, didCompleteServerWritesOfObject object: SwimModelProtocolBase)
+
     func swimListDidStartSynching(manager: SwimListManagerProtocol)
     func swimListDidLink(manager: SwimListManagerProtocol)
     func swimListDidStopSynching(manager: SwimListManagerProtocol)
@@ -81,6 +83,8 @@ public extension SwimListManagerDelegate {
     func swimList(manager: SwimListManagerProtocol, didMoveObjectFromIndex fromIndex: Int, toIndex: Int) {}
     func swimList(manager: SwimListManagerProtocol, didRemoveObject object: SwimModelProtocolBase, atIndex index: Int) {}
     func swimList(manager: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int) {}
+
+    func swimList(manager: SwimListManagerProtocol, didCompleteServerWritesOfObject object: SwimModelProtocolBase) {}
 
     func swimListDidStartSynching(manager: SwimListManagerProtocol) {}
     func swimListDidLink(manager: SwimListManagerProtocol) {}
@@ -154,7 +158,10 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }
 
         let object = ObjectType()
-        dl.insert(object, atIndex: index).continueWithBlock(logFailures)
+        object.serverWritesInProgress += 1
+        dl.insert(object, atIndex: index).continueWithBlock { [weak self] task in
+            return didCompleteServerWrite(object, manager: self, task: task)
+        }.continueWithBlock(handleFailures)
 
         return object
     }
@@ -167,7 +174,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
             return
         }
 
-        dl.moveFromIndex(fromIndex, toIndex: toIndex).continueWithBlock(logFailures)
+        dl.moveFromIndex(fromIndex, toIndex: toIndex).continueWithBlock(handleFailures)
     }
 
     public func removeObjectAtIndex(index: Int) -> SwimModelProtocolBase? {
@@ -179,7 +186,7 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }
 
         let (obj, task) = dl.removeAtIndex(index)
-        task.continueWithBlock(logFailures)
+        task.continueWithBlock(handleFailures)
         return obj
     }
 
@@ -196,6 +203,8 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         log.verbose("Did \(cmd) \(index): \(object)")
 
         object.isHighlighted = isHighlighted
+        // Note that failures only get logged, they don't go back to the
+        // delegate, to keep this call lightweight.
         dl.updateObjectAtIndex(index).continueWithBlock(logFailures)
     }
 
@@ -207,7 +216,11 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
             return
         }
 
-        dl.updateObjectAtIndex(index).continueWithBlock(logFailures)
+        let object = objects[index] as! ObjectType
+        object.serverWritesInProgress += 1
+        dl.updateObjectAtIndex(index).continueWithBlock { [weak self] task in
+            return didCompleteServerWrite(object, manager: self, task: task)
+        }.continueWithBlock(handleFailures)
     }
 
     public func downlink(_: ListDownlink, didInsert object: SwimModelProtocolBase, atIndex index: Int) {
@@ -255,16 +268,32 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
     public func downlink(_: Downlink, didUnlink response: UnlinkedResponse) {
         let tag = response.body.tag
         if tag == "nodeNotFound" {
-            sendDidReceiveError(.NodeNotFound)
+            sendDidReceiveError(SwimError.NodeNotFound)
+        }
+        else if tag == "laneNotFound" {
+            sendDidReceiveError(SwimError.LaneNotFound)
         }
 
         stopSynching()
     }
 
 
-    private func sendDidReceiveError(err: SwimError) {
+    private func sendDidReceiveError(err: ErrorType) {
+        dispatch_async(dispatch_get_main_queue()) { [weak self] in
+            self?.sendDidReceiveError_(err)
+        }
+    }
+
+    private func sendDidReceiveError_(err: ErrorType) {
         forEachDelegate {
             $0.swimList(self, didReceiveError: err)
+        }
+    }
+
+
+    private func sendDidCompleteServerWrites(object: ObjectType) {
+        forEachDelegate {
+            $0.swimList(self, didCompleteServerWritesOfObject: object)
         }
     }
 
@@ -277,6 +306,20 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }
     }
 
+
+    private func handleFailures(task: BFTask) -> BFTask {
+        if let err = task.error {
+            log.warning("Operation failed: \(err).")
+            sendDidReceiveError(err)
+        }
+        if let exn = task.exception {
+            log.warning("Operation failed: \(exn).")
+            let err = SwimError.Unknown
+            sendDidReceiveError(err)
+        }
+        return task
+    }
+
     private func logFailures(task: BFTask) -> BFTask {
         if let err = task.error {
             log.warning("Operation failed: \(err).")
@@ -286,4 +329,16 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }
         return task
     }
+}
+
+
+private func didCompleteServerWrite<ObjectType: SwimModelProtocolBase>(object: ObjectType, manager: SwimListManager<ObjectType>?, task: BFTask) -> BFTask {
+    dispatch_async(dispatch_get_main_queue()) {
+        precondition(object.serverWritesInProgress > 0)
+        object.serverWritesInProgress -= 1
+        if object.serverWritesInProgress == 0 {
+            manager?.sendDidCompleteServerWrites(object)
+        }
+    }
+    return task
 }

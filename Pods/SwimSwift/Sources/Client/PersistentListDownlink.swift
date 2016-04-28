@@ -72,8 +72,7 @@ class PersistentListDownlink: ListDownlinkAdapter {
             return BFTask(swimError: .DownlinkIsClientReadOnly)
         }
 
-        // Note that we're not inserting yet (matches the other hack in SwimListAdapter).
-//        dbInsert(value, atIndex: index)
+        dbInsert(value, atIndex: index)
         return super.insert(object, value: value, atIndex: index)
     }
 
