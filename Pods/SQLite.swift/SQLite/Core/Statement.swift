@@ -175,7 +175,6 @@ public final class Statement {
     }
 
     public func step() throws -> Bool {
-        NSLog("STEP: \(self) \(connection) \(connection.handle)")
         return try connection.sync { try self.connection.check(sqlite3_step(self.handle)) == SQLITE_ROW }
     }
 

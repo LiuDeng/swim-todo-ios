@@ -102,13 +102,8 @@ public final class Connection {
 
     /// The last rowid inserted into the database via this connection.
     public var lastInsertRowid: Int64? {
-        NSLog("LASTINSERT: \(handle)")
         let rowid = sqlite3_last_insert_rowid(handle)
         return rowid > 0 ? rowid : nil
-    }
-
-    public var lastError: String {
-        return String.fromCString(sqlite3_errmsg(handle))!
     }
 
     /// The last number of changes (inserts, updates, or deletes) made to the
