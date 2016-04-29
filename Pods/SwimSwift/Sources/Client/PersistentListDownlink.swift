@@ -34,36 +34,13 @@ class PersistentListDownlink: ListDownlinkAdapter {
         return dbManager.openAsync(laneUri, persistenceType: .List).continueWithSuccessBlock { _ in
             return dbManager.loadListContents(laneUri).continueWithSuccessBlock { [weak self] task in
                 let contents = task.result as! [SwimRecord]
+                let values = contents.map({ SwimValue($0) })
                 dispatch_async(dispatch_get_main_queue()) {
-                    self?.loadContents(contents)
+                    self?.loadValues(values)
                 }
                 return nil
             }
         }.continueWithBlock(handleDBErrors)
-    }
-
-
-    private func loadContents(contents: [SwimRecord]) {
-        guard count == 0 else {
-            log.verbose("\(laneFQUri) Not loading from DB; the server has already sent us some rows")
-            return
-        }
-
-        sendWillChangeObjects()
-
-        var idx = 0
-        for content in contents {
-            // Note, calling super because we don't want to try and insert
-            // these rows into the DB, because that's where they just came
-            // from.
-            guard super.remoteInsert(SwimValue(content), atIndex: idx) else {
-                log.error("Aborting loadContents; insert has failed")
-                return
-            }
-            idx = idx + 1
-        }
-
-        sendDidChangeObjects()
     }
 
 

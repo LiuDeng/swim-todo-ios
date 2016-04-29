@@ -15,6 +15,21 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
     public let listManager: SwimListManagerProtocol
     public var firstSync = true
 
+    /**
+     true if this instance has called tableView.beginUpdates() and has not
+     yet called tableView.endUpdates().
+
+     This is important if you want to make a call to cellForRowAtIndexPath
+     or similar, because you will have to take any pending inserts or
+     deletes into account.
+
+     You hopefully don't need to look at this in practice, because
+     this class will close any pending table updates if
+     swimList(didUpdateObject:) is called, and that's the only time
+     I anticipate you needing to call cellForRowAtIndexPath.
+     */
+    public var insideBeginUpdates = false
+
     public weak var delegate: SwimListViewHelperDelegate?
     public weak var tableView: UITableView?
 
@@ -34,7 +49,9 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
 
     public func swimListWillChangeObjects(_: SwimListManagerProtocol) {
         if !firstSync {
+            precondition(!insideBeginUpdates)
             tableView?.beginUpdates()
+            insideBeginUpdates = true
         }
     }
 
@@ -43,21 +60,34 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
             log.debug("First sync added \(delegate?.swimObjects.count ?? 0) objects")
             firstSync = false
         }
-        else {
+        endUpdatesIfNecessary()
+    }
+
+    private func endUpdatesIfNecessary() {
+        if insideBeginUpdates {
+            insideBeginUpdates = false
             tableView?.endUpdates()
         }
     }
 
     public func swimListDidStopSynching(_: SwimListManagerProtocol) {
+        endUpdatesIfNecessary()
         tableView?.reloadData()
     }
 
-    public func swimList(_: SwimListManagerProtocol, didInsertObject _: SwimModelProtocolBase, atIndex index: Int) {
-        guard let objectSection = delegate?.swimObjectSection else {
+    public func swimList(_: SwimListManagerProtocol, didInsertObjects _: [SwimModelProtocolBase], atIndexes indexes: [Int]) {
+        guard let objectSection = delegate?.swimObjectSection, tableView = tableView else {
             return
         }
-        let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
-        tableView?.insertRowsAtIndexPaths([indexPath], withRowAnimation: (firstSync ? .None : .Fade))
+        let indexPaths = indexes.map { NSIndexPath(forRow: $0, inSection: objectSection) }
+        if firstSync {
+            UIView.setAnimationsEnabled(false)
+            tableView.insertRowsAtIndexPaths(indexPaths, withRowAnimation: .None)
+            UIView.setAnimationsEnabled(true)
+        }
+        else {
+            tableView.insertRowsAtIndexPaths(indexPaths, withRowAnimation: .Fade)
+        }
     }
 
     public func swimList(_: SwimListManagerProtocol, didMoveObjectFromIndex fromIndex: Int, toIndex: Int) {
@@ -81,6 +111,9 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
+
+        endUpdatesIfNecessary()
+
         let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
         guard let cell = tableView?.cellForRowAtIndexPath(indexPath) else {
             return

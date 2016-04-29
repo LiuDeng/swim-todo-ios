@@ -23,12 +23,12 @@ public class SwimListCollectionViewHelper: SwimListManagerDelegate {
         collectionView?.reloadData()
     }
 
-    public func swimList(_: SwimListManagerProtocol, didInsertObject: SwimModelProtocolBase, atIndex index: Int) {
-        guard let objectSection = delegate?.swimObjectSection else {
+    public func swimList(_: SwimListManagerProtocol, didInsertObjects: [SwimModelProtocolBase], atIndexes indexes: [Int]) {
+        guard let objectSection = delegate?.swimObjectSection, collectionView = collectionView else {
             return
         }
-        let indexPath = NSIndexPath(forRow: index, inSection: objectSection)
-        collectionView?.insertItemsAtIndexPaths([indexPath])
+        let indexPaths = indexes.map { NSIndexPath(forRow: $0, inSection: objectSection) }
+        collectionView.insertItemsAtIndexPaths(indexPaths)
     }
 
     public func swimList(_: SwimListManagerProtocol, didMoveObjectFromIndex fromIndex: Int, toIndex: Int) {

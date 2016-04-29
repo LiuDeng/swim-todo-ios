@@ -40,6 +40,11 @@ public protocol SwimListManagerProtocol: class {
      */
     func removeObjectAtIndex(index: Int) -> SwimModelProtocolBase?
 
+    /**
+     This will fail, and return false, if the server connection is not open.
+     */
+    func removeAll() -> Bool
+
     func setHighlightAtIndex(index: Int, isHighlighted: Bool)
     func updateObjectAtIndex(index: Int)
 }
@@ -61,7 +66,7 @@ public protocol SwimListManagerDelegate: class {
      */
     func swimListDidChangeObjects(manager: SwimListManagerProtocol)
 
-    func swimList(manager: SwimListManagerProtocol, didInsertObject object: SwimModelProtocolBase, atIndex index: Int)
+    func swimList(manager: SwimListManagerProtocol, didInsertObjects objects: [SwimModelProtocolBase], atIndexes indexes: [Int])
     func swimList(manager: SwimListManagerProtocol, didMoveObjectFromIndex fromIndex: Int, toIndex: Int)
     func swimList(manager: SwimListManagerProtocol, didRemoveObject object: SwimModelProtocolBase, atIndex index: Int)
     func swimList(manager: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int)
@@ -79,7 +84,7 @@ public extension SwimListManagerDelegate {
     func swimListWillChangeObjects(manager: SwimListManagerProtocol) {}
     func swimListDidChangeObjects(manager: SwimListManagerProtocol) {}
 
-    func swimList(manager: SwimListManagerProtocol, didInsertObject object: SwimModelProtocolBase, atIndex index: Int) {}
+    func swimList(manager: SwimListManagerProtocol, didInsertObjects objects: [SwimModelProtocolBase], atIndexes indexes: [Int]) {}
     func swimList(manager: SwimListManagerProtocol, didMoveObjectFromIndex fromIndex: Int, toIndex: Int) {}
     func swimList(manager: SwimListManagerProtocol, didRemoveObject object: SwimModelProtocolBase, atIndex index: Int) {}
     func swimList(manager: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int) {}
@@ -190,6 +195,19 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         return obj
     }
 
+    public func removeAll() -> Bool {
+        SwimAssertOnMainThread()
+
+        guard let dl = downLink else {
+            log.warning("Ignoring request to unsynched list")
+            return false
+        }
+
+        let task = dl.removeAll()
+        task.continueWithBlock(handleFailures)
+        return true
+    }
+
     public func setHighlightAtIndex(index: Int, isHighlighted: Bool) {
         SwimAssertOnMainThread()
 
@@ -223,9 +241,9 @@ public class SwimListManager<ObjectType: SwimModelProtocol>: SwimListManagerProt
         }.continueWithBlock(handleFailures)
     }
 
-    public func downlink(_: ListDownlink, didInsert object: SwimModelProtocolBase, atIndex index: Int) {
+    public func downlink(downlink: ListDownlink, didInsert objects: [SwimModelProtocolBase], atIndexes indexes: [Int]) {
         forEachDelegate {
-            $0.swimList(self, didInsertObject: object, atIndex: index)
+            $0.swimList(self, didInsertObjects: objects, atIndexes: indexes)
         }
     }
 

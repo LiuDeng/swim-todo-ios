@@ -111,7 +111,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         if index == state.count {
             state.append(value)
             objects.append(object)
-            listDownlinkDelegate?.downlink(self, didInsert: object, atIndex: index)
+            listDownlinkDelegate?.downlink(self, didInsert: [object], atIndexes: [index])
         }
         else {
             state[index] = value
@@ -139,8 +139,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
             return false
         }
 
-        let item = value["item"]
-        guard let object = objectMaker(item) else {
+        guard let object = swimValueToObject(value) else {
             log.warning("Ignoring insert with unparseable item!")
             return false
         }
@@ -153,9 +152,38 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         state.insert(value, atIndex: index)
         objects.insert(object, atIndex: index)
 
-        listDownlinkDelegate?.downlink(self, didInsert: object, atIndex: index)
+        listDownlinkDelegate?.downlink(self, didInsert: [object], atIndexes: [index])
 
         return true
+    }
+
+
+    /**
+     This is only intended for the initial load e.g. from the local
+     database.  It doesn't handle conflicts with existing items already in
+     this list (it assumes that this list is empty right now).
+     */
+    func loadValues(values: [SwimValue]) {
+        guard count == 0 else {
+            log.verbose("Refusing to load; we already have some content")
+            return
+        }
+
+        let newObjects = values.flatMap({ objectMaker($0["item"]) })
+        if newObjects.count != values.count {
+            log.warning("Ignoring loadValues with unparseable item!")
+            return
+        }
+
+        sendWillChangeObjects()
+
+        state = values
+        objects = newObjects
+
+        let indexes = [Int](0 ..< values.count)
+        listDownlinkDelegate?.downlink(self, didInsert: objects, atIndexes: indexes)
+
+        sendDidChangeObjects()
     }
 
 
@@ -168,9 +196,8 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
             return false
         }
 
-        let item = value["item"]
-        guard let newDestObject = objectMaker(item) else {
-            log.warning("Ignoring move with invalid object! \(item)")
+        guard let newDestObject = swimValueToObject(value) else {
+            log.warning("Ignoring move with invalid object! \(value)")
             return false
         }
 
@@ -386,6 +413,12 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         SwimAssertOnMainThread()
 
         listDownlinkDelegate?.downlinkDidChangeObjects(self)
+    }
+
+
+    private func swimValueToObject(value: SwimValue) -> SwimModelProtocolBase? {
+        let item = value["item"]
+        return objectMaker(item)
     }
 
 

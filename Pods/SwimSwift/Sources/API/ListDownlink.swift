@@ -34,7 +34,7 @@ public protocol ListDownlinkDelegate: DownlinkDelegate {
 
     func downlink(downlink: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex index: Int)
 
-    func downlink(downlink: ListDownlink, didInsert object: SwimModelProtocolBase, atIndex index: Int)
+    func downlink(downlink: ListDownlink, didInsert objects: [SwimModelProtocolBase], atIndexes indexes: [Int])
 
     func downlink(downlink: ListDownlink, didMove object: SwimModelProtocolBase, fromIndex: Int, toIndex: Int)
 
@@ -46,7 +46,7 @@ public extension ListDownlinkDelegate {
     func downlinkDidChangeObjects(downlink: ListDownlink) {}
 
     func downlink(downlink: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex index: Int) {}
-    func downlink(downlink: ListDownlink, didInsert object: SwimModelProtocolBase, atIndex index: Int) {}
+    func downlink(downlink: ListDownlink, didInsert objects: [SwimModelProtocolBase], atIndexes indexes: [Int]) {}
     func downlink(downlink: ListDownlink, didMove object: SwimModelProtocolBase, fromIndex: Int, toIndex: Int) {}
     func downlink(downlink: ListDownlink, didRemove object: SwimModelProtocolBase, atIndex index: Int) {}
 }
