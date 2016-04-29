@@ -97,6 +97,8 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         let presenceFrame = presenceView.superview!.frame
         tableView.contentInset = UIEdgeInsets(top: presenceFrame.size.height, left: 0.0, bottom: 0.0, right: 0.0)
 
+        setToolbarItems([UIBarButtonItem(barButtonSystemItem: .Trash, target: self, action: #selector(trashButtonTapped))], animated: false)
+
         configureView()
 
         let nc = NSNotificationCenter.defaultCenter()
@@ -119,6 +121,8 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
+
+        navigationController?.toolbarHidden = false
 
         presenceListManager.startSynching()
     }
@@ -378,6 +382,23 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         let user = presenceListManager.objects[indexPath.item] as! UserPresenceModel
         cell.personImageView.initials = user.initials ?? "?"
         return cell
+    }
+
+
+    // MARK: - Toolbar
+
+    @objc func trashButtonTapped() {
+        let alert = UIAlertController(title: "Delete Entire List?", message: "Are you sure you want to delete this entire list?", preferredStyle: .Alert)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Delete", style: .Destructive, handler: { [weak self] _ in
+            self?.deleteListContents()
+        }))
+        navigationController?.presentViewController(alert, animated: true, completion: nil)
+    }
+
+    private func deleteListContents() {
+        swimListManager.removeAll()
+        tableView.reloadData()
     }
 
 

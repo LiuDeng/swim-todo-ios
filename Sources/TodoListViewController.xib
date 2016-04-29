@@ -74,6 +74,7 @@
                 <constraint firstAttribute="trailing" secondItem="rhC-9o-fw5" secondAttribute="trailing" id="vu7-FO-QVX"/>
             </constraints>
             <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
+            <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
             <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
         </view>
     </objects>
