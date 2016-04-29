@@ -13,6 +13,7 @@
 		400648E51C7268DB00701533 /* TodoEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400648E41C7268DB00701533 /* TodoEntry.swift */; };
 		402203101CA1FD0200D6B5E1 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */; };
 		402203121CA1FD1200D6B5E1 /* LoginViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 402203111CA1FD1200D6B5E1 /* LoginViewController.xib */; };
+		4026EC9F1CD3CEAF006BB352 /* SwimGoogleSignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4026EC9E1CD3CEAF006BB352 /* SwimGoogleSignIn.swift */; };
 		4048D7B31C73BF91002B490C /* TableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7B01C73BF91002B490C /* TableViewCell.swift */; };
 		4048D7B41C73BF91002B490C /* StrikeThroughText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7B11C73BF91002B490C /* StrikeThroughText.swift */; };
 		4048D7BD1C73D844002B490C /* CollectionType+Misc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */; };
@@ -72,6 +73,7 @@
 		400648E41C7268DB00701533 /* TodoEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TodoEntry.swift; sourceTree = "<group>"; };
 		4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		402203111CA1FD1200D6B5E1 /* LoginViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LoginViewController.xib; sourceTree = "<group>"; };
+		4026EC9E1CD3CEAF006BB352 /* SwimGoogleSignIn.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimGoogleSignIn.swift; sourceTree = "<group>"; };
 		4048D7B01C73BF91002B490C /* TableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableViewCell.swift; sourceTree = "<group>"; };
 		4048D7B11C73BF91002B490C /* StrikeThroughText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StrikeThroughText.swift; sourceTree = "<group>"; };
 		4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CollectionType+Misc.swift"; sourceTree = "<group>"; };
@@ -135,6 +137,14 @@
 				40F583C11CBCDCAF001BCDCC /* UserPresenceModel.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		4026EC9D1CD3CE51006BB352 /* SwimGoogleSignIn */ = {
+			isa = PBXGroup;
+			children = (
+				4026EC9E1CD3CEAF006BB352 /* SwimGoogleSignIn.swift */,
+			);
+			path = SwimGoogleSignIn;
 			sourceTree = "<group>";
 		};
 		403100CB1CA7308900C12F4E /* Utils */ = {
@@ -222,6 +232,7 @@
 				855AA9801C6DB3250087347E /* swim.recon */,
 				85553D371C6B31BA005D613B /* Sources */,
 				85553D491C6B31C2005D613B /* Tests */,
+				4026EC9D1CD3CE51006BB352 /* SwimGoogleSignIn */,
 				85674A601C68CAD200F299D7 /* Frameworks */,
 				85674A381C68CA0100F299D7 /* Products */,
 				855AA97E1C6DB2CA0087347E /* Services */,
@@ -466,6 +477,7 @@
 				40A0B3C61CA1FE5800F17BEA /* LoginManager.swift in Sources */,
 				40AE52EB1CA1FAD000A878F3 /* SwimTodoGlobals.swift in Sources */,
 				40C975FC1CB19B0200407B67 /* UINib+Misc.swift in Sources */,
+				4026EC9F1CD3CEAF006BB352 /* SwimGoogleSignIn.swift in Sources */,
 				85553D461C6B31BA005D613B /* TodoListViewController.swift in Sources */,
 				400648E21C72680000701533 /* TodoEntryTableViewCell.swift in Sources */,
 				4048D7BD1C73D844002B490C /* CollectionType+Misc.swift in Sources */,
@@ -615,6 +627,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_SWIFT_FLAGS = "$(inherited) -DSWIMGOOGLESIGNIN";
 				PRODUCT_BUNDLE_IDENTIFIER = it.swim.SwimTodo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -628,6 +641,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = Sources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_SWIFT_FLAGS = "$(inherited) -DSWIMGOOGLESIGNIN";
 				PRODUCT_BUNDLE_IDENTIFIER = it.swim.SwimTodo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

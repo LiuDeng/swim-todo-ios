@@ -45,13 +45,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         globals.loginManager = loginManager
         SwimTodoGlobals.instance = globals
 
-//        if loginManager.isUserSignedIn {
-//            loginManager.signInSilently()
+        if loginManager.isUserSignedIn {
+            loginManager.signInSilently()
             userSignedIn()
-//        }
-//        else {
-//            showLogin()
-//        }
+        }
+        else {
+            showLogin()
+        }
 
         return true
     }
