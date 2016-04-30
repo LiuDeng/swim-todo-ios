@@ -9,14 +9,24 @@
 import Foundation
 import Google
 import SwimSwift
+import SwiftyBeaver
+
+
+private let log = SwiftyBeaver.self
 
 
 class LoginManager {
+    static let UserSignedInNotification = "UserSignedInNotification"
+    static let UserSignedOutNotification = "UserSignedOutNotification"
+
+    private let gidDelegate = GIDDelegate()
+
     init() {
-        // Register Google's GIDSignIn with SwimClient.
-        // This will register as GIDSignIn's delegate, and handle all of
-        // Google's sign-in events from then on.
+        // Register gidDelegate and SwimClient with Google's GIDSignIn.
+        // SwimClient will handle all of Google's sign-in events initially,
+        // and pass them on to gidDelegate as appropriate.
         let gidSignIn = GIDSignIn.sharedInstance()
+        gidSignIn.delegate = gidDelegate
         let swimClient = SwimClient.sharedInstance
         swimClient.registerGoogleSignIn(gidSignIn)
     }
@@ -47,5 +57,29 @@ class LoginManager {
         // refresh the correct one here, of course.
         let gidSignIn = GIDSignIn.sharedInstance()
         gidSignIn.signInSilently()
+    }
+}
+
+
+@objc private class GIDDelegate: NSObject, GIDSignInDelegate {
+
+    // MARK: - GIDSignInDelegate
+
+    @objc func signIn(_: GIDSignIn!, didSignInForUser user: GIDGoogleUser!, withError error: NSError!) {
+        let nc = NSNotificationCenter.defaultCenter()
+        if let err = error {
+            log.warning("Failed to sign in: \(err)")
+            nc.postNotificationName(LoginManager.UserSignedOutNotification, object: nil)
+        }
+        else {
+            log.verbose("Signed in as \(user.userID)")
+            nc.postNotificationName(LoginManager.UserSignedInNotification, object: nil)
+        }
+    }
+
+    @objc func signIn(_: GIDSignIn!, didDisconnectWithUser user: GIDGoogleUser!, withError error: NSError!) {
+        log.warning("User \(user.userID) deauthorized: \(error ?? "")")
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.postNotificationName(LoginManager.UserSignedOutNotification, object: nil)
     }
 }

@@ -8,6 +8,7 @@
 
 #if SWIMGOOGLESIGNIN
 
+import Bolts
 import Google
 import ObjectiveC
 import Recon
@@ -22,24 +23,26 @@ public extension SwimClient {
         GGLContext.sharedInstance().configureWithError(&configureError)
         precondition(configureError == nil, "Error configuring Google services: \(configureError)")
 
-        var delegate: SwimGoogleSignInDelegate
-        if gidSignIn.swimGoogleSignInDelegate == nil {
-            delegate = SwimGoogleSignInDelegate()
-            gidSignIn.swimGoogleSignInDelegate = delegate
-            gidSignIn.delegate = delegate
+        if gidSignIn.delegate is SwimGoogleSignInDelegate {
+            preconditionFailure("Either duplicate call to registerGoogleSignIn, or using multiple SwimClient instances with connectAfterGoogleSignIn.  The former is pointless and the latter is not implemented.")
         }
-        else {
-            precondition(gidSignIn.delegate is SwimGoogleSignInDelegate,
-                ("connectAfterGoogleSignIn needs GIDSignIn.delegate for itself. " +
-                    "You cannot set GIDSignIn.delegate and use connectAfterGoogleSignIn"))
-            preconditionFailure("Using multiple SwimClient instances with connectAfterGoogleSignIn is not implemented")
-        }
-        delegate.swimClient = self
+
+        let callerDelegate = gidSignIn.delegate
+        let ourDelegate = SwimGoogleSignInDelegate()
+        gidSignIn.delegate = ourDelegate
+        gidSignIn.swimGoogleSignInDelegate = ourDelegate
+        ourDelegate.downstreamDelegate = callerDelegate
+        ourDelegate.swimClient = self
     }
 }
 
 
 private extension GIDSignIn {
+    /**
+     This is a duplicate of self.delegate, except this is strongly
+     retaining, since this instance needs to own the
+     SwimGoogleSignInDelegate.
+     */
     private var swimGoogleSignInDelegate: SwimGoogleSignInDelegate? {
         get {
             return objc_getAssociatedObject(self, &AssociatedKeys.swimGoogleSignInDelegate) as? SwimGoogleSignInDelegate
@@ -56,6 +59,7 @@ private extension GIDSignIn {
 
 
 private class SwimGoogleSignInDelegate: NSObject, GIDSignInDelegate {
+    private weak var downstreamDelegate: GIDSignInDelegate?
     private weak var swimClient: SwimClient?
 
     // MARK: GIDSignInDelegate
@@ -71,16 +75,35 @@ private class SwimGoogleSignInDelegate: NSObject, GIDSignInDelegate {
             let credentials = ReconRecord()
             credentials["googleIdToken"] = SwimValue(idToken)
             log.verbose("Signing in as \(user.userID)")
-            swimClient.auth(credentials: SwimValue(credentials))
+            swimClient.auth(credentials: SwimValue(credentials)).continueWithBlock { [weak self] task in
+                self?.completeAuth(signIn, user, task)
+                return task
+            }
         }
         else {
             log.warning("\(error)")
         }
     }
 
+
+    private func completeAuth(signIn: GIDSignIn!, _ user: GIDGoogleUser!, _ task: BFTask) {
+        if let exn = task.exception {
+            log.error("Exception signing in: \(exn)")
+            let err = SwimError.Unknown as NSError
+            downstreamDelegate?.signIn(signIn, didSignInForUser: user, withError: err)
+            return
+        }
+
+        let err = task.error
+        downstreamDelegate?.signIn(signIn, didSignInForUser: user, withError: err)
+    }
+
+
     @objc func signIn(signIn: GIDSignIn!, didDisconnectWithUser user:GIDGoogleUser!, withError error: NSError!) {
         log.info("\(error)")
+        downstreamDelegate?.signIn?(signIn, didDisconnectWithUser: user, withError: error)
     }
 }
+
 
 #endif

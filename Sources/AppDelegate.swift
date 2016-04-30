@@ -45,6 +45,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         globals.loginManager = loginManager
         SwimTodoGlobals.instance = globals
 
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.addObserver(self, selector: #selector(AppDelegate.userSignedIn), name: LoginManager.UserSignedInNotification, object: nil)
+        nc.addObserver(self, selector: #selector(AppDelegate.userSignedOut), name: LoginManager.UserSignedOutNotification, object: nil)
+
         if loginManager.isUserSignedIn {
             loginManager.signInSilently()
             userSignedIn()
@@ -60,7 +64,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Fabric.with([Crashlytics.self])
     }
 
-    private func userSignedIn() {
+    @objc func userSignedIn() {
         if window!.rootViewController is UISplitViewController {
             log.verbose("User signed in already")
         }
@@ -71,6 +75,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let mainVC = storyboard.instantiateInitialViewController()!
             window!.fadeToVC(mainVC)
         }
+    }
+
+    @objc func userSignedOut() {
+        showLogin()
     }
 
     private func showLogin() {
