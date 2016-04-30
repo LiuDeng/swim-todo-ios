@@ -8,6 +8,7 @@
 
 import Foundation
 import Google
+import JLToast
 import SwimSwift
 import SwiftyBeaver
 
@@ -70,6 +71,8 @@ class LoginManager {
         if let err = error {
             log.warning("Failed to sign in: \(err)")
             nc.postNotificationName(LoginManager.UserSignedOutNotification, object: nil)
+            let toast = JLToast.makeText("Failed to sign in")
+            toast.show()
         }
         else {
             log.verbose("Signed in as \(user.userID)")
