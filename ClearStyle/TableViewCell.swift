@@ -10,7 +10,7 @@ import QuartzCore
 import UIKit
 
 
-protocol TableViewCellDelegate {
+protocol TableViewCellDelegate: class {
     func toDoItemDeleted(todoItem: TodoEntry)
     func toDoItemCompleted(todoItem: TodoEntry)
     func cellDidBeginEditing(editingCell: TableViewCell)
@@ -31,7 +31,7 @@ class TableViewCell: UITableViewCell, UITextFieldDelegate {
         }
     }
 
-    var delegate: TableViewCellDelegate?
+    weak var delegate: TableViewCellDelegate?
 
     let label: StrikeThroughText
 
