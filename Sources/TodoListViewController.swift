@@ -5,7 +5,7 @@ import UIKit
 
 
 private let listLaneUri: SwimUri = "todo/list"
-private let presenceLaneUri: SwimUri = "todo/presence"
+private let presenceLaneUri: SwimUri = "todo/users"
 
 private let kCellIdentifier = "Cell"
 private let kRowHeight = CGFloat(50)
