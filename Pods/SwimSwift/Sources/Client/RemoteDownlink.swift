@@ -5,7 +5,7 @@ import Foundation
 private let log = SwimLogging.log
 
 
-class RemoteDownlink: Downlink, Hashable {
+class RemoteDownlink: DownlinkBase, Downlink {
     unowned let channel: Channel
 
     let hostUri: SwimUri
@@ -18,8 +18,6 @@ class RemoteDownlink: Downlink, Hashable {
 
     var keepAlive: Bool = false
 
-    var delegate: DownlinkDelegate? = nil
-
     /**
      Commands that have been sent to self.channel and for which we have not
      yet received an ack.
@@ -28,7 +26,7 @@ class RemoteDownlink: Downlink, Hashable {
 
     /**
      SyncRequests that have been sent to self.channel and for which we have
-     not yet received a SyncedResponse
+     not yet received a SyncedResponse.
      */
     private let inFlightSyncRequests = TaskQueue()
 
@@ -49,36 +47,60 @@ class RemoteDownlink: Downlink, Hashable {
             inFlightCommands.ack($0.commands)
         }
 
-        delegate?.downlink(self, acks: messages)
+        forEachDelegate {
+            $0.swimDownlink($1, acks: messages)
+        }
     }
 
     func onEventMessages(messages: [EventMessage]) {
-        delegate?.downlink(self, events: messages)
+        forEachDelegate {
+            $0.swimDownlink($1, events: messages)
+        }
     }
 
     func onLinkedResponse(response: LinkedResponse) {
-        delegate?.downlink(self, didLink: response)
+        forEachDelegate {
+            $0.swimDownlink($1, didLink: response)
+        }
     }
 
     func onSyncedResponse(response: SyncedResponse) {
         inFlightSyncRequests.ack(1)
-        delegate?.downlink(self, didSync: response)
+        forEachDelegate {
+            $0.swimDownlink($1, didSync: response)
+        }
     }
 
     func onUnlinkRequest() {
-        delegate?.downlinkWillUnlink(self)
+        forEachDelegate {
+            $0.swimDownlinkWillUnlink($1)
+        }
     }
 
     func onUnlinkedResponse(response: UnlinkedResponse) {
-        delegate?.downlink(self, didUnlink: response)
+        let tag = response.body.tag
+        if tag == "nodeNotFound" {
+            sendDidReceiveError(SwimError.NodeNotFound)
+        }
+        else if tag == "laneNotFound" {
+            sendDidReceiveError(SwimError.LaneNotFound)
+        }
+
+        forEachDelegate {
+            $0.swimDownlink($1, didUnlink: response)
+        }
     }
 
     func onConnect() {
-        delegate?.downlinkDidConnect(self)
+        forEachDelegate {
+            $0.swimDownlinkDidConnect($1)
+        }
     }
 
     func onDisconnect() {
-        delegate?.downlinkDidDisconnect(self)
+        forEachDelegate {
+            $0.swimDownlinkDidDisconnect($1)
+        }
         if !keepAlive {
             close()
         }
@@ -89,7 +111,9 @@ class RemoteDownlink: Downlink, Hashable {
     }
 
     func onClose() {
-        delegate?.downlinkDidClose(self)
+        forEachDelegate {
+            $0.swimDownlinkDidClose($1)
+        }
     }
 
     func command(body body: SwimValue) -> BFTask {
@@ -104,7 +128,9 @@ class RemoteDownlink: Downlink, Hashable {
     }
 
     func sendSyncRequest() -> BFTask {
-        delegate?.downlinkWillSync(self)
+        forEachDelegate {
+            $0.swimDownlinkWillSync($1)
+        }
         let task = BFTaskCompletionSource()
         channel.pushSyncRequest(node: nodeUri, lane: laneUri, prio: laneProperties.prio)
         inFlightSyncRequests.append(task)
@@ -121,12 +147,4 @@ class RemoteDownlink: Downlink, Hashable {
         inFlightCommands.failAll(err)
         inFlightSyncRequests.failAll(err)
     }
-
-    var hashValue: Int {
-        return ObjectIdentifier(self).hashValue
-    }
-}
-
-func == (lhs: RemoteDownlink, rhs: RemoteDownlink) -> Bool {
-    return lhs === rhs
 }

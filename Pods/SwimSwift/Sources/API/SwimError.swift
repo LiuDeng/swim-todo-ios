@@ -18,4 +18,7 @@ public enum SwimError: Int, ErrorType {
     case NodeNotFound = 2
     case LaneNotFound = 3
     case NetworkError = 4
+    case NotAuthorized = 5
+    case MalformedRequest = 6
+    case NoSuchKey = 7
 }

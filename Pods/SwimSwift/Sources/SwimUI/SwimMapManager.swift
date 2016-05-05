@@ -1,9 +1,9 @@
 //
-//  SwimListManager.swift
+//  SwimMapManager.swift
 //  Swim
 //
-//  Created by Ewan Mellor on 2/15/16.
-//  Copyright © 2016 swim.it. All rights reserved.
+//  Created by Ewan Mellor on 5/4/16.
+//
 //
 
 import Foundation
@@ -11,21 +11,22 @@ import Foundation
 private let log = SwimLogging.log
 
 
-public class SwimListManager: ListDownlinkDelegate {
+public class SwimMapManager: MapDownlinkDelegate {
     private var delegates = WeakArray<AnyObject>()
 
-    public var objects: [SwimModelProtocolBase] {
-        return downlink?.objects ?? []
+    public var objects: [SwimValue: SwimModelProtocolBase] {
+        return downlink?.objects ?? [:]
     }
 
     public var objectMaker: (SwimValue -> SwimModelProtocolBase?)!
     public var newObjectMaker: (() -> SwimModelProtocolBase)!
+    public var primaryKey: (SwimModelProtocolBase -> SwimValue)!
 
     public var laneScope: LaneScope? = nil
 
     public let laneProperties = LaneProperties()
 
-    public var downlink: ListDownlink? = nil
+    public var downlink: MapDownlink? = nil
 
     public init() {
     }
@@ -43,12 +44,13 @@ public class SwimListManager: ListDownlinkDelegate {
     }
 
     public func startSynching() {
-        precondition(laneScope != nil && objectMaker != nil,
+        precondition(laneScope != nil && objectMaker != nil && primaryKey != nil,
                      "Must configure lane before calling startSynching.")
         let ls = laneScope!
         let om = objectMaker!
+        let pk = primaryKey!
 
-        let dl = ls.syncList(properties: laneProperties, objectMaker: om)
+        let dl = ls.syncMap(properties: laneProperties, objectMaker: om, primaryKey: pk)
         dl.keepAlive = true
         dl.addDelegate(self)
         for delegate in delegates {

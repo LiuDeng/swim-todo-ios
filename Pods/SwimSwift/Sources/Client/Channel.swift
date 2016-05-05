@@ -1,3 +1,4 @@
+import Bolts
 import Foundation
 import Recon
 import SwiftWebSocket
@@ -35,6 +36,13 @@ class Channel: WebSocketDelegate {
     private var credentials: Value = Value.Absent
 
     private var networkMonitor: SwimNetworkConditionMonitor.ServerMonitor?
+
+    /**
+     AuthRequests that have been sent to the server and for which we have
+     not yet received an AuthedResponse.
+     */
+    private let inFlightAuthRequests = TaskQueue()
+
 
     init(host: SwimUri, protocols: [String] = []) {
         self.hostUri = host
@@ -106,11 +114,33 @@ class Channel: WebSocketDelegate {
     }
 
 
-    func syncMap(node node: SwimUri, lane: SwimUri, properties: LaneProperties, primaryKey: Value -> Value) -> MapDownlink {
-        let downlink = RemoteMapDownlink(channel: self, host: hostUri, node: resolve(node), lane: lane, laneProperties: properties, primaryKey: primaryKey)
-        registerDownlink(downlink)
-        return downlink
+    func syncMap(node node: SwimUri, lane: SwimUri, properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?), primaryKey: SwimModelProtocolBase -> SwimValue) -> MapDownlink {
+        let (remoteDownlink, mapDownlink) = createMapDownlinks(node: node, lane: lane, properties: properties, objectMaker: objectMaker, primaryKey: primaryKey)
+
+        registerDownlink(remoteDownlink)
+
+        return mapDownlink
     }
+
+    /**
+     - returns: The RemoteDownlink that's actually connected to the server,
+     and the Downlink that is to be returned to the caller.  If this request
+     is for a transient lane then these two will be equal, otherwise the
+     second Downlink will impose the requested persistence.
+     */
+    private func createMapDownlinks(node node: SwimUri, lane: SwimUri, properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?), primaryKey: SwimModelProtocolBase -> SwimValue) -> (RemoteDownlink, MapDownlink) {
+        let nodeUri = resolve(node)
+        let remoteDownlink = RemoteDownlink(channel: self, host: hostUri, node: nodeUri, lane: lane, laneProperties: properties)
+
+        if properties.isTransient {
+            let mapDownlink = MapDownlinkAdapter(downlink: remoteDownlink, objectMaker: objectMaker, primaryKey: primaryKey)
+            return (remoteDownlink, mapDownlink)
+        }
+        else {
+            preconditionFailure("Persistent maps unimplemented")
+        }
+    }
+
 
     func command(node node: SwimUri, lane: SwimUri, body: Value) {
         let message = CommandMessage(node: unresolve(node), lane: lane, body: body)
@@ -132,12 +162,19 @@ class Channel: WebSocketDelegate {
         push(envelope: request)
     }
 
-    func auth(credentials credentials: Value) {
+    func auth(credentials credentials: Value) -> BFTask {
         self.credentials = credentials
         if socket?.readyState == .Open {
             let request = AuthRequest(body: credentials)
             push(envelope: request)
         }
+        else if socket == nil {
+            open()
+        }
+
+        let task = BFTaskCompletionSource()
+        inFlightAuthRequests.append(task)
+        return task.task
     }
 
     func registerDownlink(downlink: RemoteDownlink) {
@@ -188,6 +225,19 @@ class Channel: WebSocketDelegate {
         }
     }
 
+    private func onAuthedResponse(response: AuthedResponse) {
+        inFlightAuthRequests.ack(1)
+    }
+
+    private func onDeauthedResponse(response: DeauthedResponse) {
+        let tag = response.body.tag
+        let err: SwimError = (
+            tag == "notAuthorized" ? .NotAuthorized :
+            tag == "invalid" ? .MalformedRequest :
+                               .Unknown
+        )
+        inFlightAuthRequests.failFirst(err as NSError)
+    }
 
     private func onEventMessages(messages: [EventMessage]) {
         let resolvedMessages = resolveAndSortMessages(messages)
@@ -205,14 +255,8 @@ class Channel: WebSocketDelegate {
     }
 
     private func onLinkedResponse(response: LinkedResponse) {
-        let node = resolve(response.node)
-        response.node = node
-        let lane = response.lane
-        guard let nodeDownlinks = downlinks[node], laneDownlinks = nodeDownlinks[lane] else {
-            return
-        }
-        for downlink in laneDownlinks {
-            downlink.onLinkedResponse(response)
+        resolveNodeAndSendToDownlinks(response) {
+            $0.onLinkedResponse(response)
         }
     }
 
@@ -221,14 +265,8 @@ class Channel: WebSocketDelegate {
     }
 
     private func onSyncedResponse(response: SyncedResponse) {
-        let node = resolve(response.node)
-        response.node = node
-        let lane = response.lane
-        guard let nodeDownlinks = downlinks[node], laneDownlinks = nodeDownlinks[lane] else {
-            return
-        }
-        for downlink in laneDownlinks {
-            downlink.onSyncedResponse(response)
+        resolveNodeAndSendToDownlinks(response) {
+            $0.onSyncedResponse(response)
         }
     }
 
@@ -253,25 +291,20 @@ class Channel: WebSocketDelegate {
         }
     }
 
+
     private func onConnect() {
-        for nodeDownlinks in downlinks.values {
-            for laneDownlinks in nodeDownlinks.values {
-                for downlink in laneDownlinks {
-                    downlink.onConnect()
-                }
-            }
+        forAllDownlinks {
+            $0.onConnect()
         }
     }
 
+
     private func onDisconnect() {
-        for nodeDownlinks in downlinks.values {
-            for laneDownlinks in nodeDownlinks.values {
-                for downlink in laneDownlinks {
-                    downlink.onDisconnect()
-                }
-            }
+        forAllDownlinks {
+            $0.onDisconnect()
         }
     }
+
 
     private func onError(error_: NSError) {
         log.info("\(error_)")
@@ -281,12 +314,8 @@ class Channel: WebSocketDelegate {
             error = SwimError.NetworkError as NSError
         }
 
-        for nodeDownlinks in downlinks.values {
-            for laneDownlinks in nodeDownlinks.values {
-                for downlink in laneDownlinks {
-                    downlink.onError(error)
-                }
-            }
+        forAllDownlinks {
+            $0.onError(error)
         }
     }
 
@@ -311,10 +340,8 @@ class Channel: WebSocketDelegate {
     private func routeMessages<T where T : RoutableEnvelope>(messages: [SwimUri: [SwimUri: [T]]], _ f: (RemoteDownlink, [T]) -> Void) {
         for (node, nodeMessages) in messages {
             for (lane, laneMessages) in nodeMessages {
-                if let nodeDownlinks = downlinks[node], let laneDownlinks = nodeDownlinks[lane] {
-                    for downlink in laneDownlinks {
-                        f(downlink, laneMessages)
-                    }
+                forEachDownlink(node: node, lane: lane) {
+                    f($0, laneMessages)
                 }
             }
         }
@@ -532,12 +559,52 @@ class Channel: WebSocketDelegate {
                 flushEventBatch()
                 ackBatch.append(ack)
 
+            case let response as AuthedResponse:
+                flushAllBatches()
+                onAuthedResponse(response)
+
+            case let response as DeauthedResponse:
+                flushAllBatches()
+                onDeauthedResponse(response)
+
             default:
                 log.warning("Unknown envelope \(envelope)")
             }
         }
 
         flushAllBatches()
+    }
+
+
+    // MARK: Helpers
+
+    private func resolveNodeAndSendToDownlinks(envelope: RoutableEnvelope, _ f: (RemoteDownlink -> Void)) {
+        let node = resolve(envelope.node)
+        envelope.node = node
+        forEachDownlink(node: node, lane: envelope.lane) {
+            f($0)
+        }
+    }
+
+
+    private func forEachDownlink(node node: SwimUri, lane: SwimUri, _ f: (RemoteDownlink -> Void)) {
+        guard let nodeDownlinks = downlinks[node], let laneDownlinks = nodeDownlinks[lane] else {
+            return
+        }
+        for downlink in laneDownlinks {
+            f(downlink)
+        }
+    }
+
+
+    private func forAllDownlinks(f: (RemoteDownlink -> Void)) {
+        for nodeDownlinks in downlinks.values {
+            for laneDownlinks in nodeDownlinks.values {
+                for downlink in laneDownlinks {
+                    f(downlink)
+                }
+            }
+        }
     }
 
 

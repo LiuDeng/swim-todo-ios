@@ -5,15 +5,11 @@ import Recon
 private let log = SwimLogging.log
 
 
-class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
+class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
     var state = [SwimValue]()
     var objects = [SwimModelProtocolBase]()
 
     private let objectMaker: (SwimValue -> SwimModelProtocolBase?)
-
-    var listDownlinkDelegate: ListDownlinkDelegate? {
-        return delegate as? ListDownlinkDelegate
-    }
 
 
     init(downlink: Downlink, objectMaker: (SwimValue -> SwimModelProtocolBase?)) {
@@ -23,7 +19,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
     }
 
 
-    override func downlink(downlink: Downlink, events messages: [EventMessage]) {
+    override func swimDownlink(downlink: Downlink, events messages: [EventMessage]) {
         log.verbose("Did receive \(messages)")
 
         sendWillChangeObjects()
@@ -84,7 +80,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 
         sendDidChangeObjects()
 
-        super.downlink(downlink, events: messages)
+        super.swimDownlink(downlink, events: messages)
     }
 
 
@@ -111,13 +107,17 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         if index == state.count {
             state.append(value)
             objects.append(object)
-            listDownlinkDelegate?.downlink(self, didInsert: [object], atIndexes: [index])
+            forEachListDelegate {
+                $0.swimListDownlink($1, didInsert: [object], atIndexes: [index])
+            }
         }
         else {
             state[index] = value
             let existingObject = objects[index]
             existingObject.swim_updateWithSwimValue(item)
-            listDownlinkDelegate?.downlink(self, didUpdate: existingObject, atIndex: index)
+            forEachListDelegate {
+                $0.swimListDownlink($1, didUpdate: existingObject, atIndex: index)
+            }
         }
 
         return true
@@ -152,7 +152,9 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         state.insert(value, atIndex: index)
         objects.insert(object, atIndex: index)
 
-        listDownlinkDelegate?.downlink(self, didInsert: [object], atIndexes: [index])
+        forEachListDelegate {
+            $0.swimListDownlink($1, didInsert: [object], atIndexes: [index])
+        }
 
         return true
     }
@@ -181,7 +183,9 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         objects = newObjects
 
         let indexes = [Int](0 ..< values.count)
-        listDownlinkDelegate?.downlink(self, didInsert: objects, atIndexes: indexes)
+        forEachListDelegate {
+            $0.swimListDownlink($1, didInsert: self.objects, atIndexes: indexes)
+        }
 
         sendDidChangeObjects()
     }
@@ -209,7 +213,9 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         let object = objects.removeAtIndex(from)
         objects.insert(object, atIndex: to)
 
-        listDownlinkDelegate?.downlink(self, didMove: object, fromIndex: from, toIndex: to)
+        forEachListDelegate {
+            $0.swimListDownlink($1, didMove: object, fromIndex: from, toIndex: to)
+        }
 
         return true
     }
@@ -232,7 +238,9 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         state.removeAtIndex(index)
         let object = objects.removeAtIndex(index)
 
-        listDownlinkDelegate?.downlink(self, didRemove: object, atIndex: index)
+        forEachListDelegate {
+            $0.swimListDownlink($1, didRemove: object, atIndex: index)
+        }
 
         return true
     }
@@ -245,10 +253,8 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         let objects = self.objects
         self.state.removeAll()
         self.objects.removeAll()
-        if let delegate = listDownlinkDelegate {
-            for index in (0 ..< objects.count).reverse() {
-                delegate.downlink(self, didRemove: objects[count], atIndex: index)
-            }
+        forEachListDelegate {
+            $0.swimListDownlinkDidRemoveAll($1, objects: objects)
         }
     }
 
@@ -286,7 +292,14 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 
         log.verbose("Replaced \(index): \(value)")
 
-        let task = sendCommand("update", value: value, index: index)
+        let object = objects[index]
+        object.serverWritesInProgress += 1
+
+        let task = sendCommand("update", value: value, index: index).continueWithBlock { [weak self] task in
+            return didCompleteServerWrite(object, downlink: self, task: task)
+        }.continueWithBlock { [weak self] task in
+            return self?.handleFailures(task)
+        }
 
         let item = value["item"]
         state[index] = value
@@ -323,7 +336,12 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 
         log.verbose("Inserted object at \(index): \(object)")
 
-        let task = sendCommand("insert", value: value, index: index)
+        object.serverWritesInProgress += 1
+        let task = sendCommand("insert", value: value, index: index).continueWithBlock { [weak self] task in
+            return didCompleteServerWrite(object, downlink: self, task: task)
+        }.continueWithBlock { [weak self] task in
+            return self?.handleFailures(task)
+        }
 
         objects.insert(object, atIndex: index)
         state.insert(value, atIndex: index)
@@ -346,7 +364,9 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 
         log.verbose("Moved \(from) -> \(to): \(object)")
 
-        return sendCommand("move", value: value, from: from, to: to)
+        return sendCommand("move", value: value, from: from, to: to).continueWithBlock { [weak self] task in
+            return self?.handleFailures(task)
+        }
     }
 
     func removeAtIndex(index: Int) -> (SwimModelProtocolBase?, BFTask) {
@@ -362,7 +382,9 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
 
         log.verbose("Removed object at \(index)")
 
-        let task = sendCommand("remove", value: value, index: index)
+        let task = sendCommand("remove", value: value, index: index).continueWithBlock { [weak self] task in
+            return self?.handleFailures(task)
+        }
 
         return (object, task)
     }
@@ -378,8 +400,28 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
         state.removeAll()
         objects.removeAll()
 
-        return command(body: SwimValue(Item.Attr("clear")))
+        return command(body: SwimValue(Item.Attr("clear"))).continueWithBlock { [weak self] task in
+            return self?.handleFailures(task)
+        }
     }
+
+
+    func setHighlightAtIndex(index: Int, isHighlighted: Bool) -> BFTask {
+        SwimAssertOnMainThread()
+        precondition(state.count == objects.count)
+
+        if laneProperties.isClientReadOnly {
+            return BFTask(swimError: .DownlinkIsClientReadOnly)
+        }
+
+        let object = objects[index]
+        let cmd = (isHighlighted ? "highlight" : "unhighlight")
+        log.verbose("Did \(cmd) \(index): \(object)")
+
+        object.isHighlighted = isHighlighted
+        return updateObjectAtIndex(index)
+    }
+
 
     private func wrapValueAsItem(value: SwimValue) -> SwimValue {
         return SwimValue(Slot("item", value))
@@ -406,24 +448,33 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink, Hashable {
     func sendWillChangeObjects() {
         SwimAssertOnMainThread()
 
-        listDownlinkDelegate?.downlinkWillChangeObjects(self)
+        forEachListDelegate {
+            $0.swimListDownlinkWillChangeObjects($1)
+        }
     }
 
     func sendDidChangeObjects() {
         SwimAssertOnMainThread()
 
-        listDownlinkDelegate?.downlinkDidChangeObjects(self)
+        forEachListDelegate {
+            $0.swimListDownlinkDidChangeObjects($1)
+        }
+    }
+
+
+    func forEachListDelegate(f: (ListDownlinkDelegate, ListDownlink) -> ()) {
+        forEachDelegate { [weak self] (delegate, _) in
+            guard let delegate = delegate as? ListDownlinkDelegate, downlink = self as? ListDownlink else {
+                return
+            }
+            f(delegate, downlink)
+        }
     }
 
 
     private func swimValueToObject(value: SwimValue) -> SwimModelProtocolBase? {
         let item = value["item"]
         return objectMaker(item)
-    }
-
-
-    var hashValue: Int {
-        return ObjectIdentifier(self).hashValue
     }
 }
 
@@ -436,6 +487,13 @@ private func bodyWithCommand(command: String, value: SwimValue, indexValue: Swim
 }
 
 
-func == (lhs: ListDownlinkAdapter, rhs: ListDownlinkAdapter) -> Bool {
-    return lhs === rhs
+private func didCompleteServerWrite(object: SwimModelProtocolBase, downlink: ListDownlinkAdapter?, task: BFTask) -> BFTask {
+    dispatch_async(dispatch_get_main_queue()) {
+        precondition(object.serverWritesInProgress > 0)
+        object.serverWritesInProgress -= 1
+        if object.serverWritesInProgress == 0 {
+            downlink?.sendDidCompleteServerWrites(object)
+        }
+    }
+    return task
 }

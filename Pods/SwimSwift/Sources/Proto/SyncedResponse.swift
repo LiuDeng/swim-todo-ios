@@ -1,6 +1,6 @@
 import Recon
 
-public class SyncedResponse: Envelope, Equatable, CustomStringConvertible {
+public class SyncedResponse: RoutableEnvelope, Equatable, CustomStringConvertible {
   public internal(set) var node: Uri
   public let lane: Uri
   public let body: Value

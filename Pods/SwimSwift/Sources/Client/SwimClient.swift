@@ -1,4 +1,4 @@
-import UIKit
+import Bolts
 
 
 private let log = SwimLogging.log
@@ -35,6 +35,7 @@ public class SwimClient {
      let chat = client.scope(node: "/chat/public")
      ```
      */
+    @warn_unused_result
     public func scope(node node: SwimUri) -> NodeScope {
         return RemoteNode(channel: channel, host: hostUri, node: node)
     }
@@ -48,6 +49,7 @@ public class SwimClient {
         let chatRoom = client.scope(node: "/chat/public", lane: "chat/room")
      ```
      */
+    @warn_unused_result
     public func scope(node node: SwimUri, lane: SwimUri) -> LaneScope {
         return RemoteLane(channel: channel, host: hostUri!, node: node, lane: lane)
     }
@@ -63,8 +65,9 @@ public class SwimClient {
         client.auth(credentials: Value(Slot("googleIdToken", "")))
      ```
      */
-    public func auth(credentials credentials: SwimValue) {
-        channel.auth(credentials: credentials)
+    @warn_unused_result
+    public func auth(credentials credentials: SwimValue) -> BFTask {
+        return channel.auth(credentials: credentials)
     }
 
     /// Unlinks all downlinks and closes the network connection associated with this client.

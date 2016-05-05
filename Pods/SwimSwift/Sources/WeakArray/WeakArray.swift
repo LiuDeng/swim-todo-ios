@@ -114,7 +114,7 @@ public struct WeakArray<T: AnyObject>: SequenceType, CustomStringConvertible, Cu
 
     public func generate() -> GeneratorType {
         let objects = items.map { $0.value }
-        return GeneratorType(items: objects[0..<objects.count])
+        return GeneratorType(items: ArraySlice(objects))
     }
 
     // MARK: - Slice-like Implementation
@@ -134,11 +134,11 @@ public struct WeakArray<T: AnyObject>: SequenceType, CustomStringConvertible, Cu
         get {
             let weakSlice = items[range]
             let slice = weakSlice.map { $0.value }
-            return slice[range]
+            return ArraySlice(slice)
         }
         set {
             let newWeakSlice = newValue.map { Weak(value: $0) }
-            items[range] = newWeakSlice[0..<newWeakSlice.count]
+            items[range] = ArraySlice(newWeakSlice)
         }
     }
 
@@ -226,15 +226,14 @@ public struct WeakArray<T: AnyObject>: SequenceType, CustomStringConvertible, Cu
 // MARK:-
 
 public struct WeakGenerator<T>: GeneratorType {
-    public typealias Element = T
     private var items: ArraySlice<T?>
 
     mutating public func next() -> T? {
         while !items.isEmpty {
-            let next = items.first!
-            items = items[1..<items.count]
-            if next != nil {
-                return next
+            if let next = items.popFirst() {
+                if next != nil {
+                    return next
+                }
             }
         }
         return nil

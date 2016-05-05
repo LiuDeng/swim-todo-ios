@@ -11,8 +11,8 @@ import UIKit
 private let log = SwimLogging.log
 
 
-public class SwimListTableViewHelper: SwimListManagerDelegate {
-    public let listManager: SwimListManagerProtocol
+public class SwimListTableViewHelper: ListDownlinkDelegate {
+    public let listManager = SwimListManager()
     public var firstSync = true
 
     /**
@@ -33,21 +33,25 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
     public weak var delegate: SwimListViewHelperDelegate?
     public weak var tableView: UITableView?
 
-    public init(listManager: SwimListManagerProtocol) {
-        self.listManager = listManager
+
+    public init() {
         self.listManager.addDelegate(self)
     }
 
+
     public func commitEdit(editingStyle: UITableViewCellEditingStyle, indexPath: NSIndexPath) {
         if editingStyle == .Delete {
-            listManager.removeObjectAtIndex(indexPath.row)
+            listManager.downlink!.removeAtIndex(indexPath.row)
         }
         else if editingStyle == .Insert {
-            listManager.insertNewObjectAtIndex(indexPath.row)
+            let newObject = listManager.newObjectMaker()
+            listManager.downlink!.insert(newObject, atIndex: indexPath.row)
         }
     }
 
-    public func swimListWillChangeObjects(_: SwimListManagerProtocol) {
+    public func swimListDownlinkWillChangeObjects(_: ListDownlink) {
+        SwimAssertOnMainThread()
+
         if !firstSync {
             precondition(!insideBeginUpdates)
             tableView?.beginUpdates()
@@ -55,7 +59,9 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
         }
     }
 
-    public func swimListDidChangeObjects(_: SwimListManagerProtocol) {
+    public func swimListDownlinkDidChangeObjects(_: ListDownlink) {
+        SwimAssertOnMainThread()
+
         if firstSync {
             log.debug("First sync added \(delegate?.swimObjects.count ?? 0) objects")
             firstSync = false
@@ -64,18 +70,24 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
     }
 
     private func endUpdatesIfNecessary() {
+        SwimAssertOnMainThread()
+
         if insideBeginUpdates {
             insideBeginUpdates = false
             tableView?.endUpdates()
         }
     }
 
-    public func swimListDidStopSynching(_: SwimListManagerProtocol) {
+    public func swimDownlinkDidClose(_: Downlink) {
+        SwimAssertOnMainThread()
+
         endUpdatesIfNecessary()
         tableView?.reloadData()
     }
 
-    public func swimList(_: SwimListManagerProtocol, didInsertObjects _: [SwimModelProtocolBase], atIndexes indexes: [Int]) {
+    public func swimListDownlink(_: ListDownlink, didInsert _: [SwimModelProtocolBase], atIndexes indexes: [Int]) {
+        SwimAssertOnMainThread()
+
         guard let objectSection = delegate?.swimObjectSection, tableView = tableView else {
             return
         }
@@ -90,7 +102,9 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
         }
     }
 
-    public func swimList(_: SwimListManagerProtocol, didMoveObjectFromIndex fromIndex: Int, toIndex: Int) {
+    public func swimListDownlink(_: ListDownlink, didMove _: SwimModelProtocolBase, fromIndex: Int, toIndex: Int) {
+        SwimAssertOnMainThread()
+
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -99,7 +113,9 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.moveRowAtIndexPath(fromIndexPath, toIndexPath: toIndexPath)
     }
 
-    public func swimList(_: SwimListManagerProtocol, didRemoveObject _: SwimModelProtocolBase, atIndex index: Int) {
+    public func swimListDownlink(_: ListDownlink, didRemove _: SwimModelProtocolBase, atIndex index: Int) {
+        SwimAssertOnMainThread()
+
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -107,7 +123,9 @@ public class SwimListTableViewHelper: SwimListManagerDelegate {
         tableView?.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
     }
 
-    public func swimList(_: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int) {
+    public func swimListDownlink(_: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex index: Int) {
+        SwimAssertOnMainThread()
+
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }

@@ -20,13 +20,11 @@ import Foundation
  Any of these forwarding calls can of course be intercepted by the subclass
  to modify the behavior on the way through.
  */
-class DownlinkAdapter: DownlinkDelegate {
+class DownlinkAdapter: DownlinkBase, DownlinkDelegate {
     /// Must be set to self by the subclass's init method.
     var uplink: Downlink!
 
     var downlink: Downlink
-
-    var delegate: DownlinkDelegate?
 
     var hostUri: SwimUri {
         return downlink.hostUri
@@ -54,7 +52,8 @@ class DownlinkAdapter: DownlinkDelegate {
 
     init(downlink: Downlink) {
         self.downlink = downlink
-        downlink.delegate = self
+        super.init()
+        downlink.addDelegate(self)
     }
 
 
@@ -75,48 +74,70 @@ class DownlinkAdapter: DownlinkDelegate {
 
     // MARK: - DownlinkDelegate
 
-    func downlink(downlink: Downlink, acks: [AckResponse]) {
-        delegate?.downlink(uplink, acks: acks)
+    func swimDownlink(downlink: Downlink, acks: [AckResponse]) {
+        forEachDelegate {
+            $0.swimDownlink($1, acks: acks)
+        }
     }
 
-    func downlink(downlink: Downlink, events: [EventMessage]) {
-        delegate?.downlink(uplink, events: events)
+    func swimDownlink(downlink: Downlink, events: [EventMessage]) {
+        forEachDelegate {
+            $0.swimDownlink($1, events: events)
+        }
     }
 
-    func downlinkWillLink(downlink: Downlink) {
-        delegate?.downlinkWillLink(uplink)
+    func swimDownlinkWillLink(downlink: Downlink) {
+        forEachDelegate {
+            $0.swimDownlinkWillLink($1)
+        }
     }
 
-    func downlink(downlink: Downlink, didLink response: LinkedResponse) {
-        delegate?.downlink(downlink, didLink: response)
+    func swimDownlink(downlink: Downlink, didLink response: LinkedResponse) {
+        forEachDelegate {
+            $0.swimDownlink($1, didLink: response)
+        }
     }
 
-    func downlinkWillSync(downlink: Downlink) {
-        delegate?.downlinkWillSync(uplink)
+    func swimDownlinkWillSync(downlink: Downlink) {
+        forEachDelegate {
+            $0.swimDownlinkWillSync($1)
+        }
     }
 
-    func downlink(downlink: Downlink, didSync response: SyncedResponse) {
-        delegate?.downlink(downlink, didSync: response)
+    func swimDownlink(downlink: Downlink, didSync response: SyncedResponse) {
+        forEachDelegate {
+            $0.swimDownlink($1, didSync: response)
+        }
     }
 
-    func downlinkWillUnlink(downlink: Downlink) {
-        delegate?.downlinkWillUnlink(uplink)
+    func swimDownlinkWillUnlink(downlink: Downlink) {
+        forEachDelegate {
+            $0.swimDownlinkWillUnlink($1)
+        }
     }
 
-    func downlink(downlink: Downlink, didUnlink response: UnlinkedResponse) {
-        delegate?.downlink(uplink, didUnlink: response)
+    func swimDownlink(downlink: Downlink, didUnlink response: UnlinkedResponse) {
+        forEachDelegate {
+            $0.swimDownlink($1, didUnlink: response)
+        }
     }
 
-    func downlinkDidConnect(downlink: Downlink) {
-        delegate?.downlinkDidConnect(uplink)
+    func swimDownlinkDidConnect(downlink: Downlink) {
+        forEachDelegate {
+            $0.swimDownlinkDidConnect($1)
+        }
     }
 
-    func downlinkDidDisconnect(downlink: Downlink) {
-        delegate?.downlinkDidDisconnect(uplink)
+    func swimDownlinkDidDisconnect(downlink: Downlink) {
+        forEachDelegate {
+            $0.swimDownlinkDidDisconnect($1)
+        }
     }
 
-    func downlinkDidClose(downlink: Downlink) {
-        delegate?.downlinkDidClose(uplink)
+    func swimDownlinkDidClose(downlink: Downlink) {
+        forEachDelegate {
+            $0.swimDownlinkDidClose($1)
+        }
     }
 }
 
@@ -127,8 +148,8 @@ class DownlinkAdapter: DownlinkDelegate {
  synchronize as soon as the lane is connected.
  */
 class SynchedDownlinkAdapter: DownlinkAdapter {
-    override func downlinkDidConnect(downlink: Downlink) {
+    override func swimDownlinkDidConnect(downlink: Downlink) {
         downlink.sendSyncRequest()
-        super.downlinkDidConnect(uplink)
+        super.swimDownlinkDidConnect(uplink)
     }
 }

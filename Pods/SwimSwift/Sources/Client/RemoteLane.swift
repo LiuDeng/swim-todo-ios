@@ -23,8 +23,8 @@ class RemoteLane: RemoteScope, LaneScope {
         return channel.syncList(node: nodeUri, lane: laneUri, properties: properties, objectMaker: objectMaker)
     }
 
-    func syncMap(properties properties: LaneProperties, primaryKey: SwimValue -> SwimValue) -> MapDownlink {
-        return channel.syncMap(node: nodeUri, lane: laneUri, properties: properties, primaryKey: primaryKey)
+    func syncMap(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?), primaryKey: SwimModelProtocolBase -> SwimValue) -> MapDownlink {
+        return channel.syncMap(node: nodeUri, lane: laneUri, properties: properties, objectMaker: objectMaker, primaryKey: primaryKey)
     }
     
     func command(body body: SwimValue) {

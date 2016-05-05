@@ -27,4 +27,7 @@ public class LaneProperties {
     public var isTransient: Bool = false
 
     public var prio: Double = 0.0
+
+    public init() {
+    }
 }

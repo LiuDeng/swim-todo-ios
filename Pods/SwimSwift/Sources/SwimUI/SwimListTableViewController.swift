@@ -10,7 +10,7 @@ import UIKit
 
 
 public class SwimListTableViewController: UITableViewController, SwimListViewHelperDelegate {
-    private let tableViewHelper: SwimListTableViewHelper
+    private let tableViewHelper = SwimListTableViewHelper()
 
     /**
      The Swim objects in this list.
@@ -23,10 +23,14 @@ public class SwimListTableViewController: UITableViewController, SwimListViewHel
         }
     }
 
+    public var swimDownlink: ListDownlink? {
+        return swimListManager.downlink
+    }
+
     /**
      The SwimListManager instance that was given to us in the init.
      */
-    public var swimListManager: SwimListManagerProtocol {
+    public var swimListManager: SwimListManager {
         get {
             return tableViewHelper.listManager
         }
@@ -45,28 +49,16 @@ public class SwimListTableViewController: UITableViewController, SwimListViewHel
 
     // MARK: Lifecycle
 
-    public init?(listManager: SwimListManagerProtocol, coder aDecoder: NSCoder) {
-        self.tableViewHelper = SwimListTableViewHelper(listManager: listManager)
-
+    required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
 
         self.tableViewHelper.delegate = self
     }
 
-    public init(listManager: SwimListManagerProtocol, nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
-        self.tableViewHelper = SwimListTableViewHelper(listManager: listManager)
-
+    override public init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
 
         self.tableViewHelper.delegate = self
-    }
-
-    required public init?(coder aDecoder: NSCoder) {
-        fatalError("Use init(listManager:coder:)")
-    }
-
-    public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
-        fatalError("Use init(listManager:nibName:bundle:)")
     }
 
     override public func viewDidLoad() {
@@ -105,17 +97,17 @@ public class SwimListTableViewController: UITableViewController, SwimListViewHel
 
     override public func tableView(tableView: UITableView, didHighlightRowAtIndexPath indexPath: NSIndexPath) {
         precondition(indexPath.section == swimObjectSection)
-        swimListManager.setHighlightAtIndex(indexPath.row, isHighlighted: true)
+        swimDownlink!.setHighlightAtIndex(indexPath.row, isHighlighted: true)
     }
 
     override public func tableView(tableView: UITableView, didUnhighlightRowAtIndexPath indexPath: NSIndexPath) {
         precondition(indexPath.section == swimObjectSection)
-        swimListManager.setHighlightAtIndex(indexPath.row, isHighlighted: false)
+        swimDownlink!.setHighlightAtIndex(indexPath.row, isHighlighted: false)
     }
 
     override public func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
         precondition(fromIndexPath.section == swimObjectSection && toIndexPath.section == swimObjectSection)
-        swimListManager.moveObjectAtIndex(fromIndexPath.row, toIndex: toIndexPath.row)
+        swimDownlink!.moveFromIndex(fromIndexPath.row, toIndex: toIndexPath.row)
     }
 
     override public func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {

@@ -1,6 +1,6 @@
 import Recon
 
-public class LinkedResponse: Envelope, Equatable, CustomStringConvertible {
+public class LinkedResponse: RoutableEnvelope, Equatable, CustomStringConvertible {
   public internal(set) var node: Uri
   public let lane: Uri
   public let prio: Double

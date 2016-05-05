@@ -25,28 +25,50 @@ public protocol ListDownlink: Downlink {
     func replace(object: SwimModelProtocolBase, atIndex index: Int) -> BFTask
 
     func updateObjectAtIndex(index: Int) -> BFTask
+
+    func setHighlightAtIndex(index: Int, isHighlighted: Bool) -> BFTask
 }
 
 
 public protocol ListDownlinkDelegate: DownlinkDelegate {
-    func downlinkWillChangeObjects(downlink: ListDownlink)
-    func downlinkDidChangeObjects(downlink: ListDownlink)
+    /**
+     Will be called whenever commands are received that will change
+     `ListDownlink.objects`, and before those commands are processed.
 
-    func downlink(downlink: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex index: Int)
+     In other words, this indicates the start of a batch of calls to
+     `swimListDownlink(:did{Insert,Move,Remove,Update}:atIndex:)` or
+     `swimListDownlinkDidRemoveAll(:objects:)`.
+     */
+    func swimListDownlinkWillChangeObjects(downlink: ListDownlink)
 
-    func downlink(downlink: ListDownlink, didInsert objects: [SwimModelProtocolBase], atIndexes indexes: [Int])
+    /**
+     Will be called after a batch of changes to `ListDownlink.objects` has
+     been processed.
 
-    func downlink(downlink: ListDownlink, didMove object: SwimModelProtocolBase, fromIndex: Int, toIndex: Int)
+     In other words, this indicates the end of a batch of calls to
+     `swimListDownlink(:did{Insert,Move,Remove,Update}:atIndex:)` or
+     `swimListDownlinkDidRemoveAll(:objects:)`.
+     */
+    func swimListDownlinkDidChangeObjects(downlink: ListDownlink)
 
-    func downlink(downlink: ListDownlink, didRemove object: SwimModelProtocolBase, atIndex index: Int)
+    func swimListDownlink(downlink: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex index: Int)
+
+    func swimListDownlink(downlink: ListDownlink, didInsert objects: [SwimModelProtocolBase], atIndexes indexes: [Int])
+
+    func swimListDownlink(downlink: ListDownlink, didMove object: SwimModelProtocolBase, fromIndex: Int, toIndex: Int)
+
+    func swimListDownlink(downlink: ListDownlink, didRemove object: SwimModelProtocolBase, atIndex index: Int)
+
+    func swimListDownlinkDidRemoveAll(downlink: ListDownlink, objects: [SwimModelProtocolBase])
 }
 
 public extension ListDownlinkDelegate {
-    func downlinkWillChangeObjects(downlink: ListDownlink) {}
-    func downlinkDidChangeObjects(downlink: ListDownlink) {}
+    func swimListDownlinkWillChangeObjects(downlink: ListDownlink) {}
+    func swimListDownlinkDidChangeObjects(downlink: ListDownlink) {}
 
-    func downlink(downlink: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex index: Int) {}
-    func downlink(downlink: ListDownlink, didInsert objects: [SwimModelProtocolBase], atIndexes indexes: [Int]) {}
-    func downlink(downlink: ListDownlink, didMove object: SwimModelProtocolBase, fromIndex: Int, toIndex: Int) {}
-    func downlink(downlink: ListDownlink, didRemove object: SwimModelProtocolBase, atIndex index: Int) {}
+    func swimListDownlink(downlink: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex index: Int) {}
+    func swimListDownlink(downlink: ListDownlink, didInsert objects: [SwimModelProtocolBase], atIndexes indexes: [Int]) {}
+    func swimListDownlink(downlink: ListDownlink, didMove object: SwimModelProtocolBase, fromIndex: Int, toIndex: Int) {}
+    func swimListDownlink(downlink: ListDownlink, didRemove object: SwimModelProtocolBase, atIndex index: Int) {}
+    func swimListDownlinkDidRemoveAll(downlink: ListDownlink, objects: [SwimModelProtocolBase]) {}
 }

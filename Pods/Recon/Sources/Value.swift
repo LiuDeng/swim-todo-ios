@@ -184,7 +184,7 @@ public enum Value: ArrayLiteralConvertible, StringLiteralConvertible, FloatLiter
 
   public var json: AnyObject {
     switch self {
-    case .Absent:
+    case .Absent, .Extant:
       return NSNull()
 
     case .Number(let val):

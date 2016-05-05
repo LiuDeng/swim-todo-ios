@@ -51,6 +51,17 @@ class TaskQueue {
     }
 
 
+    func failFirst(error: NSError) {
+        objc_sync_enter(self)
+
+        let task = queue.removeFirst()
+
+        objc_sync_exit(self)
+
+        task.setError(error)
+    }
+
+
     func failAll(error: NSError) {
         objc_sync_enter(self)
 

@@ -1,47 +1,55 @@
 public protocol DownlinkDelegate: class {
-    func downlink(downlink: Downlink, acks: [AckResponse])
+    func swimDownlink(downlink: Downlink, acks: [AckResponse])
 
-    func downlink(downlink: Downlink, events: [EventMessage])
+    func swimDownlink(downlink: Downlink, events: [EventMessage])
 
-    func downlinkWillLink(downlink: Downlink)
+    func swimDownlinkWillLink(downlink: Downlink)
 
-    func downlink(downlink: Downlink, didLink response: LinkedResponse)
+    func swimDownlink(downlink: Downlink, didLink response: LinkedResponse)
 
-    func downlinkWillSync(downlink: Downlink)
+    func swimDownlinkWillSync(downlink: Downlink)
 
-    func downlink(downlink: Downlink, didSync response: SyncedResponse)
+    func swimDownlink(downlink: Downlink, didSync response: SyncedResponse)
 
-    func downlinkWillUnlink(downlink: Downlink)
+    func swimDownlinkWillUnlink(downlink: Downlink)
 
-    func downlink(downlink: Downlink, didUnlink response: UnlinkedResponse)
+    func swimDownlink(downlink: Downlink, didUnlink response: UnlinkedResponse)
 
-    func downlinkDidConnect(downlink: Downlink)
+    func swimDownlinkDidConnect(downlink: Downlink)
 
-    func downlinkDidDisconnect(downlink: Downlink)
+    func swimDownlinkDidDisconnect(downlink: Downlink)
 
-    func downlinkDidClose(downlink: Downlink)
+    func swimDownlinkDidClose(downlink: Downlink)
+
+    func swimDownlink(downlink: Downlink, didCompleteServerWritesOfObject object: SwimModelProtocolBase)
+
+    func swimDownlink(downlink: Downlink, didReceiveError error: ErrorType)
 }
 
 public extension DownlinkDelegate {
-    public func downlink(downlink: Downlink, acks: [AckResponse]) {}
+    public func swimDownlink(downlink: Downlink, acks: [AckResponse]) {}
 
-    public func downlink(downlink: Downlink, events: [EventMessage]) {}
+    public func swimDownlink(downlink: Downlink, events: [EventMessage]) {}
 
-    public func downlinkWillLink(downlink: Downlink) {}
+    public func swimDownlinkWillLink(downlink: Downlink) {}
 
-    public func downlink(downlink: Downlink, didLink response: LinkedResponse) {}
+    public func swimDownlink(downlink: Downlink, didLink response: LinkedResponse) {}
 
-    public func downlinkWillSync(downlink: Downlink) {}
+    public func swimDownlinkWillSync(downlink: Downlink) {}
 
-    public func downlink(downlink: Downlink, didSync response: SyncedResponse) {}
+    public func swimDownlink(downlink: Downlink, didSync response: SyncedResponse) {}
 
-    public func downlinkWillUnlink(downlink: Downlink) {}
+    public func swimDownlinkWillUnlink(downlink: Downlink) {}
 
-    public func downlink(downlink: Downlink, didUnlink response: UnlinkedResponse) {}
+    public func swimDownlink(downlink: Downlink, didUnlink response: UnlinkedResponse) {}
 
-    public func downlinkDidConnect(downlink: Downlink) {}
+    public func swimDownlinkDidConnect(downlink: Downlink) {}
 
-    public func downlinkDidDisconnect(downlink: Downlink) {}
+    public func swimDownlinkDidDisconnect(downlink: Downlink) {}
 
-    public func downlinkDidClose(downlink: Downlink) {}
+    public func swimDownlinkDidClose(downlink: Downlink) {}
+
+    public func swimDownlink(downlink: Downlink, didCompleteServerWritesOfObject object: SwimModelProtocolBase) {}
+
+    public func swimDownlink(downlink: Downlink, didReceiveError error: ErrorType) {}
 }

@@ -11,19 +11,22 @@ import UIKit
 private let log = SwimLogging.log
 
 
-public class SwimListCollectionViewHelper: SwimListManagerDelegate {
+public class SwimListCollectionViewHelper: ListDownlinkDelegate {
+    public let listManager = SwimListManager()
     public weak var delegate: SwimListViewHelperDelegate?
     public weak var collectionView: UICollectionView?
 
-    public init(listManager: SwimListManagerProtocol) {
+    public init() {
         listManager.addDelegate(self)
     }
 
-    public func swimDidStopSynching() {
+    public func swimDownlinkDidClose(_: Downlink) {
+        SwimAssertOnMainThread()
+
         collectionView?.reloadData()
     }
 
-    public func swimList(_: SwimListManagerProtocol, didInsertObjects: [SwimModelProtocolBase], atIndexes indexes: [Int]) {
+    public func swimListDownlink(_: ListDownlink, didInsert _: [SwimModelProtocolBase], atIndexes indexes: [Int]) {
         guard let objectSection = delegate?.swimObjectSection, collectionView = collectionView else {
             return
         }
@@ -31,7 +34,7 @@ public class SwimListCollectionViewHelper: SwimListManagerDelegate {
         collectionView.insertItemsAtIndexPaths(indexPaths)
     }
 
-    public func swimList(_: SwimListManagerProtocol, didMoveObjectFromIndex fromIndex: Int, toIndex: Int) {
+    public func swimListDownlink(_: ListDownlink, didMove _: SwimModelProtocolBase, fromIndex: Int, toIndex: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -40,7 +43,7 @@ public class SwimListCollectionViewHelper: SwimListManagerDelegate {
         collectionView?.moveItemAtIndexPath(fromIndexPath, toIndexPath: toIndexPath)
     }
 
-    public func swimList(_: SwimListManagerProtocol, didRemoveObject _: SwimModelProtocolBase, atIndex index: Int) {
+    public func swimListDownlink(_: ListDownlink, didRemove _: SwimModelProtocolBase, atIndex index: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }
@@ -48,7 +51,7 @@ public class SwimListCollectionViewHelper: SwimListManagerDelegate {
         collectionView?.deleteItemsAtIndexPaths([indexPath])
     }
 
-    public func swimList(_: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int) {
+    public func swimListDownlink(_: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex index: Int) {
         guard let objectSection = delegate?.swimObjectSection else {
             return
         }

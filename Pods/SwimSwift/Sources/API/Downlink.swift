@@ -21,7 +21,12 @@ public protocol Downlink: class {
     /// `true` if this link should be automatically re-established after network connection failures.  The keep-alive mode can be changed at any time by assigning a new value to this property.
     var keepAlive: Bool { get set }
 
-    var delegate: DownlinkDelegate? { get set }
+    /**
+     - parameter delegate: Will be weakly referenced by this Downlink.
+     */
+    func addDelegate(delegate: DownlinkDelegate)
+
+    func removeDelegate(delegate: DownlinkDelegate)
 
     /**
      Send a command to the remote lane to which this `Downlink` is
