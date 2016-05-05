@@ -16,7 +16,7 @@ private let kPersonImageCell = String(PersonImageCollectionViewCell.self)
 private let log = SwiftyBeaver.self
 
 
-class TodoListViewController: SwimListViewController, SwimListManagerDelegate, TableViewCellDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
+class TodoListViewController: SwimListViewController, ListDownlinkDelegate, MapDownlinkDelegate, TableViewCellDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
     @IBOutlet private weak var presenceView: UICollectionView!
     @IBOutlet private weak var presenceContainer: UIView!
     @IBOutlet private weak var presenceContainerTopConstraint: NSLayoutConstraint!
@@ -24,8 +24,16 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
     private let pinchRecognizer = UIPinchGestureRecognizer()
 
-    private let presenceListHelper: SwimListCollectionViewHelper
-    private let presenceListManager: SwimListManagerProtocol
+    private let presenceListHelper = SwimMapCollectionViewHelper() { (x, y) in x.swimId < y.swimId }
+
+    private var presenceMapManager: SwimMapManager {
+        return presenceListHelper.mapManager
+    }
+
+    private var presenceDownlink: MapDownlink? {
+        return presenceMapManager.downlink
+    }
+
 
     private var laneScope: LaneScope? {
         get {
@@ -36,58 +44,62 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         }
     }
 
+    private var presenceLaneScope: LaneScope? {
+        get {
+            return presenceMapManager.laneScope
+        }
+        set {
+            presenceMapManager.laneScope = newValue
+        }
+    }
+
     var detailItem : NodeScope? {
         didSet {
             laneScope = detailItem?.scope(lane: listLaneUri)
+            presenceLaneScope = detailItem?.scope(lane: presenceLaneUri)
         }
     }
 
 
     // MARK: - Lifecycle
 
-    required init() {
-        self.presenceListManager = TodoListViewController.createPresenceListManager()
-        self.presenceListHelper = TodoListViewController.createPresenceListHelper(presenceListManager)
-        super.init(listManager: TodoListViewController.createListManager(), nibName: nil, bundle: nil)
-        swimListManager.addDelegate(self)
-    }
-
-    required init?(coder aDecoder: NSCoder) {
-        self.presenceListManager = TodoListViewController.createPresenceListManager()
-        self.presenceListHelper = TodoListViewController.createPresenceListHelper(presenceListManager)
-        super.init(listManager: TodoListViewController.createListManager(), coder: aDecoder)
-        swimListManager.addDelegate(self)
-    }
-
-    private static func createListManager() -> SwimListManagerProtocol {
-        return SwimListManager<TodoEntry>()
-    }
-
-    private static func createPresenceListManager() -> SwimListManagerProtocol {
-        let mgr = SwimListManager<UserPresenceModel>()
-        mgr.laneProperties.isTransient = true
-        return mgr
-    }
-
-    private static func createPresenceListHelper(mgr: SwimListManagerProtocol) -> SwimListCollectionViewHelper {
-        return SwimListCollectionViewHelper(listManager: mgr)
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
         swimListTableView = tableView
 
-        presenceView.backgroundColor = UIColor.clearColor()
-        presenceView.collectionViewLayout = RTLLayout()
-        presenceView.delegate = self
-        presenceView.registerNib(UINib(nibName: kPersonImageCell, bundle: nil), forCellWithReuseIdentifier: kPersonImageCell)
-        presenceView.scrollsToTop = false
+        configureTodoListDownlink()
+        configurePresenceDownlink()
 
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .Light))
-        presenceContainer.insertSubview(blur, belowSubview: presenceView)
-        presenceContainer.anchorSubview(blur)
+        configureTodoListView()
+        configurePresenceView()
 
+        setToolbarItems([UIBarButtonItem(barButtonSystemItem: .Trash, target: self, action: #selector(trashButtonTapped))], animated: false)
+
+        configureView()
+
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.addObserver(self, selector: #selector(orientationDidChange), name: UIDeviceOrientationDidChangeNotification, object: nil)
+    }
+
+
+    private func configureTodoListDownlink() {
+        swimListManager.objectMaker = { TodoEntry(swimValue: $0) }
+        swimListManager.newObjectMaker = { TodoEntry() }
+        swimListManager.addDelegate(self)
+    }
+
+
+    private func configurePresenceDownlink() {
+        presenceMapManager.laneProperties.isTransient = true
+        presenceMapManager.objectMaker = { UserPresenceModel(swimValue: $0) }
+        presenceMapManager.primaryKey = { SwimValue($0.swimId) }
+        presenceListHelper.collectionView = presenceView
+        presenceListHelper.delegate = self
+    }
+
+
+    private func configureTodoListView() {
         pinchRecognizer.addTarget(self, action: #selector(handlePinch(_:)))
         tableView.addGestureRecognizer(pinchRecognizer)
         tableView.registerClass(TableViewCell.self, forCellReuseIdentifier: kCellIdentifier)
@@ -97,16 +109,21 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         let presenceFrame = presenceView.superview!.frame
         tableView.contentInset = UIEdgeInsets(top: presenceFrame.size.height, left: 0.0, bottom: 0.0, right: 0.0)
 
-        setToolbarItems([UIBarButtonItem(barButtonSystemItem: .Trash, target: self, action: #selector(trashButtonTapped))], animated: false)
-
-        configureView()
-
-        let nc = NSNotificationCenter.defaultCenter()
-        nc.addObserver(self, selector: #selector(orientationDidChange), name: UIDeviceOrientationDidChangeNotification, object: nil)
-
         view.removeConstraint(presenceContainerTopConstraint)
         presenceContainerTopConstraint = NSLayoutConstraint(item: presenceContainer, attribute: .Top, relatedBy: .Equal, toItem: topLayoutGuide, attribute: .Bottom, multiplier: 1.0, constant: 0)
         view.addConstraint(presenceContainerTopConstraint)
+    }
+
+
+    private func configurePresenceView() {
+        presenceView.backgroundColor = UIColor.clearColor()
+        presenceView.collectionViewLayout = RTLLayout()
+        presenceView.registerNib(UINib(nibName: kPersonImageCell, bundle: nil), forCellWithReuseIdentifier: kPersonImageCell)
+        presenceView.scrollsToTop = false
+
+        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .Light))
+        presenceContainer.insertSubview(blur, belowSubview: presenceView)
+        presenceContainer.anchorSubview(blur)
     }
 
 
@@ -122,44 +139,26 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
 
+        presenceMapManager.startSynching()
+
         navigationController?.toolbarHidden = false
-
-        presenceListManager.startSynching()
     }
 
 
-    override func viewDidDisappear(animated: Bool) {
-        super.viewDidDisappear(animated)
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
 
-        presenceListManager.stopSynching()
+        presenceMapManager.stopSynching()
     }
 
 
-    // MARK: - SwimListManagerDelegate
+    // MARK: - ListDownlinkDelegate
 
-    func swimListDidStartSynching(manager: SwimListManagerProtocol) {
-        if manager === swimListManager {
-            configureView()
-        }
+    func swimListDownlinkDidChangeObjects(_: ListDownlink) {
+        fixColors()
     }
 
-    func swimListDidChangeObjects(manager: SwimListManagerProtocol) {
-        if manager === swimListManager {
-            fixColors()
-        }
-    }
-
-    func swimList(manager: SwimListManagerProtocol, didUpdateObject object: SwimModelProtocolBase, atIndex index: Int) {
-        if manager === swimListManager {
-            todoListDidUpdateObject(object, atIndex: index)
-        }
-        else {
-            precondition(manager === presenceListManager)
-            presenceListDidUpdateObject(object, atIndex: index)
-        }
-    }
-
-    private func todoListDidUpdateObject(object: SwimModelProtocolBase, atIndex index: Int) {
+    func swimListDownlink(downlink: ListDownlink, didUpdate object: SwimModelProtocolBase, atIndex index: Int) {
         let indexPath = NSIndexPath(forRow: index, inSection: swimObjectSection)
         guard let visiblePaths = tableView.indexPathsForVisibleRows where visiblePaths.contains(indexPath) else {
             return
@@ -169,8 +168,14 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         cell.toDoItem = (object as! TodoEntry)
     }
 
-    private func presenceListDidUpdateObject(object: SwimModelProtocolBase, atIndex index: Int) {
-        let indexPath = NSIndexPath(forRow: index, inSection: 0)
+
+    // MARK: - MapDownlinkDelegate
+
+    func swimMapDownlink(downlink: MapDownlink, didUpdate object: SwimModelProtocolBase, forKey key: SwimValue) {
+        guard let index = presenceListHelper.indexOf(object) else {
+            return
+        }
+        let indexPath = NSIndexPath(forItem: index, inSection: 0)
         let visiblePaths = presenceView.indexPathsForVisibleItems()
         guard visiblePaths.contains(indexPath) else {
             return
@@ -180,10 +185,10 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
 
-    func swimList(manager: SwimListManagerProtocol, didCompleteServerWritesOfObject object: SwimModelProtocolBase) {
-        precondition(manager === swimListManager)
+    // MARK: - DownlinkDelegate
 
-        guard let index = swimObjects.indexOf({ $0 === object }) else {
+    func swimDownlink(_: Downlink, didCompleteServerWritesOfObject object: SwimModelProtocolBase) {
+        guard let index = indexOfObject(object as! TodoEntry) else {
             return
         }
         let indexPath = NSIndexPath(forRow: index, inSection: swimObjectSection)
@@ -195,11 +200,13 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
 
-    func swimList(manager: SwimListManagerProtocol, didReceiveError error: ErrorType) {
+    func swimDownlink(downlink: Downlink, didReceiveError error: ErrorType) {
+        let isTodoList = (swimDownlink != nil && downlink === swimDownlink!)
+
         var message = "Unknown error"
         switch error {
         case SwimError.NodeNotFound, SwimError.LaneNotFound:
-            if manager === swimListManager {
+            if isTodoList {
                 message = "This list is not present on the server!"
             }
             else {
@@ -208,7 +215,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
             }
 
         case SwimError.NetworkError:
-            if manager === swimListManager {
+            if isTodoList {
                 message = "Network error"
             }
             else {
@@ -241,7 +248,8 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         guard let path = tableView.indexPathForCell(editingCell) else {
             preconditionFailure("Cannot find cell when we're editing it!")
         }
-        swimListManager.setHighlightAtIndex(path.row, isHighlighted: true)
+
+        swimDownlink!.setHighlightAtIndex(path.row, isHighlighted: true)
     }
 
 
@@ -261,9 +269,9 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         }
 
         let index = path.row
-        swimListManager.setHighlightAtIndex(index, isHighlighted: false)
+        swimDownlink!.setHighlightAtIndex(index, isHighlighted: false)
         if changed {
-            swimListManager.updateObjectAtIndex(index)
+            swimDownlink!.updateObjectAtIndex(index)
         }
     }
 
@@ -282,19 +290,17 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
             log.warning("Couldn't find completed item \(toDoItem)!")
             return
         }
-        swimListManager.updateObjectAtIndex(index)
+        swimDownlink!.updateObjectAtIndex(index)
     }
 
 
     // MARK: - List manipulation
 
     private func addTodoEntryAtIndex(index: Int) {
-        let newObjectOrNil = swimListManager.insertNewObjectAtIndex(index) as? TodoEntry
+        let newObject = TodoEntry()
+        swimDownlink!.insert(newObject, atIndex: index)
         tableView.reloadData()
         fixColors()
-        guard let newObject = newObjectOrNil else {
-            return
-        }
         // enter edit mode
         let visibleCells = tableView.visibleCells as! [TableViewCell]
         let editCell = visibleCells.find { $0.toDoItem === newObject }
@@ -303,7 +309,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
 
 
     private func deleteTodoEntry(toDoItem: TodoEntry, atIndex index: Int) {
-        swimListManager.removeObjectAtIndex(index)
+        swimDownlink!.removeAtIndex(index)
 
         // loop over the visible cells to animate delete
         let visibleCells = tableView.visibleCells as! [TableViewCell]
@@ -360,7 +366,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
 
-    // MARK: - UICollectionViewDataSource, UICollectionViewDelegate
+    // MARK: - UICollectionViewDataSource / UICollectionViewDelegate
 
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
         return 1
@@ -370,7 +376,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         precondition(collectionView == presenceView)
         precondition(section == 0)
 
-        return presenceListManager.objects.count;
+        return presenceDownlink?.objects.count ?? 0;
     }
 
 
@@ -379,7 +385,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
         precondition(indexPath.section == 0)
 
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier(kPersonImageCell, forIndexPath: indexPath) as! PersonImageCollectionViewCell
-        let user = presenceListManager.objects[indexPath.item] as! UserPresenceModel
+        let user = presenceListHelper.sortedObjects[indexPath.item] as! UserPresenceModel
         cell.personImageView.initials = user.initials ?? "?"
         return cell
     }
@@ -397,7 +403,7 @@ class TodoListViewController: SwimListViewController, SwimListManagerDelegate, T
     }
 
     private func deleteListContents() {
-        swimListManager.removeAll()
+        swimDownlink!.removeAll()
         tableView.reloadData()
     }
 
