@@ -196,23 +196,45 @@ class Channel: WebSocketDelegate {
     func unregisterDownlink(downlink: RemoteDownlink) {
         let node = downlink.nodeUri
         let lane = downlink.laneUri
+
         guard var nodeDownlinks = downlinks[node], laneDownlinks = nodeDownlinks[lane] else {
             return
         }
         laneDownlinks.remove(downlink)
         if laneDownlinks.isEmpty {
-            nodeDownlinks.removeValueForKey(lane)
-            if nodeDownlinks.isEmpty {
-                downlinks.removeValueForKey(node)
-                watchIdle()
-            }
             if socket?.readyState == .Open {
                 let request = UnlinkRequest(node: unresolve(node), lane: lane)
                 downlink.onUnlinkRequest()
                 push(envelope: request)
             }
+
+            unregisterLane(node, lane)
         }
+        else {
+            nodeDownlinks[lane] = laneDownlinks
+            downlinks[node] = nodeDownlinks
+        }
+
         downlink.onClose()
+    }
+
+    private func unregisterLane(node: SwimUri, _ lane: SwimUri) {
+        guard var nodeDownlinks = downlinks[node] else {
+            return
+        }
+        nodeDownlinks.removeValueForKey(lane)
+        if nodeDownlinks.isEmpty {
+            unregisterNode(node)
+        }
+        else {
+            downlinks[node] = nodeDownlinks
+        }
+
+    }
+
+    private func unregisterNode(node: SwimUri) {
+        downlinks.removeValueForKey(node)
+        watchIdle()
     }
 
 
