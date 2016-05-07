@@ -37,7 +37,7 @@ PODS:
   - ReachabilitySwift (2.3.3)
   - Recon (0.3.1)
   - SQLite.swift (0.10.1)
-  - SwiftWebSocket (2.6.0)
+  - SwiftWebSocket (2.6.1)
   - SwiftyBeaver (0.5.2)
   - SwimSwift (0.5.3):
     - Bolts (>= 1.7.0)
@@ -84,7 +84,7 @@ SPEC CHECKSUMS:
   ReachabilitySwift: e0f6b6f280effb47731acfaaa2d5ffe223703793
   Recon: 44a8f6fe0acb185c0bf001048eb7e6e724a8038c
   SQLite.swift: 6a6e4b034efc317ce4e203b6af2d3024fee2b570
-  SwiftWebSocket: c24c0dde0b33852f478ffb54226408bfe703b26b
+  SwiftWebSocket: ccace0c3843fa5dc5a571506b01dcbb8f8d0add8
   SwiftyBeaver: 3a2481e7c24e8ef75252ec9eeebf1f456ac2d2f7
   SwimSwift: e5b7ec61099b2cf29f896a801bb4560746ff691e
 
