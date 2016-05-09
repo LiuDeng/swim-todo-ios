@@ -42,7 +42,7 @@ class LoginManager {
         // If you have more than one auth provider, you will need to check
         // them all here, or maintain your own user identity details.
         let gidSignIn = GIDSignIn.sharedInstance()
-        return (gidSignIn.currentUser != nil)
+        return gidSignIn.hasAuthInKeychain()
     }
 
     /**
