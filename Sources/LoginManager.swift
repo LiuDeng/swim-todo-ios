@@ -59,6 +59,13 @@ class LoginManager {
         let gidSignIn = GIDSignIn.sharedInstance()
         gidSignIn.signInSilently()
     }
+
+    func signOut() {
+        let gidSignIn = GIDSignIn.sharedInstance()
+        gidSignIn.signOut()
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.postNotificationName(LoginManager.UserSignedOutNotification, object: nil)
+    }
 }
 
 

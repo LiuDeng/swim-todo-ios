@@ -21,6 +21,7 @@ class GuruModeViewController: UITableViewController {
         case Crash
         case DBSize(NSURL)
         case DeleteDB(SwimUri?)
+        case SignOut
     }
 
     var knownLanes: [SwimUri]!
@@ -43,6 +44,7 @@ class GuruModeViewController: UITableViewController {
 
         configureDBRows()
 
+        rows.append(.SignOut)
         rows.append(.Crash)
     }
 
@@ -103,6 +105,12 @@ class GuruModeViewController: UITableViewController {
             cell.label = (uri == nil ? "Delete All DBs" : "Delete DB \(uri!)")
             cell.value = ""
             return cell
+
+        case .SignOut:
+            let cell: DetailTableViewCell = DetailTableViewCell.dequeueFromTableView(tableView, forIndexPath: indexPath)
+            cell.label = "Sign Out"
+            cell.value = ""
+            return cell
         }
     }
 
@@ -134,6 +142,9 @@ class GuruModeViewController: UITableViewController {
 
         case .DBSize:
             break
+
+        case .SignOut:
+            signOut()
         }
     }
 
@@ -149,5 +160,10 @@ class GuruModeViewController: UITableViewController {
         }))
 
         presentViewController(prompt, animated: true, completion: nil)
+    }
+
+
+    private func signOut() {
+        SwimTodoGlobals.instance.loginManager.signOut()
     }
 }
