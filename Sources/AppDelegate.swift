@@ -55,13 +55,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         nc.addObserver(self, selector: #selector(AppDelegate.userSignedIn), name: LoginManager.UserSignedInNotification, object: nil)
         nc.addObserver(self, selector: #selector(AppDelegate.userSignedOut), name: LoginManager.UserSignedOutNotification, object: nil)
 
-        if loginManager.isUserSignedIn {
-            loginManager.signInSilently()
+//        if loginManager.isUserSignedIn {
+//            loginManager.signInSilently()
             userSignedIn()
-        }
-        else {
-            showLogin()
-        }
+//        }
+//        else {
+//            showLogin()
+//        }
 
         return true
     }
