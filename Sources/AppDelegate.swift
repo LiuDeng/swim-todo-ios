@@ -55,12 +55,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         nc.addObserver(self, selector: #selector(AppDelegate.userSignedIn), name: LoginManager.UserSignedInNotification, object: nil)
         nc.addObserver(self, selector: #selector(AppDelegate.userSignedOut), name: LoginManager.UserSignedOutNotification, object: nil)
 
-        let vc = MapViewController()
-        window?.rootViewController = vc
-
 //        if loginManager.isUserSignedIn {
 //            loginManager.signInSilently()
-//            userSignedIn()
+            userSignedIn()
 //        }
 //        else {
 //            showLogin()
@@ -74,15 +71,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     @objc func userSignedIn() {
-        if window!.rootViewController is UISplitViewController {
-            log.verbose("User signed in already")
-        }
-        else {
+        if window!.rootViewController is LoginViewController {
             log.verbose("User signed in, transitioning to main view")
 
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let mainVC = storyboard.instantiateInitialViewController()!
             window!.fadeToVC(mainVC)
+        }
+        else {
+            log.verbose("User signed in already")
         }
     }
 

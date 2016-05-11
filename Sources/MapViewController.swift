@@ -82,6 +82,13 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
 
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+
+        navigationController?.navigationBarHidden = false
+    }
+
+
     private func linkAgencies() {
         let swimClient = SwimTodoGlobals.instance.cityClient
         let countryScope = swimClient.scope(node: countryNodeUri)

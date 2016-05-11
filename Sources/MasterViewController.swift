@@ -2,7 +2,7 @@ import SwimSwift
 import UIKit
 
 
-class MasterViewController: UITableViewController, UISplitViewControllerDelegate {
+class MasterViewController: UITableViewController {
     var objects = [NodeScope]()
 
 
@@ -13,17 +13,12 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
         let groceryList = swim.scope(node: "/todo/grocery")
         let elementsList = swim.scope(node: "/todo/elements")
         objects = [groceryList, elementsList]
-
-        guard let splitVC = splitViewController else {
-            return
-        }
-        splitVC.delegate = self
-        navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
     }
 
     override func viewWillAppear(animated: Bool) {
-        self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
         super.viewWillAppear(animated)
+
+        navigationController?.navigationBarHidden = false
     }
 
 
@@ -78,37 +73,24 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
 
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let indexPath = tableView.indexPathForSelectedRow!
-        let splitVC = splitViewController!
 
         switch indexPath.section {
         case 0:
-            let object = objects[indexPath.row]
-
-            let listVC = TodoListViewController()
-            listVC.detailItem = object
-            listVC.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
-            listVC.navigationItem.leftItemsSupplementBackButton = true
-
-            let listNav = UINavigationController(rootViewController: listVC)
-            splitVC.showDetailViewController(listNav, sender: self)
+            let vc = TodoListViewController()
+            vc.detailItem = objects[indexPath.row]
+            navigationController?.pushViewController(vc, animated: true)
 
         case 1:
             switch indexPath.row {
             case 0:
                 let vc = MapViewController()
-
-                let nav = UINavigationController(rootViewController: vc)
-                splitVC.showDetailViewController(nav, sender: self)
+                navigationController?.pushViewController(vc, animated: true)
 
             case 1:
                 let vc = GuruModeViewController()
                 let todoHostUri = SwimTodoGlobals.instance.todoClient.hostUri
                 vc.knownLanes = objects.map { todoHostUri.resolve(SwimUri("\($0.nodeUri)/todo/list")!) }
-                vc.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
-                vc.navigationItem.leftItemsSupplementBackButton = true
-
-                let nav = UINavigationController(rootViewController: vc)
-                splitVC.showDetailViewController(nav, sender: self)
+                navigationController?.pushViewController(vc, animated: true)
 
             default:
                 preconditionFailure()
@@ -117,27 +99,5 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
         default:
             preconditionFailure()
         }
-    }
-
-
-    // MARK: - UISplitViewControllerDelegate
-
-    func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController: UIViewController, ontoPrimaryViewController primaryViewController:UIViewController) -> Bool {
-        let detailNav = secondaryViewController as! UINavigationController
-        guard let listVC = detailNav.topViewController as? TodoListViewController else {
-            return false
-        }
-        if listVC.detailItem == nil {
-            // Return true to indicate that we have handled the collapse by doing nothing; the secondary controller will be discarded.
-            return true
-        }
-        return false
-    }
-
-    func splitViewController(splitViewController: UISplitViewController, separateSecondaryViewControllerFromPrimaryViewController primaryViewController: UIViewController) -> UIViewController? {
-        let masterNav = primaryViewController as! UINavigationController
-        let detailVC = masterNav.topViewController!
-        masterNav.popViewControllerAnimated(false)
-        return detailVC
     }
 }
