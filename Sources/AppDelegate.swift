@@ -55,9 +55,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         nc.addObserver(self, selector: #selector(AppDelegate.userSignedIn), name: LoginManager.UserSignedInNotification, object: nil)
         nc.addObserver(self, selector: #selector(AppDelegate.userSignedOut), name: LoginManager.UserSignedOutNotification, object: nil)
 
+        let vc = MapViewController()
+        window?.rootViewController = vc
+
 //        if loginManager.isUserSignedIn {
 //            loginManager.signInSilently()
-            userSignedIn()
+//            userSignedIn()
 //        }
 //        else {
 //            showLogin()
