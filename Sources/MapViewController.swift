@@ -6,6 +6,7 @@
 //  Copyright © 2016 swim.it. All rights reserved.
 //
 
+import CCHMapClusterController
 import MapKit
 import SwiftyBeaver
 import SwimSwift
@@ -21,10 +22,16 @@ private let log = SwiftyBeaver.self
 
 
 class VehicleAnnotation: NSObject, MKAnnotation {
+    var vehicle: VehicleModel
+
+    // Note that this is a cache of vehicle.coordinate rather than a
+    // direct call, because we only want to change this when we're ready
+    // to animate a batch of changes.
     var coordinate: CLLocationCoordinate2D
 
-    init(coordinate: CLLocationCoordinate2D) {
-        self.coordinate = coordinate
+    init(vehicle: VehicleModel) {
+        self.vehicle = vehicle
+        coordinate = vehicle.coordinate
     }
 
     override func isEqual(object: AnyObject?) -> Bool {
@@ -33,8 +40,10 @@ class VehicleAnnotation: NSObject, MKAnnotation {
 }
 
 
-class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegate {
+class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegate, CCHMapClusterControllerDelegate {
     @IBOutlet private weak var mapView: MKMapView!
+
+    private var mapClusterController: CCHMapClusterController!
 
     private var agenciesDownlink: MapDownlink!
     private var routeDownlinks = [String: MapDownlink]()
@@ -42,7 +51,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     private var vehicleAnnotations = [String: VehicleAnnotation]()
 
     private var changesInProgress = 0
-    private var pendingChanges = [VehicleAnnotation: CLLocationCoordinate2D]()
+    private var pendingChanges = [VehicleAnnotation]()
     private var pendingAdds = [VehicleAnnotation]()
     private var pendingRemoves = [VehicleAnnotation]()
 
@@ -59,6 +68,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        mapClusterController = CCHMapClusterController(mapView: mapView)
 
         laneProperties.isClientReadOnly = true
         laneProperties.isTransient = true
@@ -153,10 +164,10 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
             return
         }
         if let anno = vehicleAnnotations[vehicle.swimId] {
-            pendingChanges[anno] = coord
+            pendingChanges.append(anno)
         }
         else {
-            let anno = VehicleAnnotation(coordinate: coord)
+            let anno = VehicleAnnotation(vehicle: vehicle)
             vehicleAnnotations[vehicle.swimId] = anno
             pendingAdds.append(anno)
         }
@@ -187,11 +198,11 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         SwimAssertOnMainThread()
 
         if pendingAdds.count > 0 {
-            mapView.addAnnotations(pendingAdds)
+            mapClusterController.addAnnotations(pendingAdds, withCompletionHandler: nil)
             pendingAdds.removeAll()
         }
         if pendingRemoves.count > 0 {
-            mapView.removeAnnotations(pendingRemoves)
+            mapClusterController.removeAnnotations(pendingRemoves, withCompletionHandler: nil)
             pendingRemoves.removeAll()
         }
 
@@ -199,8 +210,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
             let changes = pendingChanges
             pendingChanges.removeAll()
             UIView.animateWithDuration(0.3) {
-                for (anno, coord) in changes {
-                    anno.coordinate = coord
+                for anno in changes {
+                    anno.coordinate = anno.vehicle.coordinate
                 }
             }
         }
@@ -256,6 +267,51 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
         if let vehicle = object as? VehicleModel {
             removeVehicleMarker(vehicle)
+        }
+    }
+
+
+    // MARK: - CCHMapClusterControllerDelegate
+
+    func mapClusterController(mapClusterController: CCHMapClusterController!, titleForMapClusterAnnotation mapClusterAnnotation: CCHMapClusterAnnotation!) -> String! {
+        let n = mapClusterAnnotation.annotations.count
+        let unit = (n > 1 ? "buses" : "bus")
+        return "\(n) \(unit)"
+    }
+
+    func mapClusterController(mapClusterController: CCHMapClusterController!, willReuseMapClusterAnnotation mapClusterAnnotation: CCHMapClusterAnnotation!) {
+        guard let v = mapView.viewForAnnotation(mapClusterAnnotation) as? MapAnnotationView else {
+            assertionFailure()
+            return
+        }
+        v.count = mapClusterAnnotation.annotations.count
+    }
+
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+        if let clusterAnno = annotation as? CCHMapClusterAnnotation {
+            let identifier = "annotationView"
+            var v = mapView.dequeueReusableAnnotationViewWithIdentifier(identifier) as? MapAnnotationView
+            if v == nil {
+                v = MapAnnotationView(annotation: clusterAnno, reuseIdentifier: identifier)
+                v!.canShowCallout = true
+            }
+            else {
+                v!.annotation = clusterAnno
+            }
+
+            let n = clusterAnno.annotations.count
+            if n > 1 {
+                v!.count = n
+                v!.vehicle = nil
+            }
+            else {
+                v!.vehicle = (clusterAnno.annotations.first as! VehicleAnnotation).vehicle
+            }
+
+            return v
+        }
+        else {
+            return nil
         }
     }
 }

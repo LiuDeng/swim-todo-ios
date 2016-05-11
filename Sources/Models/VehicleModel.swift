@@ -14,6 +14,12 @@ class VehicleModel: SwimModelBase {
     var longitude: Float?
     var speed: Int?
 
+    var coordinate: CLLocationCoordinate2D {
+        return CLLocationCoordinate2D(latitude: CLLocationDegrees(latitude ?? 0.0),
+                                      longitude: CLLocationDegrees(longitude ?? 0.0))
+    }
+
+
     override func swim_updateWithJSON(json: [String: AnyObject]) {
         super.swim_updateWithJSON(json)
 
