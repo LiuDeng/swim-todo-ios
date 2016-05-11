@@ -24,6 +24,8 @@ public protocol DownlinkDelegate: class {
     func swimDownlink(downlink: Downlink, didCompleteServerWritesOfObject object: SwimModelProtocolBase)
 
     func swimDownlink(downlink: Downlink, didReceiveError error: ErrorType)
+
+    func swimDownlinkDidLoseSync(downlink: Downlink)
 }
 
 public extension DownlinkDelegate {
@@ -52,4 +54,6 @@ public extension DownlinkDelegate {
     public func swimDownlink(downlink: Downlink, didCompleteServerWritesOfObject object: SwimModelProtocolBase) {}
 
     public func swimDownlink(downlink: Downlink, didReceiveError error: ErrorType) {}
+
+    public func swimDownlinkDidLoseSync(downlink: Downlink) {}
 }

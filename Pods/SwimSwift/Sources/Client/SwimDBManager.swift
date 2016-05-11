@@ -200,7 +200,7 @@ public class SwimDBManager {
     }
 
 
-    public func addEntryAsync(lane: SwimUri, timestamp: NSDate, counter: Int64, swimValue: SwimValue) -> BFTask {
+    public func addOplogEntryAsync(lane: SwimUri, timestamp: NSDate, counter: Int64, swimValue: SwimValue) -> BFTask {
         guard let db = connectionForLane(lane) else {
             return BFTask(error: NSError(errorCode: .NotConnected))
         }
@@ -209,6 +209,33 @@ public class SwimDBManager {
             colCounter <- counter,
             colSwimValue <- swimValue.recon
             ))
+    }
+
+
+    public func ackOplogEntryAsync(lane: SwimUri, rowId: Int64) -> BFTask {
+        guard let db = connectionForLane(lane) else {
+            return BFTask(error: NSError(errorCode: .NotConnected))
+        }
+        return db.runTask(tableOplog.filter(colId == rowId).delete())
+    }
+
+
+    @warn_unused_result
+    public func getOplogEntries(lane: SwimUri) -> BFTask {
+        guard let db = connectionForLane(lane) else {
+            return BFTask(error: NSError(errorCode: .NotConnected))
+        }
+        return db.runQueryTask(tableOplog.select(colId, colTimestamp, colCounter, colSwimValue).order(colId)) { row -> OplogEntry? in
+            let rowId = row.get(colId)
+            let ts = row.get(colTimestamp)
+            let c = row.get(colCounter)
+            let valStr = row.get(colSwimValue)
+            guard let val = recon(valStr) else {
+                log.error("Unparsable value \(valStr) in database!  Ignoring row.")
+                return nil
+            }
+            return OplogEntry(rowId, ts, c, val)
+        }
     }
 
 
@@ -571,4 +598,19 @@ private func backgroundTask<T where T: AnyObject>(f: () throws -> T) -> BFTask {
         }
     }
     return task.task
+}
+
+
+@objc class OplogEntry: NSObject {
+    let rowId: Int64
+    let timestamp: NSDate
+    let counter: Int64
+    let swimValue: SwimValue
+
+    private init(_ rowId: Int64, _ timestamp: NSDate, _ counter: Int64, _ swimValue: SwimValue) {
+        self.rowId = rowId
+        self.timestamp = timestamp
+        self.counter = counter
+        self.swimValue = swimValue
+    }
 }

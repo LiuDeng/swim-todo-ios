@@ -81,15 +81,14 @@ class MapDownlinkAdapter: SynchedDownlinkAdapter, MapDownlink {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
-        let item = value["item"]
-        guard let newObject = objectMaker(item) else {
+        guard let newObject = objectMaker(value) else {
             log.warning("Ignoring update with unparseable item!")
             return false
         }
 
         state[key] = value
         if let existingObject = objects[key] {
-            existingObject.swim_updateWithSwimValue(item)
+            existingObject.swim_updateWithSwimValue(value)
             forEachMapDelegate {
                 $0.swimMapDownlink($1, didUpdate: existingObject, forKey: key)
             }
@@ -232,7 +231,7 @@ class MapDownlinkAdapter: SynchedDownlinkAdapter, MapDownlink {
         return command(body: bodyWithCommand(cmd, value: value))
     }
 
-    override func sendSyncRequest() -> BFTask {
+    override func sendSyncRequest() {
         preconditionFailure("You do not need to call this, this list is automatically synched.")
     }
 
@@ -264,14 +263,13 @@ class MapDownlinkAdapter: SynchedDownlinkAdapter, MapDownlink {
 
 
     private func swimValueToObject(value: SwimValue) -> SwimModelProtocolBase? {
-        let item = value["item"]
-        return objectMaker(item)
+        return objectMaker(value)
     }
 }
 
 
 private func bodyWithCommand(command: String, value: SwimValue) -> SwimValue {
     let body = Record()
-    body["item"] = value["item"]
+    body["item"] = value
     return Value(body)
 }

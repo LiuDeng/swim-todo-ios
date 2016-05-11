@@ -62,8 +62,8 @@ class DownlinkAdapter: DownlinkBase, DownlinkDelegate {
     }
 
 
-    func sendSyncRequest() -> BFTask {
-        return downlink.sendSyncRequest()
+    func sendSyncRequest() {
+        downlink.sendSyncRequest()
     }
 
 
@@ -74,69 +74,87 @@ class DownlinkAdapter: DownlinkBase, DownlinkDelegate {
 
     // MARK: - DownlinkDelegate
 
-    func swimDownlink(downlink: Downlink, acks: [AckResponse]) {
+    func swimDownlink(_: Downlink, acks: [AckResponse]) {
         forEachDelegate {
             $0.swimDownlink($1, acks: acks)
         }
     }
 
-    func swimDownlink(downlink: Downlink, events: [EventMessage]) {
+    func swimDownlink(_: Downlink, events: [EventMessage]) {
         forEachDelegate {
             $0.swimDownlink($1, events: events)
         }
     }
 
-    func swimDownlinkWillLink(downlink: Downlink) {
+    func swimDownlinkWillLink(_: Downlink) {
         forEachDelegate {
             $0.swimDownlinkWillLink($1)
         }
     }
 
-    func swimDownlink(downlink: Downlink, didLink response: LinkedResponse) {
+    func swimDownlink(_: Downlink, didLink response: LinkedResponse) {
         forEachDelegate {
             $0.swimDownlink($1, didLink: response)
         }
     }
 
-    func swimDownlinkWillSync(downlink: Downlink) {
+    func swimDownlinkWillSync(_: Downlink) {
         forEachDelegate {
             $0.swimDownlinkWillSync($1)
         }
     }
 
-    func swimDownlink(downlink: Downlink, didSync response: SyncedResponse) {
+    func swimDownlink(_: Downlink, didSync response: SyncedResponse) {
         forEachDelegate {
             $0.swimDownlink($1, didSync: response)
         }
     }
 
-    func swimDownlinkWillUnlink(downlink: Downlink) {
+    func swimDownlinkWillUnlink(_: Downlink) {
         forEachDelegate {
             $0.swimDownlinkWillUnlink($1)
         }
     }
 
-    func swimDownlink(downlink: Downlink, didUnlink response: UnlinkedResponse) {
+    func swimDownlink(_: Downlink, didUnlink response: UnlinkedResponse) {
         forEachDelegate {
             $0.swimDownlink($1, didUnlink: response)
         }
     }
 
-    func swimDownlinkDidConnect(downlink: Downlink) {
+    func swimDownlinkDidConnect(_: Downlink) {
         forEachDelegate {
             $0.swimDownlinkDidConnect($1)
         }
     }
 
-    func swimDownlinkDidDisconnect(downlink: Downlink) {
+    func swimDownlinkDidDisconnect(_: Downlink) {
         forEachDelegate {
             $0.swimDownlinkDidDisconnect($1)
         }
     }
 
-    func swimDownlinkDidClose(downlink: Downlink) {
+    func swimDownlinkDidClose(_: Downlink) {
         forEachDelegate {
             $0.swimDownlinkDidClose($1)
+        }
+    }
+
+    func swimDownlink(_: Downlink, didCompleteServerWritesOfObject object: SwimModelProtocolBase) {
+        forEachDelegate {
+            $0.swimDownlink($1, didCompleteServerWritesOfObject: object)
+        }
+    }
+
+    func swimDownlinkDidLoseSync(_: Downlink) {
+        forEachDelegate {
+            $0.swimDownlinkDidLoseSync($1)
+        }
+    }
+
+    func swimDownlink(_: Downlink, didReceiveError error: ErrorType) {
+        forEachDelegate {
+            $0.swimDownlink($1, didReceiveError: error)
         }
     }
 }
@@ -148,7 +166,7 @@ class DownlinkAdapter: DownlinkBase, DownlinkDelegate {
  synchronize as soon as the lane is connected.
  */
 class SynchedDownlinkAdapter: DownlinkAdapter {
-    override func swimDownlinkDidConnect(downlink: Downlink) {
+    override func swimDownlinkDidConnect(_: Downlink) {
         downlink.sendSyncRequest()
         super.swimDownlinkDidConnect(uplink)
     }

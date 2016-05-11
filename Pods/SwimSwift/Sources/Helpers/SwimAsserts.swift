@@ -9,6 +9,6 @@
 import Foundation
 
 
-func SwimAssertOnMainThread() {
+public func SwimAssertOnMainThread() {
     assert(NSThread.isMainThread(), "Must be on main thread.")
 }

@@ -6,7 +6,16 @@ import SwiftWebSocket
 
 private let log = SwimLogging.log
 
+private let idleTimeout: NSTimeInterval = 30.0
+private let sendBufferSize: Int = 1024
 
+
+/**
+ Note that Channel is handling the WebSocket, which often calls on a
+ background thread.  Channel is responsible for getting all calls to
+ Downlink onto the main thread so that the UI layer can handle delegate
+ callbacks and model objects easily.
+ */
 class Channel: WebSocketDelegate {
     let hostUri: SwimUri
 
@@ -14,27 +23,43 @@ class Channel: WebSocketDelegate {
 
     private var uriCache: UriCache
 
+    /// May only be accessed under objc_sync_enter(self).
     private var downlinks = [SwimUri: [SwimUri: Set<RemoteDownlink>]]()
 
+    /**
+     Retry managers, one per lane.  These are responsible for making sure
+     that writes are pushed back to the server whenever we can.  Note
+     that nothing ever leaves this dictionary, even once the lane is
+     deregistered.  That way, if the downlink is closed then we'll
+     still be there to retry when it is re-opened.
+
+     May only be accessed under objc_sync_enter(self).
+     */
+    private var retryManagers = [SwimUri: OplogRetryManager]()
+
+    /// May only be accessed under objc_sync_enter(self).
     private var sendBuffer = [Envelope]()
 
+    /// May only be accessed under objc_sync_enter(self).
     private var reconnectTimer: NSTimer?
 
+    /// May only be accessed under objc_sync_enter(self).
     private var reconnectTimeout: NSTimeInterval = 0.0
 
+    /// May only be accessed under objc_sync_enter(self).
     private var idleTimer: NSTimer?
 
-    private let idleTimeout: NSTimeInterval = 30.0 // TODO: make configurable
-
-    private let sendBufferSize: Int = 1024 // TODO: make configurable
-
+    /// May only be accessed under objc_sync_enter(self).
     private var socket: WebSocket?
+
     private let socketQueue = dispatch_queue_create("it.swim.Channel", DISPATCH_QUEUE_SERIAL)
 
     private var pendingMessages: Batcher<Envelope>!
 
+    /// May only be accessed under objc_sync_enter(self).
     private var credentials: Value = Value.Absent
 
+    /// May only be accessed under objc_sync_enter(self).
     private var networkMonitor: SwimNetworkConditionMonitor.ServerMonitor?
 
     /**
@@ -55,7 +80,10 @@ class Channel: WebSocketDelegate {
     }
 
     var isConnected: Bool {
-        return socket != nil && socket!.readyState == .Open
+        objc_sync_enter(self)
+        let result = (socket != nil && socket!.readyState == .Open)
+        objc_sync_exit(self)
+        return result
     }
 
     private func resolve(uri: SwimUri) -> SwimUri {
@@ -102,12 +130,13 @@ class Channel: WebSocketDelegate {
             return (remoteDownlink, listDownlink)
         }
 
-        let globals = SwimGlobals.instance
-        if globals.dbManager == nil {
-            globals.dbManager = SwimDBManager()
-        }
+        startDBManagerIfNecessary()
+
         let laneFQUri = SwimUri("\(nodeUri)/\(lane)")!
-        let listDownlink = PersistentListDownlink(downlink: remoteDownlink, objectMaker: objectMaker, laneFQUri: laneFQUri)
+
+        let retryManager = retryManagerForLane(node: node, lane: lane, laneFQUri: laneFQUri, remoteDownlink: remoteDownlink)
+
+        let listDownlink = PersistentListDownlink(downlink: remoteDownlink, objectMaker: objectMaker, laneFQUri: laneFQUri, retryManager: retryManager)
         listDownlink.loadFromDBAsync()
 
         return (remoteDownlink, listDownlink)
@@ -142,6 +171,33 @@ class Channel: WebSocketDelegate {
     }
 
 
+    private func startDBManagerIfNecessary() {
+        let globals = SwimGlobals.instance
+
+        objc_sync_enter(globals)
+
+        if globals.dbManager == nil {
+            globals.dbManager = SwimDBManager()
+        }
+
+        objc_sync_exit(globals)
+    }
+
+    private func retryManagerForLane(node node: SwimUri, lane: SwimUri, laneFQUri: SwimUri, remoteDownlink: RemoteDownlink) -> OplogRetryManager {
+        objc_sync_enter(self)
+
+        var mgr = retryManagers[lane]
+        if mgr == nil {
+            startNetworkMonitorIfNecessary()
+            mgr = OplogRetryManager(laneFQUri: laneFQUri, downlink: remoteDownlink, dbManager: SwimGlobals.instance.dbManager!, networkMonitor: networkMonitor!)
+            retryManagers[lane] = mgr
+        }
+
+        objc_sync_exit(self)
+        return mgr!
+    }
+
+
     func command(node node: SwimUri, lane: SwimUri, body: Value) {
         let message = CommandMessage(node: unresolve(node), lane: lane, body: body)
         push(envelope: message)
@@ -163,7 +219,10 @@ class Channel: WebSocketDelegate {
     }
 
     func auth(credentials credentials: Value) -> BFTask {
+        objc_sync_enter(self)
         self.credentials = credentials
+        objc_sync_exit(self)
+
         if socket?.readyState == .Open {
             let request = AuthRequest(body: credentials)
             push(envelope: request)
@@ -178,17 +237,27 @@ class Channel: WebSocketDelegate {
     }
 
     func registerDownlink(downlink: RemoteDownlink) {
-        clearIdle()
         let node = downlink.nodeUri
         let lane = downlink.laneUri
+
+        objc_sync_enter(self)
+
+        clearIdle()
+
         var nodeDownlinks = downlinks[node] ?? [SwimUri: Set<RemoteDownlink>]()
         var laneDownlinks = nodeDownlinks[lane] ?? Set<RemoteDownlink>()
         laneDownlinks.insert(downlink)
         nodeDownlinks[lane] = laneDownlinks
         downlinks[node] = nodeDownlinks
-        if socket?.readyState == .Open {
+
+        let isOpen = (socket?.readyState == .Open)
+
+        objc_sync_exit(self)
+
+        if isOpen {
             downlink.onConnect()
-        } else {
+        }
+        else {
             open()
         }
     }
@@ -196,28 +265,36 @@ class Channel: WebSocketDelegate {
     func unregisterDownlink(downlink: RemoteDownlink) {
         let node = downlink.nodeUri
         let lane = downlink.laneUri
+        var shouldSendUnlinkRequest = false
+
+        objc_sync_enter(self)
 
         guard var nodeDownlinks = downlinks[node], laneDownlinks = nodeDownlinks[lane] else {
+            objc_sync_exit(self)
             return
         }
         laneDownlinks.remove(downlink)
         if laneDownlinks.isEmpty {
-            if socket?.readyState == .Open {
-                let request = UnlinkRequest(node: unresolve(node), lane: lane)
-                downlink.onUnlinkRequest()
-                push(envelope: request)
-            }
-
             unregisterLane(node, lane)
+            shouldSendUnlinkRequest = (socket?.readyState == .Open)
         }
         else {
             nodeDownlinks[lane] = laneDownlinks
             downlinks[node] = nodeDownlinks
         }
 
+        objc_sync_exit(self)
+
+        if shouldSendUnlinkRequest {
+            let request = UnlinkRequest(node: unresolve(node), lane: lane)
+            downlink.onUnlinkRequest()
+            push(envelope: request)
+        }
+
         downlink.onClose()
     }
 
+    /// Must be called under objc_sync_enter(self).
     private func unregisterLane(node: SwimUri, _ lane: SwimUri) {
         guard var nodeDownlinks = downlinks[node] else {
             return
@@ -232,6 +309,7 @@ class Channel: WebSocketDelegate {
 
     }
 
+    /// Must be called under objc_sync_enter(self).
     private func unregisterNode(node: SwimUri) {
         downlinks.removeValueForKey(node)
         watchIdle()
@@ -297,19 +375,27 @@ class Channel: WebSocketDelegate {
     }
 
     private func onUnlinkedResponse(response: UnlinkedResponse) {
+        objc_sync_enter(self)
+
         let node = resolve(response.node)
         response.node = node
         let lane = response.lane
         guard var nodeDownlinks = downlinks[node], let laneDownlinks = nodeDownlinks[lane] else {
+            objc_sync_exit(self)
             return
         }
         nodeDownlinks.removeValueForKey(lane)
         if nodeDownlinks.isEmpty {
             downlinks.removeValueForKey(node)
         }
-        for downlink in laneDownlinks {
-            downlink.onUnlinkedResponse(response)
-            downlink.onClose()
+
+        objc_sync_exit(self)
+
+        dispatch_async(dispatch_get_main_queue()) {
+            for downlink in laneDownlinks {
+                downlink.onUnlinkedResponse(response)
+                downlink.onClose()
+            }
         }
     }
 
@@ -336,8 +422,17 @@ class Channel: WebSocketDelegate {
             error = SwimError.NetworkError as NSError
         }
 
+        // We have to discard the send buffer now, because we're about to
+        // fail all the in-flight commands.
+        objc_sync_enter(self)
+        self.sendBuffer.removeAll()
+        objc_sync_exit(self)
+
         forAllDownlinks {
             $0.onError(error)
+        }
+        dispatch_async(dispatch_get_main_queue()) { [weak self] in
+            self?.inFlightAuthRequests.failAll(error)
         }
     }
 
@@ -373,37 +468,62 @@ class Channel: WebSocketDelegate {
     private func open() {
         log.verbose("")
 
+        objc_sync_enter(self)
+
         if let timer = reconnectTimer {
             timer.invalidate()
             reconnectTimer = nil
             reconnectTimeout = 0.0
         }
         if socket == nil {
-            startNetworkMonitor(hostUri.authority!.host.description)
+            startNetworkMonitorIfNecessary()
 
             let s = WebSocket(hostUri.uri, subProtocols: protocols)
             s.eventQueue = socketQueue
             s.delegate = self
             socket = s
         }
+
+        objc_sync_exit(self)
     }
 
+
+    /// Must be called under objc_sync_enter(self)
+    private func startNetworkMonitorIfNecessary() -> SwimNetworkConditionMonitor.ServerMonitor {
+        if networkMonitor == nil {
+            startNetworkMonitor(hostUri.authority!.host.description)
+        }
+        return networkMonitor!
+    }
+
+    /// Must be called under objc_sync_enter(self)
     private func startNetworkMonitor(host: String) {
         let globals = SwimGlobals.instance
+        objc_sync_enter(globals)
         if globals.networkConditionMonitor == nil {
             globals.networkConditionMonitor = SwimNetworkConditionMonitor()
         }
+        objc_sync_exit(globals)
         networkMonitor = globals.networkConditionMonitor.startMonitoring(host)
     }
+
 
     func close() {
         log.verbose("")
 
+        objc_sync_enter(self)
+
         clearIdle()
         socket?.close()
-        socket = nil
+        // Note that we don't set socket = nil here -- we need to retain
+        // it until webSocketClose is called.
+
         let downlinks = self.downlinks
+        let monitor = networkMonitor
         self.downlinks.removeAll()
+
+        objc_sync_exit(self)
+
         for nodeDownlinks in downlinks.values {
             for laneDownlinks in nodeDownlinks.values {
                 for downlink in laneDownlinks {
@@ -412,7 +532,7 @@ class Channel: WebSocketDelegate {
             }
         }
 
-        if let monitor = networkMonitor {
+        if let monitor = monitor {
             let ncm = SwimGlobals.instance.networkConditionMonitor
             ncm.stopMonitoring(monitor)
             networkMonitor = nil
@@ -422,10 +542,16 @@ class Channel: WebSocketDelegate {
 
     func closeDownlinks(node node: SwimUri) {
         let node = resolve(node)
+
+        objc_sync_enter(self)
+
         guard let nodeDownlinks = downlinks[node] else {
+            objc_sync_exit(self)
             return
         }
         downlinks.removeValueForKey(node)
+
+        objc_sync_exit(self)
 
         for laneDownlinks in nodeDownlinks.values {
             laneDownlinks.forEach {
@@ -437,11 +563,17 @@ class Channel: WebSocketDelegate {
 
     func closeDownlinks(node node: SwimUri, lane: SwimUri) {
         let node = resolve(node)
+
+        objc_sync_enter(self)
+
         guard var nodeDownlinks = downlinks[node], let laneDownlinks = nodeDownlinks[lane] else {
+            objc_sync_exit(self)
             return
         }
         nodeDownlinks.removeValueForKey(lane)
         downlinks[node] = nodeDownlinks
+
+        objc_sync_exit(self)
 
         laneDownlinks.forEach {
             $0.onClose()
@@ -450,6 +582,8 @@ class Channel: WebSocketDelegate {
 
 
     private func reconnect() {
+        objc_sync_enter(self)
+
         if reconnectTimer != nil {
             return
         }
@@ -460,6 +594,8 @@ class Channel: WebSocketDelegate {
             reconnectTimeout = min(1.8 * reconnectTimeout, 30.0)
         }
         reconnectTimer = NSTimer.scheduledTimerWithTimeInterval(reconnectTimeout, target: self, selector: #selector(Channel.doReconnect(_:)), userInfo: nil, repeats: false)
+
+        objc_sync_exit(self)
     }
 
     @objc private func doReconnect(timer: NSTimer) {
@@ -467,26 +603,40 @@ class Channel: WebSocketDelegate {
     }
 
     private func clearIdle() {
+        objc_sync_enter(self)
+
         if let timer = idleTimer {
             timer.invalidate()
             idleTimer = nil
         }
+
+        objc_sync_exit(self)
     }
 
     private func watchIdle() {
+        objc_sync_enter(self)
+
         if socket?.readyState == .Open && sendBuffer.isEmpty && downlinks.isEmpty {
             idleTimer = NSTimer.scheduledTimerWithTimeInterval(idleTimeout, target: self, selector: #selector(Channel.checkIdle(_:)), userInfo: nil, repeats: false)
         }
+
+        objc_sync_exit(self)
     }
 
     @objc private func checkIdle(timer: NSTimer) {
+        objc_sync_enter(self)
+
         if sendBuffer.isEmpty && downlinks.isEmpty {
             log.verbose("Channel is idle.")
             close()
         }
+
+        objc_sync_exit(self)
     }
 
     private func push(envelope envelope: Envelope) {
+        objc_sync_enter(self)
+
         if socket?.readyState == .Open {
             clearIdle()
             let text = envelope.recon
@@ -500,9 +650,25 @@ class Channel: WebSocketDelegate {
                 log.error("Send buffer overflow! Handling this situation is unimplemented; the message has been dropped. \(envelope)")
             }
             open()
-        } else {
+        }
+        else if envelope is SyncRequest {
+            // This is usually only sent by the downlink when the socket
+            // opens (in response to the onConnect callback) so the fact
+            // that the socket isn't ready suggests that it opened and then
+            // closed again immediately.  This happens if the server is
+            // down.
+            //
+            // It's possible for app code to send this message any time they
+            // want, but that's unlikely because we're handling it all
+            // internally.
+            //
+            // On the assumption that the server is down, drop this message.
+        }
+        else {
             log.error("Buffering this message is unimplemented; the message has been dropped! \(envelope)")
         }
+
+        objc_sync_exit(self)
     }
 
 
@@ -610,39 +776,57 @@ class Channel: WebSocketDelegate {
 
 
     private func forEachDownlink(node node: SwimUri, lane: SwimUri, _ f: (RemoteDownlink -> Void)) {
+        objc_sync_enter(self)
+
         guard let nodeDownlinks = downlinks[node], let laneDownlinks = nodeDownlinks[lane] else {
             return
         }
-        for downlink in laneDownlinks {
-            f(downlink)
-        }
+
+        objc_sync_exit(self)
+
+        dispatchFor(laneDownlinks, f)
     }
 
 
     private func forAllDownlinks(f: (RemoteDownlink -> Void)) {
+        var allDownlinks = [RemoteDownlink]()
+
+        objc_sync_enter(self)
+
         for nodeDownlinks in downlinks.values {
             for laneDownlinks in nodeDownlinks.values {
-                for downlink in laneDownlinks {
-                    f(downlink)
-                }
+                allDownlinks.appendContentsOf(laneDownlinks)
             }
         }
+
+        objc_sync_exit(self)
+
+        dispatchFor(allDownlinks, f)
     }
 
 
     // MARK: WebSocketDelegate
 
     @objc func webSocketOpen() {
-        if credentials.isDefined {
-            let request = AuthRequest(body: credentials)
-            push(envelope: request)
+        objc_sync_enter(self)
+        let creds = credentials
+        objc_sync_exit(self)
+
+        if creds.isDefined {
+            auth(credentials: creds)
         }
+
         onConnect()
+
+        objc_sync_enter(self)
         let sendBuffer = self.sendBuffer
         self.sendBuffer.removeAll()
+        objc_sync_exit(self)
+
         for envelope in sendBuffer {
             push(envelope: envelope)
         }
+
         watchIdle()
     }
 
@@ -662,17 +846,36 @@ class Channel: WebSocketDelegate {
 
         onError(error)
         clearIdle()
-        socket?.delegate = nil
+
+        objc_sync_enter(self)
+
         socket?.close()
-        socket = nil
+        // Note that we don't set socket = nil here -- we need to retain
+        // it until webSocketClose is called.
+
+        objc_sync_exit(self)
     }
 
     @objc func webSocketClose(code: Int, reason: String, wasClean: Bool) {
+        objc_sync_enter(self)
+
+        socket?.delegate = nil
         socket = nil
         onDisconnect()
         clearIdle()
         if !sendBuffer.isEmpty || !downlinks.isEmpty {
             reconnect()
+        }
+
+        objc_sync_exit(self)
+    }
+}
+
+
+private func dispatchFor<T where T : SequenceType>(l: T, _ f: T.Generator.Element -> Void) {
+    dispatch_async(dispatch_get_main_queue()) {
+        for x in l {
+            f(x)
         }
     }
 }

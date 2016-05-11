@@ -38,7 +38,14 @@ public protocol Downlink: class {
      */
     func command(body body: SwimValue) -> BFTask
 
-    func sendSyncRequest() -> BFTask
+    /**
+     Note that this is asynchronous, but there's no task to track success.
+     This is because you might never get an ack for this request, e.g.
+     if the server goes down before the request is handled, and there's
+     no tracking inside this SDK for that.  We could add that, but it
+     hasn't been necessary and this way we avoid lots of complexity.
+     */
+    func sendSyncRequest()
 
     /// Unregister this `Downlink` so that it no longer receives events.  If this was the only active link to a particular lane, then the link will be unlinked.
     func close()

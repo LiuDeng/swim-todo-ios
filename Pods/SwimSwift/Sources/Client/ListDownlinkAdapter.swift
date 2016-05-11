@@ -98,9 +98,8 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
             return false
         }
 
-        let item = value["item"]
-        guard let object = objectMaker(item) else {
-            log.warning("Ignoring update with unparseable item!")
+        guard let object = objectMaker(value) else {
+            log.warning("Ignoring update with unparseable value!")
             return false
         }
 
@@ -114,7 +113,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
         else {
             state[index] = value
             let existingObject = objects[index]
-            existingObject.swim_updateWithSwimValue(item)
+            existingObject.swim_updateWithSwimValue(value)
             forEachListDelegate {
                 $0.swimListDownlink($1, didUpdate: existingObject, atIndex: index)
             }
@@ -128,7 +127,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
         SwimAssertOnMainThread()
         precondition(state.count == objects.count)
 
-        let swimId = value["item"]["swimId"].text ?? ""
+        let swimId = value["swimId"].text ?? ""
         if objects.indexOf({ $0.swimId == swimId }) != nil {
             log.verbose("Ignoring insert of object that we already have (it's hopefully one that we just inserted).")
             return false
@@ -171,7 +170,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
             return
         }
 
-        let newObjects = values.flatMap({ objectMaker($0["item"]) })
+        let newObjects = values.flatMap({ objectMaker($0) })
         if newObjects.count != values.count {
             log.warning("Ignoring loadValues with unparseable item!")
             return
@@ -301,9 +300,8 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
             return self?.handleFailures(task)
         }
 
-        let item = value["item"]
         state[index] = value
-        objects[index].swim_updateWithSwimValue(item)
+        objects[index].swim_updateWithSwimValue(value)
         return task
     }
 
@@ -441,7 +439,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
         return command(body: bodyWithCommand(cmd, value: value, indexValue: indexValue))
     }
 
-    override func sendSyncRequest() -> BFTask {
+    override func sendSyncRequest() {
         preconditionFailure("You do not need to call this, this list is automatically synched.")
     }
 
@@ -473,8 +471,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
 
 
     private func swimValueToObject(value: SwimValue) -> SwimModelProtocolBase? {
-        let item = value["item"]
-        return objectMaker(item)
+        return objectMaker(value)
     }
 }
 
@@ -482,7 +479,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
 private func bodyWithCommand(command: String, value: SwimValue, indexValue: SwimValue) -> SwimValue {
     let body = Record()
     body.append(Item.Attr(command, indexValue))
-    body["item"] = value["item"]
+    body["item"] = value
     return Value(body)
 }
 

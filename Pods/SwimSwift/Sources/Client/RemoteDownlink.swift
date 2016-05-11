@@ -24,12 +24,6 @@ class RemoteDownlink: DownlinkBase, Downlink {
      */
     private let inFlightCommands = TaskQueue()
 
-    /**
-     SyncRequests that have been sent to self.channel and for which we have
-     not yet received a SyncedResponse.
-     */
-    private let inFlightSyncRequests = TaskQueue()
-
     init(channel: Channel, host: SwimUri, node: SwimUri, lane: SwimUri, laneProperties: LaneProperties) {
         self.channel = channel
         self.hostUri = host
@@ -65,7 +59,6 @@ class RemoteDownlink: DownlinkBase, Downlink {
     }
 
     func onSyncedResponse(response: SyncedResponse) {
-        inFlightSyncRequests.ack(1)
         forEachDelegate {
             $0.swimDownlink($1, didSync: response)
         }
@@ -116,6 +109,12 @@ class RemoteDownlink: DownlinkBase, Downlink {
         }
     }
 
+    func didLoseSync() {
+        forEachDelegate {
+            $0.swimDownlinkDidLoseSync($1)
+        }
+    }
+
     func command(body body: SwimValue) -> BFTask {
         if laneProperties.isClientReadOnly {
             return BFTask(swimError: .DownlinkIsClientReadOnly)
@@ -127,14 +126,11 @@ class RemoteDownlink: DownlinkBase, Downlink {
         return task.task
     }
 
-    func sendSyncRequest() -> BFTask {
+    func sendSyncRequest() {
         forEachDelegate {
             $0.swimDownlinkWillSync($1)
         }
-        let task = BFTaskCompletionSource()
         channel.pushSyncRequest(node: nodeUri, lane: laneUri, prio: laneProperties.prio)
-        inFlightSyncRequests.append(task)
-        return task.task
     }
 
     func close() {
@@ -145,6 +141,5 @@ class RemoteDownlink: DownlinkBase, Downlink {
 
     private func failAllInFlight(err: NSError) {
         inFlightCommands.failAll(err)
-        inFlightSyncRequests.failAll(err)
     }
 }
