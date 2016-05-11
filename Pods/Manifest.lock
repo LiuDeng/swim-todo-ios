@@ -5,6 +5,7 @@ PODS:
   - Bolts/AppLinks (1.7.0):
     - Bolts/Tasks
   - Bolts/Tasks (1.7.0)
+  - CCHMapClusterController (1.7.0)
   - Crashlytics (3.7.0):
     - Fabric (~> 1.6.3)
   - Fabric (1.6.7)
@@ -61,6 +62,7 @@ PODS:
     - SwiftyBeaver (>= 0.4.2)
 
 DEPENDENCIES:
+  - CCHMapClusterController
   - Crashlytics
   - Fabric
   - Google/SignIn
@@ -70,6 +72,7 @@ DEPENDENCIES:
 
 SPEC CHECKSUMS:
   Bolts: a0058fa3b331c5a1e4402d534f2dae36dbff31e4
+  CCHMapClusterController: d8cd12cd5682ec6cd76d911ac7198f981b6cc1b8
   Crashlytics: c3a2333dea9e2733d2777f730910321fc9e25c0d
   Fabric: caf7580c725e64db144f610ac65cd60956911dc7
   Google: d0932824c5b97c96be489aa6f4e8cd6c294d637d
@@ -88,6 +91,6 @@ SPEC CHECKSUMS:
   SwiftyBeaver: 3a2481e7c24e8ef75252ec9eeebf1f456ac2d2f7
   SwimSwift: e5b7ec61099b2cf29f896a801bb4560746ff691e
 
-PODFILE CHECKSUM: acc804528cabe7601b088a17bedce052c0b7964e
+PODFILE CHECKSUM: 0406a05dcb7f10a6206a1814f2e0a6c5d3e5b392
 
 COCOAPODS: 1.0.0.beta.8

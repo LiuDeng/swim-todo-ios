@@ -85,6 +85,7 @@ strip_invalid_archs() {
 
 if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework "$BUILT_PRODUCTS_DIR/Bolts/Bolts.framework"
+  install_framework "$BUILT_PRODUCTS_DIR/CCHMapClusterController/CCHMapClusterController.framework"
   install_framework "$BUILT_PRODUCTS_DIR/JLToast/JLToast.framework"
   install_framework "$BUILT_PRODUCTS_DIR/ReachabilitySwift/ReachabilitySwift.framework"
   install_framework "$BUILT_PRODUCTS_DIR/Recon/Recon.framework"
@@ -95,6 +96,7 @@ if [[ "$CONFIGURATION" == "Debug" ]]; then
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "$BUILT_PRODUCTS_DIR/Bolts/Bolts.framework"
+  install_framework "$BUILT_PRODUCTS_DIR/CCHMapClusterController/CCHMapClusterController.framework"
   install_framework "$BUILT_PRODUCTS_DIR/JLToast/JLToast.framework"
   install_framework "$BUILT_PRODUCTS_DIR/ReachabilitySwift/ReachabilitySwift.framework"
   install_framework "$BUILT_PRODUCTS_DIR/Recon/Recon.framework"
