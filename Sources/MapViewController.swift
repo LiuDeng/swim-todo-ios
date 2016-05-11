@@ -83,7 +83,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
 
     private func linkAgencies() {
-        let swimClient = SwimClient.sharedInstance
+        let swimClient = SwimTodoGlobals.instance.cityClient
         let countryScope = swimClient.scope(node: countryNodeUri)
 
         let downlink = countryScope.scope(lane: agenciesLaneUri).syncMap(properties: laneProperties, objectMaker: {
@@ -108,7 +108,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         SwimAssertOnMainThread()
         log.debug("Linking with agency \(agency.swimId ?? "Missing ID") \(agency.name ?? "")")
 
-        let swimClient = SwimClient.sharedInstance
+        let swimClient = SwimTodoGlobals.instance.cityClient
         let agencyScope = swimClient.scope(node: SwimUri("agency/\(agency.swimId)")!)
 
         let downlink = agencyScope.scope(lane: routesLaneUri).syncMap(properties: laneProperties, objectMaker: {
@@ -127,7 +127,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         SwimAssertOnMainThread()
         log.debug("Linking with route \(route.swimId ?? "Missing ID")")
 
-        let swimClient = SwimClient.sharedInstance
+        let swimClient = SwimTodoGlobals.instance.cityClient
         let routeScope = swimClient.scope(node: SwimUri("route/\(route.swimId)")!)
 
         let downlink = routeScope.scope(lane: vehiclesLaneUri).syncMap(properties: laneProperties, objectMaker: {

@@ -7,10 +7,14 @@
 //
 
 import Foundation
+import SwimSwift
 
 
 class SwimTodoGlobals {
     static var instance: SwimTodoGlobals!
 
     var loginManager: LoginManager!
+
+    var cityClient: SwimClient!
+    var todoClient: SwimClient!
 }

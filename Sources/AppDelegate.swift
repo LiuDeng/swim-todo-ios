@@ -10,8 +10,10 @@ private let SWIM_USE_LOCALHOST = false
 
 
 private let log = SwiftyBeaver.self
-private let SwimHost = (SWIM_USE_LOCALHOST ? "localhost:5619" : "todo.swim.services")
-private let SwimHostURI = SwimUri("ws://\(SwimHost)")
+private let SwimCityHost = (SWIM_USE_LOCALHOST ? "localhost:9050" : "city.swim.services")
+private let SwimTodoHost = (SWIM_USE_LOCALHOST ? "localhost:5619" : "todo.swim.services")
+private let SwimCityHostURI = SwimUri("ws://\(SwimCityHost)")
+private let SwimTodoHostURI = SwimUri("ws://\(SwimTodoHost)")
 
 
 @UIApplicationMain
@@ -32,17 +34,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         SwimLoggingSwiftyBeaver.enableConsoleDestination()
 //        SwimLoggingSwiftyBeaver.enableConsoleDestination(.Verbose)
 
-        // Configure Swim to connect to the host specified above.
+        // Configure Swim to connect to the hosts specified above.
         //
-        // If your app connects to more than one Swim service, you can
-        // create separate instances of SwimClient rather than using
-        // SwimClient.sharedInstance.
-        SwimClient.sharedInstance.hostUri = SwimHostURI
+        // If your app connects to just one Swim service, you can use
+        // SwimClient.sharedInstance.hostUri = myServerURI.
+        // In this case, we are connecting to multiple servers, so we
+        // use separate SwimClient instances.
+        let cityClient = SwimClient(host: SwimCityHostURI, protocols: [])
+        let todoClient = SwimClient(host: SwimTodoHostURI, protocols: [])
 
         let loginManager = LoginManager()
 
         let globals = SwimTodoGlobals()
         globals.loginManager = loginManager
+        globals.cityClient = cityClient
+        globals.todoClient = todoClient
         SwimTodoGlobals.instance = globals
 
         let nc = NSNotificationCenter.defaultCenter()

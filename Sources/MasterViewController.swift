@@ -9,7 +9,7 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let swim = SwimClient.sharedInstance
+        let swim = SwimTodoGlobals.instance.todoClient
         let groceryList = swim.scope(node: "/todo/grocery")
         let elementsList = swim.scope(node: "/todo/elements")
         objects = [groceryList, elementsList]
@@ -102,8 +102,8 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
 
             case 1:
                 let vc = GuruModeViewController()
-                let hostUri = SwimClient.sharedInstance.hostUri
-                vc.knownLanes = objects.map { hostUri.resolve(SwimUri("\($0.nodeUri)/todo/list")!) }
+                let todoHostUri = SwimTodoGlobals.instance.todoClient.hostUri
+                vc.knownLanes = objects.map { todoHostUri.resolve(SwimUri("\($0.nodeUri)/todo/list")!) }
                 vc.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
                 vc.navigationItem.leftItemsSupplementBackButton = true
 
