@@ -39,7 +39,7 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
             return objects.count
 
         case 1:
-            return 1
+            return 2
 
         default:
             preconditionFailure()
@@ -55,7 +55,16 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
             cell.textLabel!.text = object.nodeUri.path.description
 
         case 1:
-            cell.textLabel!.text = "Guru mode"
+            switch indexPath.row {
+            case 0:
+                cell.textLabel!.text = "Map"
+
+            case 1:
+                cell.textLabel!.text = "Guru mode"
+
+            default:
+                preconditionFailure()
+            }
 
         default:
             preconditionFailure()
@@ -84,14 +93,26 @@ class MasterViewController: UITableViewController, UISplitViewControllerDelegate
             splitVC.showDetailViewController(listNav, sender: self)
 
         case 1:
-            let vc = GuruModeViewController()
-            let hostUri = SwimClient.sharedInstance.hostUri
-            vc.knownLanes = objects.map { hostUri.resolve(SwimUri("\($0.nodeUri)/todo/list")!) }
-            vc.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
-            vc.navigationItem.leftItemsSupplementBackButton = true
+            switch indexPath.row {
+            case 0:
+                let vc = MapViewController()
 
-            let nav = UINavigationController(rootViewController: vc)
-            splitVC.showDetailViewController(nav, sender: self)
+                let nav = UINavigationController(rootViewController: vc)
+                splitVC.showDetailViewController(nav, sender: self)
+
+            case 1:
+                let vc = GuruModeViewController()
+                let hostUri = SwimClient.sharedInstance.hostUri
+                vc.knownLanes = objects.map { hostUri.resolve(SwimUri("\($0.nodeUri)/todo/list")!) }
+                vc.navigationItem.leftBarButtonItem = splitVC.displayModeButtonItem()
+                vc.navigationItem.leftItemsSupplementBackButton = true
+
+                let nav = UINavigationController(rootViewController: vc)
+                splitVC.showDetailViewController(nav, sender: self)
+
+            default:
+                preconditionFailure()
+            }
 
         default:
             preconditionFailure()

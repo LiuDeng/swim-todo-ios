@@ -23,6 +23,11 @@
 		409DD2491CC6E7980000D366 /* UITableViewCell+Misc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409DD2481CC6E7980000D366 /* UITableViewCell+Misc.swift */; };
 		40A0B3C61CA1FE5800F17BEA /* LoginManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */; };
 		40AE52EB1CA1FAD000A878F3 /* SwimTodoGlobals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */; };
+		40B0732D1CE2951900DFB732 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B0732C1CE2951900DFB732 /* MapViewController.swift */; };
+		40B0732F1CE2964A00DFB732 /* MapViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40B0732E1CE2964A00DFB732 /* MapViewController.xib */; };
+		40B073361CE29EE400DFB732 /* AgencyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B073351CE29EE400DFB732 /* AgencyModel.swift */; };
+		40B073381CE2A39200DFB732 /* RouteModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B073371CE2A39200DFB732 /* RouteModel.swift */; };
+		40B0733A1CE2A43E00DFB732 /* VehicleModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B073391CE2A43E00DFB732 /* VehicleModel.swift */; };
 		40C975C51CAD94A900407B67 /* PersonImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C975C41CAD94A900407B67 /* PersonImageView.swift */; };
 		40C975C71CAD957A00407B67 /* PersonImageView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40C975C61CAD957A00407B67 /* PersonImageView.xib */; };
 		40C975EE1CAD9F7200407B67 /* TodoListViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40C975ED1CAD9F7200407B67 /* TodoListViewController.xib */; };
@@ -83,6 +88,11 @@
 		409DD2481CC6E7980000D366 /* UITableViewCell+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITableViewCell+Misc.swift"; sourceTree = "<group>"; };
 		40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginManager.swift; sourceTree = "<group>"; };
 		40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimTodoGlobals.swift; sourceTree = "<group>"; };
+		40B0732C1CE2951900DFB732 /* MapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
+		40B0732E1CE2964A00DFB732 /* MapViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MapViewController.xib; sourceTree = "<group>"; };
+		40B073351CE29EE400DFB732 /* AgencyModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AgencyModel.swift; sourceTree = "<group>"; };
+		40B073371CE2A39200DFB732 /* RouteModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteModel.swift; sourceTree = "<group>"; };
+		40B073391CE2A43E00DFB732 /* VehicleModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VehicleModel.swift; sourceTree = "<group>"; };
 		40C975C41CAD94A900407B67 /* PersonImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PersonImageView.swift; sourceTree = "<group>"; };
 		40C975C61CAD957A00407B67 /* PersonImageView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PersonImageView.xib; sourceTree = "<group>"; };
 		40C975ED1CAD9F7200407B67 /* TodoListViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TodoListViewController.xib; sourceTree = "<group>"; };
@@ -133,8 +143,11 @@
 		400648E61C7268E500701533 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				40B073351CE29EE400DFB732 /* AgencyModel.swift */,
+				40B073371CE2A39200DFB732 /* RouteModel.swift */,
 				400648E41C7268DB00701533 /* TodoEntry.swift */,
 				40F583C11CBCDCAF001BCDCC /* UserPresenceModel.swift */,
+				40B073391CE2A43E00DFB732 /* VehicleModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -195,6 +208,8 @@
 				40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */,
 				4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */,
 				402203111CA1FD1200D6B5E1 /* LoginViewController.xib */,
+				40B0732C1CE2951900DFB732 /* MapViewController.swift */,
+				40B0732E1CE2964A00DFB732 /* MapViewController.xib */,
 				85553D401C6B31BA005D613B /* MasterViewController.swift */,
 				40C975F11CADE79600407B67 /* PersonImageCollectionViewCell.swift */,
 				40C975F21CADE79600407B67 /* PersonImageCollectionViewCell.xib */,
@@ -370,6 +385,7 @@
 				409DD2471CC6E5CE0000D366 /* DetailTableViewCell.xib in Resources */,
 				400648E31C72680000701533 /* TodoEntryTableViewCell.xib in Resources */,
 				85553D451C6B31BA005D613B /* Main.storyboard in Resources */,
+				40B0732F1CE2964A00DFB732 /* MapViewController.xib in Resources */,
 				400268241CA20F6200335AC7 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -467,6 +483,7 @@
 				402203101CA1FD0200D6B5E1 /* LoginViewController.swift in Sources */,
 				40C975C51CAD94A900407B67 /* PersonImageView.swift in Sources */,
 				400648E51C7268DB00701533 /* TodoEntry.swift in Sources */,
+				40B073381CE2A39200DFB732 /* RouteModel.swift in Sources */,
 				85553D481C6B31BA005D613B /* MasterViewController.swift in Sources */,
 				409DD2411CC6E3F10000D366 /* GuruModeViewController.swift in Sources */,
 				40C975F01CADE0C700407B67 /* RTLLayout.swift in Sources */,
@@ -475,12 +492,15 @@
 				4048D7B41C73BF91002B490C /* StrikeThroughText.swift in Sources */,
 				409DD2491CC6E7980000D366 /* UITableViewCell+Misc.swift in Sources */,
 				40A0B3C61CA1FE5800F17BEA /* LoginManager.swift in Sources */,
+				40B0732D1CE2951900DFB732 /* MapViewController.swift in Sources */,
 				40AE52EB1CA1FAD000A878F3 /* SwimTodoGlobals.swift in Sources */,
 				40C975FC1CB19B0200407B67 /* UINib+Misc.swift in Sources */,
 				4026EC9F1CD3CEAF006BB352 /* SwimGoogleSignIn.swift in Sources */,
+				40B0733A1CE2A43E00DFB732 /* VehicleModel.swift in Sources */,
 				85553D461C6B31BA005D613B /* TodoListViewController.swift in Sources */,
 				400648E21C72680000701533 /* TodoEntryTableViewCell.swift in Sources */,
 				4048D7BD1C73D844002B490C /* CollectionType+Misc.swift in Sources */,
+				40B073361CE29EE400DFB732 /* AgencyModel.swift in Sources */,
 				85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */,
 				40C975F31CADE79600407B67 /* PersonImageCollectionViewCell.swift in Sources */,
 				40C975F81CAE113800407B67 /* UIView+Misc.swift in Sources */,
