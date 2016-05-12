@@ -84,6 +84,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
         mapClusterController = CCHMapClusterController(mapView: mapView)
         mapClusterController.delegate = self
+        mapClusterController.cellSize = 20
 
         laneProperties.isClientReadOnly = true
         laneProperties.isTransient = true
