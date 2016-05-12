@@ -30,6 +30,10 @@ class VehicleAnnotation: NSObject, MKAnnotation {
     var coordinate: CLLocationCoordinate2D
 
     var title: String? {
+        return vehicle.routeId
+    }
+
+    var subtitle: String? {
         if let speed = vehicle.speedMph {
             return "\(speed) mph"
         }
@@ -295,6 +299,17 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         if n == 1 {
             let anno = mapClusterAnnotation.annotations.first as! VehicleAnnotation
             return anno.title
+        }
+        else {
+            return nil
+        }
+    }
+
+    func mapClusterController(mapClusterController: CCHMapClusterController!, subtitleForMapClusterAnnotation mapClusterAnnotation: CCHMapClusterAnnotation!) -> String! {
+        let n = mapClusterAnnotation.annotations.count
+        if n == 1 {
+            let anno = mapClusterAnnotation.annotations.first as! VehicleAnnotation
+            return anno.subtitle
         }
         else {
             return nil

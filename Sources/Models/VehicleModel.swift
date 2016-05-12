@@ -10,6 +10,7 @@ import SwimSwift
 
 
 class VehicleModel: SwimModelBase {
+    var routeId: String?
     var latitude: Float?
     var longitude: Float?
     var speedKph: Int?
@@ -33,6 +34,7 @@ class VehicleModel: SwimModelBase {
         super.swim_updateWithJSON(json)
 
         swimId = json["id"] as? String ?? "MissingID"
+        routeId = json["routeId"] as? String
         if let latStr = json["latitude"] as? String {
             latitude = Float(latStr)
         }
@@ -48,6 +50,7 @@ class VehicleModel: SwimModelBase {
     override func swim_toJSON() -> [String: AnyObject] {
         var json = super.swim_toJSON()
         json["id"] = swimId
+        json["routeId"] = routeId
         if latitude != nil {
             json["latitude"] = String(latitude!)
         }
