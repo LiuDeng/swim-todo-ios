@@ -29,6 +29,15 @@ class VehicleAnnotation: NSObject, MKAnnotation {
     // to animate a batch of changes.
     var coordinate: CLLocationCoordinate2D
 
+    var title: String? {
+        if let speed = vehicle.speedMph {
+            return "\(speed) mph"
+        }
+        else {
+            return "Stationary"
+        }
+    }
+
     init(vehicle: VehicleModel) {
         self.vehicle = vehicle
         coordinate = vehicle.coordinate
@@ -70,6 +79,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         super.viewDidLoad()
 
         mapClusterController = CCHMapClusterController(mapView: mapView)
+        mapClusterController.delegate = self
 
         laneProperties.isClientReadOnly = true
         laneProperties.isTransient = true
@@ -282,16 +292,20 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
     func mapClusterController(mapClusterController: CCHMapClusterController!, titleForMapClusterAnnotation mapClusterAnnotation: CCHMapClusterAnnotation!) -> String! {
         let n = mapClusterAnnotation.annotations.count
-        let unit = (n > 1 ? "buses" : "bus")
-        return "\(n) \(unit)"
+        if n == 1 {
+            let anno = mapClusterAnnotation.annotations.first as! VehicleAnnotation
+            return anno.title
+        }
+        else {
+            return nil
+        }
     }
 
     func mapClusterController(mapClusterController: CCHMapClusterController!, willReuseMapClusterAnnotation mapClusterAnnotation: CCHMapClusterAnnotation!) {
         guard let v = mapView.viewForAnnotation(mapClusterAnnotation) as? MapAnnotationView else {
-            assertionFailure()
             return
         }
-        v.count = mapClusterAnnotation.annotations.count
+        configureAnnoView(v, mapClusterAnnotation)
     }
 
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
@@ -306,19 +320,25 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
                 v!.annotation = clusterAnno
             }
 
-            let n = clusterAnno.annotations.count
-            if n > 1 {
-                v!.count = n
-                v!.vehicle = nil
-            }
-            else {
-                v!.vehicle = (clusterAnno.annotations.first as! VehicleAnnotation).vehicle
-            }
+            configureAnnoView(v!, clusterAnno)
 
             return v
         }
         else {
             return nil
         }
+    }
+
+
+    private func configureAnnoView(v: MapAnnotationView, _ anno: CCHMapClusterAnnotation) {
+        let n = anno.annotations.count
+        if n > 1 {
+            v.count = n
+            v.vehicle = nil
+        }
+        else {
+            v.vehicle = (anno.annotations.first as! VehicleAnnotation).vehicle
+        }
+
     }
 }

@@ -18,7 +18,9 @@ import MapKit
 class MapAnnotationView: MKAnnotationView {
     var count = 0 {
         didSet {
+            precondition(count > 1)
             countLabel.text = String(count)
+            vehicle = nil
             setNeedsLayout()
         }
     }
@@ -35,8 +37,11 @@ class MapAnnotationView: MKAnnotationView {
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
 
+        canShowCallout = true
+
         backgroundColor = UIColor.clearColor()
         configureLabel()
+        configureCallout()
     }
 
     override init(frame: CGRect) {
@@ -60,6 +65,11 @@ class MapAnnotationView: MKAnnotationView {
         countLabel.baselineAdjustment = .AlignCenters
 
         addSubview(countLabel)
+    }
+
+
+    private func configureCallout() {
+        leftCalloutAccessoryView = UIImageView(image: UIImage(named: "bus"))
     }
 
 

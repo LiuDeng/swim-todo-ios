@@ -12,7 +12,16 @@ import SwimSwift
 class VehicleModel: SwimModelBase {
     var latitude: Float?
     var longitude: Float?
-    var speed: Int?
+    var speedKph: Int?
+
+    var speedMph: Int? {
+        if let speedKph = speedKph {
+            return Int(Float(speedKph) * 0.621371)
+        }
+        else {
+            return nil
+        }
+    }
 
     var coordinate: CLLocationCoordinate2D {
         return CLLocationCoordinate2D(latitude: CLLocationDegrees(latitude ?? 0.0),
@@ -31,7 +40,7 @@ class VehicleModel: SwimModelBase {
             longitude = Float(longStr)
         }
         if let speedStr = json["speed"] as? String {
-            speed = Int(speedStr)
+            speedKph = Int(speedStr)
         }
     }
 
@@ -45,8 +54,8 @@ class VehicleModel: SwimModelBase {
         if longitude != nil {
             json["longitude"] = String(longitude!)
         }
-        if speed != nil {
-            json["speed"] = String(speed!)
+        if speedKph != nil {
+            json["speed"] = String(speedKph!)
         }
         return json
     }
