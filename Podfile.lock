@@ -40,20 +40,20 @@ PODS:
   - SQLite.swift (0.10.1)
   - SwiftWebSocket (2.6.1)
   - SwiftyBeaver (0.5.3)
-  - SwimSwift (0.6.1):
+  - SwimSwift (0.6.2):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-    - SwimSwift/Core (= 0.6.1)
-  - SwimSwift/Core (0.6.1):
+    - SwimSwift/Core (= 0.6.2)
+  - SwimSwift/Core (0.6.2):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
     - SQLite.swift (>= 0.10.0)
     - SwiftWebSocket (>= 2.6.0)
-  - SwimSwift/SwiftyBeaver (0.6.1):
+  - SwimSwift/SwiftyBeaver (0.6.2):
     - Bolts (>= 1.7.0)
     - ReachabilitySwift (>= 2.3.3)
     - Recon (>= 0.2.0)
@@ -89,8 +89,8 @@ SPEC CHECKSUMS:
   SQLite.swift: 6a6e4b034efc317ce4e203b6af2d3024fee2b570
   SwiftWebSocket: ccace0c3843fa5dc5a571506b01dcbb8f8d0add8
   SwiftyBeaver: 20afdb23012f8bcacb7e865880e90301bf70ad37
-  SwimSwift: ab73636bde183835fbeedaf023405edef58d245d
+  SwimSwift: fed970fb691b977699513cd4d2f76370ba42e263
 
 PODFILE CHECKSUM: 0406a05dcb7f10a6206a1814f2e0a6c5d3e5b392
 
-COCOAPODS: 1.0.0.beta.8
+COCOAPODS: 1.0.0

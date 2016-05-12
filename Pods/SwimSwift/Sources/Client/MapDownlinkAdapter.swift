@@ -164,7 +164,7 @@ class MapDownlinkAdapter: SynchedDownlinkAdapter, MapDownlink {
 
 
     func setObject(object: SwimModelProtocolBase, forKey key: SwimValue) -> BFTask {
-        return setObject(object, value: wrapValueAsItem(object.swim_toSwimValue()), forKey: key)
+        return setObject(object, value: object.swim_toSwimValue(), forKey: key)
     }
 
     func setObject(object: SwimModelProtocolBase, value: SwimValue, forKey key: SwimValue) -> BFTask {
@@ -221,10 +221,6 @@ class MapDownlinkAdapter: SynchedDownlinkAdapter, MapDownlink {
         objects.removeAll()
 
         return command(body: SwimValue(Item.Attr("clear")))
-    }
-
-    private func wrapValueAsItem(value: SwimValue) -> SwimValue {
-        return SwimValue(Slot("item", value))
     }
 
     private func sendCommand(cmd: String, value: SwimValue) -> BFTask {

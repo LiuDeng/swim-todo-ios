@@ -278,7 +278,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
 
 
     func replace(object: SwimModelProtocolBase, atIndex index: Int) -> BFTask {
-        return replace(wrapValueAsItem(object.swim_toSwimValue()), atIndex: index)
+        return replace(object.swim_toSwimValue(), atIndex: index)
     }
 
     func replace(value: SwimValue, atIndex index: Int) -> BFTask {
@@ -318,7 +318,7 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
     }
 
     func insert(object: SwimModelProtocolBase, atIndex index: Int) -> BFTask {
-        return insert(object, value: wrapValueAsItem(object.swim_toSwimValue()), atIndex: index)
+        return insert(object, value: object.swim_toSwimValue(), atIndex: index)
     }
 
     func insert(object: SwimModelProtocolBase, value: SwimValue, atIndex index: Int) -> BFTask {
@@ -420,10 +420,6 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
         return updateObjectAtIndex(index)
     }
 
-
-    private func wrapValueAsItem(value: SwimValue) -> SwimValue {
-        return SwimValue(Slot("item", value))
-    }
 
     private func sendCommand(cmd: String, value: SwimValue, index: Int) -> BFTask {
         let indexValue = Value(Slot("index", Value(index)))
