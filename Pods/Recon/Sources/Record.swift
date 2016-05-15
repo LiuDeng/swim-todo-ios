@@ -391,10 +391,18 @@ public class Record: CollectionType, ArrayLiteralConvertible, CustomStringConver
   public var json: [String: AnyObject] {
     var result = [String: AnyObject]()
     for item in items {
-      guard let key = item.key?.text else {
+      if let rec = item.record {
+        let recJson = rec.json
+        for (k, v) in recJson {
+          result[k] = v
+        }
+      }
+      else if let key = item.key?.text {
+        result[key] = item.value.json
+      }
+      else {
         preconditionFailure("Cannot convert ReconValue to JSON key: \(item)")
       }
-      result[key] = item.value.json
     }
     return result
   }
