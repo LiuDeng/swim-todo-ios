@@ -101,6 +101,7 @@ class MapAnnotationView: MKAnnotationView {
 
     override func layoutSubviews() {
         image = imageForCount()
+        (leftCalloutAccessoryView as! UIImageView).image = image
         centerOffset = CGPointZero
         countLabel.frame = self.bounds
         countLabel.hidden = (count < 2)
