@@ -24,6 +24,7 @@
 		40A0B3C61CA1FE5800F17BEA /* LoginManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */; };
 		40A8F2AA1CE5121C000C8AE0 /* BankModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A8F2A91CE5121C000C8AE0 /* BankModel.swift */; };
 		40A8F2AC1CE51330000C8AE0 /* ATMModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A8F2AB1CE51330000C8AE0 /* ATMModel.swift */; };
+		40A8F2B41CE8122B000C8AE0 /* MapAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40A8F2B31CE8122B000C8AE0 /* MapAnnotation.swift */; };
 		40AE52EB1CA1FAD000A878F3 /* SwimTodoGlobals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */; };
 		40B0732D1CE2951900DFB732 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B0732C1CE2951900DFB732 /* MapViewController.swift */; };
 		40B0732F1CE2964A00DFB732 /* MapViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40B0732E1CE2964A00DFB732 /* MapViewController.xib */; };
@@ -93,6 +94,7 @@
 		40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginManager.swift; sourceTree = "<group>"; };
 		40A8F2A91CE5121C000C8AE0 /* BankModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BankModel.swift; sourceTree = "<group>"; };
 		40A8F2AB1CE51330000C8AE0 /* ATMModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ATMModel.swift; sourceTree = "<group>"; };
+		40A8F2B31CE8122B000C8AE0 /* MapAnnotation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapAnnotation.swift; sourceTree = "<group>"; };
 		40AE52EA1CA1FAD000A878F3 /* SwimTodoGlobals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwimTodoGlobals.swift; sourceTree = "<group>"; };
 		40B0732C1CE2951900DFB732 /* MapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		40B0732E1CE2964A00DFB732 /* MapViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MapViewController.xib; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 				40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */,
 				4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */,
 				402203111CA1FD1200D6B5E1 /* LoginViewController.xib */,
+				40A8F2B31CE8122B000C8AE0 /* MapAnnotation.swift */,
 				40EDB0B31CE3B76A00D996AF /* MapAnnotationView.swift */,
 				40B0732C1CE2951900DFB732 /* MapViewController.swift */,
 				40B0732E1CE2964A00DFB732 /* MapViewController.xib */,
@@ -529,6 +532,7 @@
 				85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */,
 				40C975F31CADE79600407B67 /* PersonImageCollectionViewCell.swift in Sources */,
 				40EDB0B41CE3B76A00D996AF /* MapAnnotationView.swift in Sources */,
+				40A8F2B41CE8122B000C8AE0 /* MapAnnotation.swift in Sources */,
 				40C975F81CAE113800407B67 /* UIView+Misc.swift in Sources */,
 				40A8F2AA1CE5121C000C8AE0 /* BankModel.swift in Sources */,
 				409DD2451CC6E5A30000D366 /* DetailTableViewCell.swift in Sources */,
