@@ -29,19 +29,21 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
     private var mapClusterController: CCHMapClusterController!
 
-    private var agenciesDownlink: MapDownlink!
-    private var banksDownlink: MapDownlink!
-    private var atms = [String: ATMModel]()
-    private var bankDownlinks = [String: MapDownlink]()
-    private var atmInfoDownlinks = [String: ValueDownlink]()
-    private var routeDownlinks = [String: MapDownlink]()
-    private var vehicleDownlinks = [String: MapDownlink]()
     private var mapAnnotations = [String: MapAnnotation]()
 
     private var changesInProgress = 0
     private var pendingChanges = [MapAnnotation]()
     private var pendingAdds = [MapAnnotation]()
     private var pendingRemoves = [MapAnnotation]()
+
+    private var agenciesDownlink: MapDownlink!
+    private var banksDownlink: MapDownlink!
+    private var bankDownlinks = [String: MapDownlink]()
+    private var atmInfoDownlinks = [String: ValueDownlink]()
+    private var routeDownlinks = [String: MapDownlink]()
+    private var vehicleDownlinks = [String: MapDownlink]()
+
+    private var atms = [String: ATMModel]()
 
     private let laneProperties = LaneProperties()
 
@@ -104,13 +106,6 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
 
-    private func centerMap(location: CLLocation, _ radius: CLLocationDistance, animated: Bool) {
-        let radius2 = radius * 2
-        let coordinateRegion = MKCoordinateRegionMakeWithDistance(location.coordinate, radius2, radius2)
-        mapView.setRegion(coordinateRegion, animated: animated)
-    }
-
-
     private func linkAgency(agency: AgencyModel) {
         SwimAssertOnMainThread()
         log.debug("Linking with agency \(agency.swimId ?? "Missing ID") \(agency.name ?? "")")
@@ -160,6 +155,13 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         downlink.addDelegate(self)
 
         vehicleDownlinks[route.swimId] = downlink
+    }
+
+
+    private func centerMap(location: CLLocation, _ radius: CLLocationDistance, animated: Bool) {
+        let radius2 = radius * 2
+        let coordinateRegion = MKCoordinateRegionMakeWithDistance(location.coordinate, radius2, radius2)
+        mapView.setRegion(coordinateRegion, animated: animated)
     }
 
 
