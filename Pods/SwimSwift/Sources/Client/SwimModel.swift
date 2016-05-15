@@ -75,7 +75,9 @@ public class SwimModelBase: SwimModelProtocol, CustomStringConvertible {
     }
 
     public func swim_updateWithJSON(json: [String: AnyObject]) {
-        swimId = json["swimId"] as? String ?? ""
+        if let newId = json["swimId"] as? String {
+            swimId = newId
+        }
         isHighlighted = ((json["isHighlighted"] as? String) == "true")
     }
 

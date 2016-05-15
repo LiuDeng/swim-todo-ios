@@ -24,7 +24,11 @@ public protocol LaneScope: class {
      */
     func syncList(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ListDownlink
 
-    func syncMap(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?), primaryKey: SwimModelProtocolBase -> SwimValue) -> MapDownlink
+    func syncMap(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> MapDownlink
+
+    func syncMap(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?), primaryKey: (SwimModelProtocolBase -> SwimValue)?) -> MapDownlink
+
+    func syncValue(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ValueDownlink
 
     /**
      Sends a command to the remote lane to which this scope is bound.

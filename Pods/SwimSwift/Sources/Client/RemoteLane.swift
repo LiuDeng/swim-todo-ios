@@ -23,10 +23,24 @@ class RemoteLane: RemoteScope, LaneScope {
         return channel.syncList(node: nodeUri, lane: laneUri, properties: properties, objectMaker: objectMaker)
     }
 
-    func syncMap(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?), primaryKey: SwimModelProtocolBase -> SwimValue) -> MapDownlink {
-        return channel.syncMap(node: nodeUri, lane: laneUri, properties: properties, objectMaker: objectMaker, primaryKey: primaryKey)
+    func syncMap(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> MapDownlink {
+        return syncMap(properties: properties, objectMaker: objectMaker, primaryKey: nil)
+    }
+
+    func syncMap(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?), primaryKey: (SwimModelProtocolBase -> SwimValue)? = nil) -> MapDownlink {
+        var pk = primaryKey
+        if pk == nil {
+            pk = { (obj: SwimModelProtocolBase) in
+                return SwimValue(obj.swimId ?? "")
+            }
+        }
+        return channel.syncMap(node: nodeUri, lane: laneUri, properties: properties, objectMaker: objectMaker, primaryKey: pk!)
     }
     
+    func syncValue(properties properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ValueDownlink {
+        return channel.syncValue(node: nodeUri, lane: laneUri, properties: properties, objectMaker: objectMaker)
+    }
+
     func command(body body: SwimValue) {
         channel.command(node: nodeUri, lane: laneUri, body: body)
     }

@@ -171,6 +171,33 @@ class Channel: WebSocketDelegate {
     }
 
 
+    func syncValue(node node: SwimUri, lane: SwimUri, properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> ValueDownlink {
+        let (remoteDownlink, valueDownlink) = createValueDownlinks(node: node, lane: lane, properties: properties, objectMaker: objectMaker)
+
+        registerDownlink(remoteDownlink)
+
+        return valueDownlink
+    }
+
+    /**
+     - returns: The RemoteDownlink that's actually connected to the server,
+     and the Downlink that is to be returned to the caller.  If this request
+     is for a transient lane then these two will be equal, otherwise the
+     second Downlink will impose the requested persistence.
+     */
+    private func createValueDownlinks(node node: SwimUri, lane: SwimUri, properties: LaneProperties, objectMaker: (SwimValue -> SwimModelProtocolBase?)) -> (RemoteDownlink, ValueDownlink) {
+        let nodeUri = resolve(node)
+        let remoteDownlink = RemoteDownlink(channel: self, host: hostUri, node: nodeUri, lane: lane, laneProperties: properties)
+
+        if properties.isTransient && properties.isClientReadOnly {
+            let valueDownlink = ValueDownlinkAdapter(downlink: remoteDownlink, objectMaker: objectMaker)
+            return (remoteDownlink, valueDownlink)
+        }
+
+        preconditionFailure("Unimplemented")
+    }
+
+
     private func startDBManagerIfNecessary() {
         let globals = SwimGlobals.instance
 
