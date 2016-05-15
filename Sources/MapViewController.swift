@@ -91,7 +91,7 @@ class ATMAnnotation: NSObject, MKAnnotation {
 }
 
 
-class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegate, CCHMapClusterControllerDelegate {
+class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegate, ValueDownlinkDelegate, CCHMapClusterControllerDelegate {
     @IBOutlet private weak var mapView: MKMapView!
 
     private var mapClusterController: CCHMapClusterController!
@@ -100,7 +100,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     private var banksDownlink: MapDownlink!
     private var atms = [String: ATMModel]()
     private var bankDownlinks = [String: MapDownlink]()
-    private var atmInfoDownlinks = [String: Downlink]()
+    private var atmInfoDownlinks = [String: ValueDownlink]()
     private var routeDownlinks = [String: MapDownlink]()
     private var vehicleDownlinks = [String: MapDownlink]()
     private var mapAnnotations = [String: MapAnnotation]()
@@ -209,7 +209,9 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         let swimClient = SwimTodoGlobals.instance.cityClient
         let scope = swimClient.scope(node: SwimUri("atm/\(atm.swimId)")!)
 
-        let downlink = scope.scope(lane: atmInfoLaneUri).sync(properties: laneProperties)
+        let downlink = scope.scope(lane: atmInfoLaneUri).syncValue(properties: laneProperties) {
+            return ATMModel(swimValue: $0)
+        }
         downlink.addDelegate(self)
 
         atmInfoDownlinks[atm.swimId] = downlink
@@ -327,26 +329,6 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
 
-    // MARK: - DownlinkDelegate
-
-    func swimDownlink(downlink: Downlink, events: [EventMessage]) {
-        guard downlink.laneUri == atmInfoLaneUri else {
-            return
-        }
-
-        for event in events {
-            let atmId = String(event.node.path).componentsSeparatedByString("/").last!
-            guard let atm = atms[atmId] else {
-                log.warning("Ignoring ATM event for ATM that we don't have \(event)!")
-                continue
-            }
-
-            atm.swim_updateWithSwimValue(event.body)
-            updateMapMarker(atm)
-        }
-    }
-
-
     // MARK: - MapDownlinkDelegate
 
     func swimMapDownlinkWillChange(downlink: MapDownlink) {
@@ -404,6 +386,13 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         if let thing = object as? LocatableModel {
             removeMapMarker(thing)
         }
+    }
+
+
+    // MARK: - ValueDownlinkDelegate
+
+    func swimValueDownlink(downlink: ValueDownlink, didUpdate object: SwimModelProtocolBase) {
+        updateMapMarker(object as! LocatableModel)
     }
 
 
