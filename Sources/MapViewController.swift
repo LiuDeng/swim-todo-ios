@@ -327,16 +327,12 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
     func swimMapDownlink(downlink: MapDownlink, didUpdate object: SwimModelProtocolBase, forKey key: SwimValue) {
-        SwimAssertOnMainThread()
-
         if let thing = object as? LocatableModel {
             updateMapMarker(thing)
         }
     }
 
     func swimMapDownlink(downlink: MapDownlink, didRemove object: SwimModelProtocolBase, forKey key: SwimValue) {
-        SwimAssertOnMainThread()
-
         if let thing = object as? LocatableModel {
             removeMapMarker(thing)
         }
