@@ -6,13 +6,14 @@
 //  Copyright © 2016 swim.it. All rights reserved.
 //
 
+import SwimSwift
 import UIKit
 
 
 class MapAnnotation: NSObject, MKAnnotation {
-    var thing: LocatableModel
+    var thing: SwimLatLongModel
 
-    // Note that this is a cache of vehicle.coordinate rather than a
+    // Note that this is a cache of thing.coordinate rather than a
     // direct call, because we only want to change this when we're ready
     // to animate a batch of changes.
     var coordinate: CLLocationCoordinate2D
@@ -46,7 +47,7 @@ class MapAnnotation: NSObject, MKAnnotation {
         }
     }
 
-    init(thing: LocatableModel) {
+    init(thing: SwimLatLongModel) {
         self.thing = thing
         coordinate = thing.coordinate
     }

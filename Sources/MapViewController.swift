@@ -176,7 +176,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
 
-    private func updateMapMarker(thing: LocatableModel) {
+    private func updateMapMarker(thing: SwimLatLongModel) {
         SwimAssertOnMainThread()
 
         addChangeToPending(thing)
@@ -186,7 +186,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         }
     }
 
-    private func addChangeToPending(thing: LocatableModel) {
+    private func addChangeToPending(thing: SwimLatLongModel) {
         guard let lat = thing.latitude, long = thing.longitude else {
             return
         }
@@ -208,7 +208,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
 
-    private func removeMapMarker(thing: LocatableModel) {
+    private func removeMapMarker(thing: SwimLatLongModel) {
         SwimAssertOnMainThread()
 
         savePendingRemove(thing)
@@ -219,7 +219,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
 
-    private func savePendingRemove(vehicle: LocatableModel) {
+    private func savePendingRemove(vehicle: SwimLatLongModel) {
         SwimAssertOnMainThread()
 
         if let anno = mapAnnotations[vehicle.swimId] {
@@ -290,19 +290,19 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         else if let route = object as? RouteModel {
             linkRoute(route)
         }
-        else if let thing = object as? LocatableModel {
+        else if let thing = object as? SwimLatLongModel {
             updateMapMarker(thing)
         }
     }
 
     func swimMapDownlink(downlink: MapDownlink, didUpdate object: SwimModelProtocolBase, forKey key: SwimValue) {
-        if let thing = object as? LocatableModel {
+        if let thing = object as? SwimLatLongModel {
             updateMapMarker(thing)
         }
     }
 
     func swimMapDownlink(downlink: MapDownlink, didRemove object: SwimModelProtocolBase, forKey key: SwimValue) {
-        if let thing = object as? LocatableModel {
+        if let thing = object as? SwimLatLongModel {
             removeMapMarker(thing)
         }
     }
@@ -311,7 +311,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     // MARK: - ValueDownlinkDelegate
 
     func swimValueDownlink(downlink: ValueDownlink, didUpdate object: SwimModelProtocolBase) {
-        updateMapMarker(object as! LocatableModel)
+        updateMapMarker(object as! SwimLatLongModel)
     }
 
 

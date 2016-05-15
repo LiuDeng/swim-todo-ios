@@ -9,7 +9,7 @@
 import SwimSwift
 
 
-class ATMModel: LocatableModel {
+class ATMModel: SwimLatLongModel {
     var name: String? = nil
     var address: String? = nil
 
