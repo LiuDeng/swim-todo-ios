@@ -16,17 +16,43 @@ import MapKit
 
 
 class MapAnnotationView: MKAnnotationView {
-    var count = 0 {
-        didSet {
-            precondition(count > 1)
-            countLabel.text = String(count)
-            vehicle = nil
+    private var _count = 0
+    var count: Int {
+        get {
+            return _count
+        }
+        set {
+            precondition(newValue > 1)
+            _count = newValue
+            countLabel.text = String(_count)
+            _atm = nil
+            _vehicle = nil
             setNeedsLayout()
         }
     }
 
+    private var _atm: ATMModel?
+    var atm: ATMModel? {
+        get {
+            return _atm
+        }
+        set {
+            _atm = newValue
+            _count = 1
+            _vehicle = nil
+            setNeedsLayout()
+        }
+    }
+
+    private var _vehicle: VehicleModel?
     var vehicle: VehicleModel? {
-        didSet {
+        get {
+            return _vehicle
+        }
+        set {
+            _count = 1
+            _atm = nil
+            _vehicle = newValue
             setNeedsLayout()
         }
     }
@@ -77,13 +103,16 @@ class MapAnnotationView: MKAnnotationView {
         image = imageForCount()
         centerOffset = CGPointZero
         countLabel.frame = self.bounds
-        countLabel.hidden = (vehicle != nil)
+        countLabel.hidden = (count < 2)
     }
 
 
     private func imageForCount() -> UIImage {
         if vehicle != nil {
             return UIImage(named: "bus")!
+        }
+        if atm != nil {
+            return UIImage(named: "atm")!
         }
         let suffix = suffixForCount()
         return UIImage(named: "CircleRed\(suffix)")!

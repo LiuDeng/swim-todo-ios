@@ -15,14 +15,17 @@ import UIKit
 
 private let countryNodeUri: SwimUri = "country/us"
 private let agenciesLaneUri: SwimUri = "country/agencies"
+private let banksLaneUri: SwimUri = "country/banks"
+private let atmsLaneUri: SwimUri = "bank/atms"
+private let atmInfoLaneUri: SwimUri = "atm/info"
 private let routesLaneUri: SwimUri = "agency/routes"
 private let vehiclesLaneUri: SwimUri = "route/vehicles"
 
 private let log = SwiftyBeaver.self
 
 
-class VehicleAnnotation: NSObject, MKAnnotation {
-    var vehicle: VehicleModel
+class MapAnnotation: NSObject, MKAnnotation {
+    var thing: LocatableModel
 
     // Note that this is a cache of vehicle.coordinate rather than a
     // direct call, because we only want to change this when we're ready
@@ -30,25 +33,60 @@ class VehicleAnnotation: NSObject, MKAnnotation {
     var coordinate: CLLocationCoordinate2D
 
     var title: String? {
-        return vehicle.routeId
+        if let vehicle = thing as? VehicleModel {
+            return vehicle.routeId
+        }
+        else if let atm = thing as? ATMModel {
+            return atm.name
+        }
+        else {
+            return nil
+        }
     }
 
     var subtitle: String? {
-        if let speed = vehicle.speedMph {
-            return "\(speed) mph"
+        if let vehicle = thing as? VehicleModel {
+            if let speed = vehicle.speedMph {
+                return "\(speed) mph"
+            }
+            else {
+                return "Stationary"
+            }
+        }
+        else if let atm = thing as? ATMModel {
+            return atm.address
         }
         else {
-            return "Stationary"
+            return nil
         }
     }
 
-    init(vehicle: VehicleModel) {
-        self.vehicle = vehicle
-        coordinate = vehicle.coordinate
+    init(thing: LocatableModel) {
+        self.thing = thing
+        coordinate = thing.coordinate
+    }
+}
+
+
+class ATMAnnotation: NSObject, MKAnnotation {
+    var atm: ATMModel
+
+    // Note that this is a cache of atm.coordinate rather than a
+    // direct call, because we only want to change this when we're ready
+    // to animate a batch of changes.
+    var coordinate: CLLocationCoordinate2D
+
+    var title: String? {
+        return atm.name
     }
 
-    override func isEqual(object: AnyObject?) -> Bool {
-        return object === self
+    var subtitle: String? {
+        return atm.address
+    }
+
+    init(atm: ATMModel) {
+        self.atm = atm
+        coordinate = atm.coordinate
     }
 }
 
@@ -59,14 +97,18 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     private var mapClusterController: CCHMapClusterController!
 
     private var agenciesDownlink: MapDownlink!
+    private var banksDownlink: MapDownlink!
+    private var atms = [String: ATMModel]()
+    private var bankDownlinks = [String: MapDownlink]()
+    private var atmInfoDownlinks = [String: Downlink]()
     private var routeDownlinks = [String: MapDownlink]()
     private var vehicleDownlinks = [String: MapDownlink]()
-    private var vehicleAnnotations = [String: VehicleAnnotation]()
+    private var mapAnnotations = [String: MapAnnotation]()
 
     private var changesInProgress = 0
-    private var pendingChanges = [VehicleAnnotation]()
-    private var pendingAdds = [VehicleAnnotation]()
-    private var pendingRemoves = [VehicleAnnotation]()
+    private var pendingChanges = [MapAnnotation]()
+    private var pendingAdds = [MapAnnotation]()
+    private var pendingRemoves = [MapAnnotation]()
 
     private let laneProperties = LaneProperties()
 
@@ -94,6 +136,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         centerMap(initialLocation, initialRadius, animated: false)
 
         linkAgencies()
+        linkBanks()
     }
 
 
@@ -113,6 +156,21 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         }, primaryKey: {
             let id = ($0 as! AgencyModel).swimId ?? ""
             return SwimValue(id)
+        })
+        downlink.addDelegate(self)
+        agenciesDownlink = downlink
+    }
+
+
+    private func linkBanks() {
+        let swimClient = SwimTodoGlobals.instance.cityClient
+        let countryScope = swimClient.scope(node: countryNodeUri)
+
+        let downlink = countryScope.scope(lane: banksLaneUri).syncMap(properties: laneProperties, objectMaker: {
+            return BankModel(swimValue: $0)
+            }, primaryKey: {
+                let id = ($0 as! BankModel).swimId ?? ""
+                return SwimValue(id)
         })
         downlink.addDelegate(self)
         agenciesDownlink = downlink
@@ -145,6 +203,35 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
 
+    private func linkATM(atm: ATMModel) {
+        atms[atm.swimId] = atm
+
+        let swimClient = SwimTodoGlobals.instance.cityClient
+        let scope = swimClient.scope(node: SwimUri("atm/\(atm.swimId)")!)
+
+        let downlink = scope.scope(lane: atmInfoLaneUri).sync(properties: laneProperties)
+        downlink.addDelegate(self)
+
+        atmInfoDownlinks[atm.swimId] = downlink
+    }
+
+
+    private func linkBank(bank: BankModel) {
+        let swimClient = SwimTodoGlobals.instance.cityClient
+        let scope = swimClient.scope(node: SwimUri("bank/\(bank.swimId)")!)
+
+        let downlink = scope.scope(lane: atmsLaneUri).syncMap(properties: laneProperties, objectMaker: {
+            return ATMModel(swimValue: $0)
+            }, primaryKey: {
+                let id = ($0 as! ATMModel).swimId ?? ""
+                return SwimValue(id)
+        })
+        downlink.addDelegate(self)
+
+        bankDownlinks[bank.swimId] = downlink
+    }
+
+
     private func linkRoute(route: RouteModel) {
         SwimAssertOnMainThread()
         log.debug("Linking with route \(route.swimId ?? "Missing ID")")
@@ -164,42 +251,42 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
 
-    private func updateVehicleMarker(vehicle: VehicleModel) {
+    private func updateMapMarker(thing: LocatableModel) {
         SwimAssertOnMainThread()
 
-        addChangeToPending(vehicle)
+        addChangeToPending(thing)
 
         if changesInProgress == 0 {
             applyAllChanges()
         }
     }
 
-    private func addChangeToPending(vehicle: VehicleModel) {
-        guard let lat = vehicle.latitude, long = vehicle.longitude else {
+    private func addChangeToPending(thing: LocatableModel) {
+        guard let lat = thing.latitude, long = thing.longitude else {
             return
         }
-        log.verbose("Vehicle \(vehicle.swimId) moved to \(lat), \(long)")
+        log.verbose("Thing \(thing.swimId) moved to \(lat), \(long)")
 
         let coord = CLLocationCoordinate2D(latitude: CLLocationDegrees(lat), longitude: CLLocationDegrees(long))
         guard CLLocationCoordinate2DIsValid(coord) else {
-            log.warning("Ignoring invalid location \(coord) for vehicle \(vehicle.swimId)")
+            log.warning("Ignoring invalid location \(coord) for vehicle \(thing.swimId)")
             return
         }
-        if let anno = vehicleAnnotations[vehicle.swimId] {
+        if let anno = mapAnnotations[thing.swimId] {
             pendingChanges.append(anno)
         }
         else {
-            let anno = VehicleAnnotation(vehicle: vehicle)
-            vehicleAnnotations[vehicle.swimId] = anno
+            let anno = MapAnnotation(thing: thing)
+            mapAnnotations[thing.swimId] = anno
             pendingAdds.append(anno)
         }
     }
 
 
-    private func removeVehicleMarker(vehicle: VehicleModel) {
+    private func removeMapMarker(thing: LocatableModel) {
         SwimAssertOnMainThread()
 
-        savePendingRemove(vehicle)
+        savePendingRemove(thing)
 
         if changesInProgress == 0 {
             applyAllChanges()
@@ -207,10 +294,10 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
 
-    private func savePendingRemove(vehicle: VehicleModel) {
+    private func savePendingRemove(vehicle: LocatableModel) {
         SwimAssertOnMainThread()
 
-        if let anno = vehicleAnnotations[vehicle.swimId] {
+        if let anno = mapAnnotations[vehicle.swimId] {
             pendingRemoves.append(anno)
         }
     }
@@ -233,9 +320,29 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
             pendingChanges.removeAll()
             UIView.animateWithDuration(0.3) {
                 for anno in changes {
-                    anno.coordinate = anno.vehicle.coordinate
+                    anno.coordinate = anno.thing.coordinate
                 }
             }
+        }
+    }
+
+
+    // MARK: - DownlinkDelegate
+
+    func swimDownlink(downlink: Downlink, events: [EventMessage]) {
+        guard downlink.laneUri == atmInfoLaneUri else {
+            return
+        }
+
+        for event in events {
+            let atmId = String(event.node.path).componentsSeparatedByString("/").last!
+            guard let atm = atms[atmId] else {
+                log.warning("Ignoring ATM event for ATM that we don't have \(event)!")
+                continue
+            }
+
+            atm.swim_updateWithSwimValue(event.body)
+            updateMapMarker(atm)
         }
     }
 
@@ -268,27 +375,34 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         if let agency = object as? AgencyModel {
             linkAgency(agency)
         }
+        else if let atm = object as? ATMModel {
+            linkATM(atm)
+            updateMapMarker(atm)
+        }
+        else if let bank = object as? BankModel {
+            linkBank(bank)
+        }
         else if let route = object as? RouteModel {
             linkRoute(route)
         }
-        else if let vehicle = object as? VehicleModel {
-            updateVehicleMarker(vehicle)
+        else if let thing = object as? LocatableModel {
+            updateMapMarker(thing)
         }
     }
 
     func swimMapDownlink(downlink: MapDownlink, didUpdate object: SwimModelProtocolBase, forKey key: SwimValue) {
         SwimAssertOnMainThread()
 
-        if let vehicle = object as? VehicleModel {
-            updateVehicleMarker(vehicle)
+        if let thing = object as? LocatableModel {
+            updateMapMarker(thing)
         }
     }
 
     func swimMapDownlink(downlink: MapDownlink, didRemove object: SwimModelProtocolBase, forKey key: SwimValue) {
         SwimAssertOnMainThread()
 
-        if let vehicle = object as? VehicleModel {
-            removeVehicleMarker(vehicle)
+        if let thing = object as? LocatableModel {
+            removeMapMarker(thing)
         }
     }
 
@@ -298,7 +412,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     func mapClusterController(mapClusterController: CCHMapClusterController!, titleForMapClusterAnnotation mapClusterAnnotation: CCHMapClusterAnnotation!) -> String! {
         let n = mapClusterAnnotation.annotations.count
         if n == 1 {
-            let anno = mapClusterAnnotation.annotations.first as! VehicleAnnotation
+            let anno = mapClusterAnnotation.annotations.first as! MapAnnotation
             return anno.title
         }
         else {
@@ -309,7 +423,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     func mapClusterController(mapClusterController: CCHMapClusterController!, subtitleForMapClusterAnnotation mapClusterAnnotation: CCHMapClusterAnnotation!) -> String! {
         let n = mapClusterAnnotation.annotations.count
         if n == 1 {
-            let anno = mapClusterAnnotation.annotations.first as! VehicleAnnotation
+            let anno = mapClusterAnnotation.annotations.first as! MapAnnotation
             return anno.subtitle
         }
         else {
@@ -350,10 +464,18 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         let n = anno.annotations.count
         if n > 1 {
             v.count = n
-            v.vehicle = nil
         }
         else {
-            v.vehicle = (anno.annotations.first as! VehicleAnnotation).vehicle
+            let thing = (anno.annotations.first as! MapAnnotation).thing
+            if let vehicle = thing as? VehicleModel {
+                v.vehicle = vehicle
+            }
+            else if let atm = thing as? ATMModel {
+                v.atm = atm
+            }
+            else {
+                preconditionFailure()
+            }
         }
 
     }

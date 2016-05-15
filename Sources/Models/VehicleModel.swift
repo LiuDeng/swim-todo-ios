@@ -9,10 +9,48 @@
 import SwimSwift
 
 
-class VehicleModel: SwimModelBase {
-    var routeId: String?
+class LocatableModel: SwimModelBase {
     var latitude: Float?
     var longitude: Float?
+
+    var coordinate: CLLocationCoordinate2D {
+        return CLLocationCoordinate2D(latitude: CLLocationDegrees(latitude ?? 0.0),
+                                      longitude: CLLocationDegrees(longitude ?? 0.0))
+    }
+
+    override func swim_updateWithJSON(json: [String: AnyObject]) {
+        super.swim_updateWithJSON(json)
+
+        if let latStr = json["latitude"] as? String {
+            latitude = Float(latStr)
+        }
+        else if let lat = json["latitude"] as? NSNumber {
+            latitude = lat.floatValue
+        }
+        if let longStr = json["longitude"] as? String {
+            longitude = Float(longStr)
+        }
+        else if let longit = json["longitude"] as? NSNumber {
+            longitude = longit.floatValue
+        }
+    }
+
+
+    override func swim_toJSON() -> [String: AnyObject] {
+        var json = super.swim_toJSON()
+        if latitude != nil {
+            json["latitude"] = String(latitude!)
+        }
+        if longitude != nil {
+            json["longitude"] = String(longitude!)
+        }
+        return json
+    }
+}
+
+
+class VehicleModel: LocatableModel {
+    var routeId: String?
     var speedKph: Int?
 
     var speedMph: Int? {
@@ -24,23 +62,11 @@ class VehicleModel: SwimModelBase {
         }
     }
 
-    var coordinate: CLLocationCoordinate2D {
-        return CLLocationCoordinate2D(latitude: CLLocationDegrees(latitude ?? 0.0),
-                                      longitude: CLLocationDegrees(longitude ?? 0.0))
-    }
-
-
     override func swim_updateWithJSON(json: [String: AnyObject]) {
         super.swim_updateWithJSON(json)
 
         swimId = json["id"] as? String ?? "MissingID"
         routeId = json["routeId"] as? String
-        if let latStr = json["latitude"] as? String {
-            latitude = Float(latStr)
-        }
-        if let longStr = json["longitude"] as? String {
-            longitude = Float(longStr)
-        }
         if let speedStr = json["speed"] as? String {
             speedKph = Int(speedStr)
         }
@@ -51,12 +77,6 @@ class VehicleModel: SwimModelBase {
         var json = super.swim_toJSON()
         json["id"] = swimId
         json["routeId"] = routeId
-        if latitude != nil {
-            json["latitude"] = String(latitude!)
-        }
-        if longitude != nil {
-            json["longitude"] = String(longitude!)
-        }
         if speedKph != nil {
             json["speed"] = String(speedKph!)
         }
