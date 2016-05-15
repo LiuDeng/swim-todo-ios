@@ -68,29 +68,6 @@ class MapAnnotation: NSObject, MKAnnotation {
 }
 
 
-class ATMAnnotation: NSObject, MKAnnotation {
-    var atm: ATMModel
-
-    // Note that this is a cache of atm.coordinate rather than a
-    // direct call, because we only want to change this when we're ready
-    // to animate a batch of changes.
-    var coordinate: CLLocationCoordinate2D
-
-    var title: String? {
-        return atm.name
-    }
-
-    var subtitle: String? {
-        return atm.address
-    }
-
-    init(atm: ATMModel) {
-        self.atm = atm
-        coordinate = atm.coordinate
-    }
-}
-
-
 class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegate, ValueDownlinkDelegate, CCHMapClusterControllerDelegate {
     @IBOutlet private weak var mapView: MKMapView!
 
