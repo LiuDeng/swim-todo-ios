@@ -153,9 +153,6 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
         let downlink = countryScope.scope(lane: agenciesLaneUri).syncMap(properties: laneProperties, objectMaker: {
             return AgencyModel(swimValue: $0)
-        }, primaryKey: {
-            let id = ($0 as! AgencyModel).swimId ?? ""
-            return SwimValue(id)
         })
         downlink.addDelegate(self)
         agenciesDownlink = downlink
@@ -168,9 +165,6 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
         let downlink = countryScope.scope(lane: banksLaneUri).syncMap(properties: laneProperties, objectMaker: {
             return BankModel(swimValue: $0)
-            }, primaryKey: {
-                let id = ($0 as! BankModel).swimId ?? ""
-                return SwimValue(id)
         })
         downlink.addDelegate(self)
         agenciesDownlink = downlink
@@ -193,9 +187,6 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
         let downlink = agencyScope.scope(lane: routesLaneUri).syncMap(properties: laneProperties, objectMaker: {
             return RouteModel(swimValue: $0)
-        }, primaryKey: {
-            let id = ($0 as! RouteModel).swimId ?? ""
-            return SwimValue(id)
         })
         downlink.addDelegate(self)
 
@@ -224,9 +215,6 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
         let downlink = scope.scope(lane: atmsLaneUri).syncMap(properties: laneProperties, objectMaker: {
             return ATMModel(swimValue: $0)
-            }, primaryKey: {
-                let id = ($0 as! ATMModel).swimId ?? ""
-                return SwimValue(id)
         })
         downlink.addDelegate(self)
 
@@ -243,9 +231,6 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
         let downlink = routeScope.scope(lane: vehiclesLaneUri).syncMap(properties: laneProperties, objectMaker: {
             return VehicleModel(swimValue: $0)
-        }, primaryKey: {
-            let id = ($0 as! VehicleModel).swimId ?? ""
-            return SwimValue(id)
         })
         downlink.addDelegate(self)
 
