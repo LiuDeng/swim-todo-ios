@@ -89,6 +89,10 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
     private let laneProperties = LaneProperties()
 
+    private var swimClient: SwimClient {
+        return SwimTodoGlobals.instance.cityClient
+    }
+
     init() {
         super.init(nibName: nil, bundle: nil)
     }
@@ -125,10 +129,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
 
     private func linkAgencies() {
-        let swimClient = SwimTodoGlobals.instance.cityClient
-        let countryScope = swimClient.scope(node: countryNodeUri)
-
-        let downlink = countryScope.scope(lane: agenciesLaneUri).syncMap(properties: laneProperties, objectMaker: {
+        let scope = swimClient.scope(node: countryNodeUri, lane: agenciesLaneUri)
+        let downlink = scope.syncMap(properties: laneProperties, objectMaker: {
             return AgencyModel(swimValue: $0)
         })
         downlink.addDelegate(self)
@@ -137,10 +139,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
 
     private func linkBanks() {
-        let swimClient = SwimTodoGlobals.instance.cityClient
-        let countryScope = swimClient.scope(node: countryNodeUri)
-
-        let downlink = countryScope.scope(lane: banksLaneUri).syncMap(properties: laneProperties, objectMaker: {
+        let scope = swimClient.scope(node: countryNodeUri,lane: banksLaneUri)
+        let downlink = scope.syncMap(properties: laneProperties, objectMaker: {
             return BankModel(swimValue: $0)
         })
         downlink.addDelegate(self)
@@ -159,10 +159,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         SwimAssertOnMainThread()
         log.debug("Linking with agency \(agency.swimId ?? "Missing ID") \(agency.name ?? "")")
 
-        let swimClient = SwimTodoGlobals.instance.cityClient
-        let agencyScope = swimClient.scope(node: SwimUri("agency/\(agency.swimId)")!)
-
-        let downlink = agencyScope.scope(lane: routesLaneUri).syncMap(properties: laneProperties, objectMaker: {
+        let scope = swimClient.scope(node: SwimUri("agency/\(agency.swimId)")!, lane: routesLaneUri)
+        let downlink = scope.syncMap(properties: laneProperties, objectMaker: {
             return RouteModel(swimValue: $0)
         })
         downlink.addDelegate(self)
@@ -174,10 +172,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     private func linkATM(atm: ATMModel) {
         atms[atm.swimId] = atm
 
-        let swimClient = SwimTodoGlobals.instance.cityClient
-        let scope = swimClient.scope(node: SwimUri("atm/\(atm.swimId)")!)
-
-        let downlink = scope.scope(lane: atmInfoLaneUri).syncValue(properties: laneProperties) {
+        let scope = swimClient.scope(node: SwimUri("atm/\(atm.swimId)")!, lane: atmInfoLaneUri)
+        let downlink = scope.syncValue(properties: laneProperties) {
             return ATMModel(swimValue: $0)
         }
         downlink.addDelegate(self)
@@ -187,10 +183,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
 
     private func linkBank(bank: BankModel) {
-        let swimClient = SwimTodoGlobals.instance.cityClient
-        let scope = swimClient.scope(node: SwimUri("bank/\(bank.swimId)")!)
-
-        let downlink = scope.scope(lane: atmsLaneUri).syncMap(properties: laneProperties, objectMaker: {
+        let scope = swimClient.scope(node: SwimUri("bank/\(bank.swimId)")!, lane: atmsLaneUri)
+        let downlink = scope.syncMap(properties: laneProperties, objectMaker: {
             return ATMModel(swimValue: $0)
         })
         downlink.addDelegate(self)
@@ -203,10 +197,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         SwimAssertOnMainThread()
         log.debug("Linking with route \(route.swimId ?? "Missing ID")")
 
-        let swimClient = SwimTodoGlobals.instance.cityClient
-        let routeScope = swimClient.scope(node: SwimUri("route/\(route.swimId)")!)
-
-        let downlink = routeScope.scope(lane: vehiclesLaneUri).syncMap(properties: laneProperties, objectMaker: {
+        let scope = swimClient.scope(node: SwimUri("route/\(route.swimId)")!, lane: vehiclesLaneUri)
+        let downlink = scope.syncMap(properties: laneProperties, objectMaker: {
             return VehicleModel(swimValue: $0)
         })
         downlink.addDelegate(self)
