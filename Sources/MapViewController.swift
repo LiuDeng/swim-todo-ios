@@ -21,6 +21,23 @@ private let atmInfoLaneUri: SwimUri = "atm/info"
 private let routesLaneUri: SwimUri = "agency/routes"
 private let vehiclesLaneUri: SwimUri = "route/vehicles"
 
+private func agencyUri(agency: AgencyModel) -> SwimUri {
+    return SwimUri("agency/\(agency.swimId)")!
+}
+
+private func atmUri(atm: ATMModel) -> SwimUri {
+    return SwimUri("atm/\(atm.swimId)")!
+}
+
+private func bankUri(bank: BankModel) -> SwimUri {
+    return SwimUri("bank/\(bank.swimId)")!
+}
+
+private func routeUri(route: RouteModel) -> SwimUri {
+    return SwimUri("route/\(route.swimId)")!
+}
+
+
 private let log = SwiftyBeaver.self
 
 
@@ -107,10 +124,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
 
     private func linkAgency(agency: AgencyModel) {
-        SwimAssertOnMainThread()
-        log.debug("Linking with agency \(agency.swimId ?? "Missing ID") \(agency.name ?? "")")
-
-        let scope = swimClient.scope(node: SwimUri("agency/\(agency.swimId)")!, lane: routesLaneUri)
+        let scope = swimClient.scope(node: agencyUri(agency), lane: routesLaneUri)
         let downlink = scope.syncMap(properties: laneProperties, objectMaker: {
             return RouteModel(swimValue: $0)
         })
@@ -123,7 +137,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     private func linkATM(atm: ATMModel) {
         atms[atm.swimId] = atm
 
-        let scope = swimClient.scope(node: SwimUri("atm/\(atm.swimId)")!, lane: atmInfoLaneUri)
+        let scope = swimClient.scope(node: atmUri(atm), lane: atmInfoLaneUri)
         let downlink = scope.syncValue(properties: laneProperties) {
             return ATMModel(swimValue: $0)
         }
@@ -134,7 +148,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
 
     private func linkBank(bank: BankModel) {
-        let scope = swimClient.scope(node: SwimUri("bank/\(bank.swimId)")!, lane: atmsLaneUri)
+        let scope = swimClient.scope(node: bankUri(bank), lane: atmsLaneUri)
         let downlink = scope.syncMap(properties: laneProperties, objectMaker: {
             return ATMModel(swimValue: $0)
         })
@@ -145,10 +159,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
 
     private func linkRoute(route: RouteModel) {
-        SwimAssertOnMainThread()
-        log.debug("Linking with route \(route.swimId ?? "Missing ID")")
-
-        let scope = swimClient.scope(node: SwimUri("route/\(route.swimId)")!, lane: vehiclesLaneUri)
+        let scope = swimClient.scope(node: routeUri(route), lane: vehiclesLaneUri)
         let downlink = scope.syncMap(properties: laneProperties, objectMaker: {
             return VehicleModel(swimValue: $0)
         })
