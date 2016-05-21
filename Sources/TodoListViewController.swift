@@ -35,15 +35,6 @@ class TodoListViewController: SwimListViewController, ListDownlinkDelegate, MapD
     }
 
 
-    private var laneScope: LaneScope? {
-        get {
-            return swimListManager.laneScope
-        }
-        set {
-            swimListManager.laneScope = newValue
-        }
-    }
-
     private var presenceLaneScope: LaneScope? {
         get {
             return presenceMapManager.laneScope
@@ -55,7 +46,7 @@ class TodoListViewController: SwimListViewController, ListDownlinkDelegate, MapD
 
     var detailItem : NodeScope? {
         didSet {
-            laneScope = detailItem?.scope(lane: listLaneUri)
+            swimLaneScope = detailItem?.scope(lane: listLaneUri)
             presenceLaneScope = detailItem?.scope(lane: presenceLaneUri)
         }
     }
