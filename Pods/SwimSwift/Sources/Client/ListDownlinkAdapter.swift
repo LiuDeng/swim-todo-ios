@@ -475,7 +475,12 @@ class ListDownlinkAdapter: SynchedDownlinkAdapter, ListDownlink {
 private func bodyWithCommand(command: String, value: SwimValue, indexValue: SwimValue) -> SwimValue {
     let body = Record()
     body.append(Item.Attr(command, indexValue))
-    body["item"] = value
+    if let rec = value.record {
+        body.appendContentsOf(rec)
+    }
+    else if value != Value.Absent {
+        body.append(Item.Value(value))
+    }
     return Value(body)
 }
 

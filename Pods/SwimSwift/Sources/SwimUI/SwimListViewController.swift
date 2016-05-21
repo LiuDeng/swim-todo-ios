@@ -34,12 +34,32 @@ public class SwimListViewController: UIViewController, UITableViewDataSource, UI
         }
     }
 
+    /**
+     The downlink for this list.
+
+     Equivalent to swimListManager.downlink (this is just an alias for convenience).
+     */
     public var swimDownlink: ListDownlink? {
         return swimListManager.downlink
     }
 
     /**
-     The SwimListManager instance that was given to us in the init.
+     The scope for this list.  Set this before viewWillAppear to configure
+     the list.
+
+     Equivalent to swimListManager.laneScope (this is just an alias for convenience).
+     */
+    public var swimLaneScope: LaneScope? {
+        get {
+            return swimListManager.laneScope
+        }
+        set {
+            swimListManager.laneScope = newValue
+        }
+    }
+
+    /**
+     The SwimListManager instance that we created to manage this list.
      */
     public var swimListManager: SwimListManager {
         get {
@@ -47,6 +67,10 @@ public class SwimListViewController: UIViewController, UITableViewDataSource, UI
         }
     }
 
+    /**
+     The UITableView that we are managing.  Set this before viewWillAppear
+     so that the table is updated as soon as the lane is synchronized.
+     */
     public var swimListTableView: UITableView? {
         get {
             return tableViewHelper.tableView
