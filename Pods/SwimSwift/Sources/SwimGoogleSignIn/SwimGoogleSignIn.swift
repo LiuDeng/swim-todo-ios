@@ -10,6 +10,7 @@
 
 import Bolts
 import Google
+import GoogleSignIn
 import ObjectiveC
 import Recon
 import SwimSwift

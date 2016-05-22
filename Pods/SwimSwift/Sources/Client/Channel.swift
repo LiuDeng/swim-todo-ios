@@ -254,7 +254,7 @@ class Channel: WebSocketDelegate {
             let request = AuthRequest(body: credentials)
             push(envelope: request)
         }
-        else if socket == nil {
+        else if socket == nil || socket!.readyState == .Closed {
             open()
         }
 
@@ -502,7 +502,7 @@ class Channel: WebSocketDelegate {
             reconnectTimer = nil
             reconnectTimeout = 0.0
         }
-        if socket == nil {
+        if socket == nil || socket!.readyState == .Closed {
             startNetworkMonitorIfNecessary()
 
             let s = WebSocket(hostUri.uri, subProtocols: protocols)

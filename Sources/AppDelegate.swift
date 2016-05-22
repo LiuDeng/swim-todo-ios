@@ -1,6 +1,6 @@
 import Crashlytics
 import Fabric
-import Google
+import GoogleSignIn
 import SwiftyBeaver
 import SwimSwift
 import UIKit

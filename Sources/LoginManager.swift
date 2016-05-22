@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import Google
+import GoogleSignIn
 import JLToast
 import SwimSwift
 import SwiftyBeaver

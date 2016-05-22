@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import Google
+import GoogleSignIn
 import UIKit
 
 class LoginViewController: UIViewController, GIDSignInUIDelegate {
