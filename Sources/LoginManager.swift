@@ -22,13 +22,12 @@ class LoginManager {
 
     private let gidDelegate = GIDDelegate()
 
-    init() {
+    init(swimClient: SwimClient) {
         // Register gidDelegate and SwimClient with Google's GIDSignIn.
         // SwimClient will handle all of Google's sign-in events initially,
         // and pass them on to gidDelegate as appropriate.
         let gidSignIn = GIDSignIn.sharedInstance()
         gidSignIn.delegate = gidDelegate
-        let swimClient = SwimClient.sharedInstance
         swimClient.registerGoogleSignIn(gidSignIn)
     }
 
