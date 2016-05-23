@@ -29,6 +29,20 @@ class TaskQueue {
     }
 
 
+    func ackAll() {
+        objc_sync_enter(self)
+
+        let tasks = queue
+        queue.removeAll()
+
+        objc_sync_exit(self)
+
+        tasks.forEach {
+            $0.setResult(nil)
+        }
+    }
+
+
     func ack(count_: Int) {
         var count = count_
 
@@ -73,5 +87,21 @@ class TaskQueue {
         tasks.forEach {
             $0.setError(error)
         }
+    }
+
+
+    func popAll() -> TaskQueue {
+        objc_sync_enter(self)
+
+        let tasks = queue
+        queue.removeAll()
+
+        objc_sync_exit(self)
+
+        let result = TaskQueue()
+        tasks.forEach {
+            result.append($0)
+        }
+        return result
     }
 }

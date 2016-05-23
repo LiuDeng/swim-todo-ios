@@ -840,7 +840,29 @@ class Channel: WebSocketDelegate {
         objc_sync_exit(self)
 
         if creds.isDefined {
-            auth(credentials: creds)
+            // Auth now that we are connected, but note that we need to
+            // ack any in-flight auth requests.
+            //
+            // auth() does not send the request if the socket isn't open,
+            // it's waiting for us to do it instead.  This can leave us
+            // with zero in-flight (a disconnect-retry), one in-flight (the
+            // user is explicitly signing in), or more than one in-flight
+            // (something bad happened before).
+            let needsAck = inFlightAuthRequests.popAll()
+            auth(credentials: creds).continueWithBlock { task in
+                if let err = task.error {
+                    needsAck.failAll(err)
+                }
+                else if let exn = task.exception {
+                    log.error("Exception handling auth request: \(exn)")
+                    let err = SwimError.Unknown
+                    needsAck.failAll(err as NSError)
+                }
+                else {
+                    needsAck.ackAll()
+                }
+                return nil
+            }
         }
 
         onConnect()
