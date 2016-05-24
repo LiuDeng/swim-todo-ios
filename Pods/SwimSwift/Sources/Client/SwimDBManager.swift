@@ -337,7 +337,7 @@ public class SwimDBManager {
                     return
                 }
 
-                tableList.filter(colIndex == fromIndex).delete()
+                try db.run(tableList.filter(colIndex == fromIndex).delete())
                 let gap = tableList.filter(colIndex > fromIndex && colIndex <= toIndex)
                 try db.run(gap.update(colIndex <- colIndex + oneBillion))
                 rowId = try db.run(tableList.insert(
@@ -345,8 +345,8 @@ public class SwimDBManager {
                     colIndex <- toIndex,
                     colSwimValue <- oldValue
                 ))
-                let offsetGap = tableList.filter(colIndex > fromIndex + oneBillion)
-                try db.run(offsetGap.update(colIndex <- colIndex - oneBillion + gapOffset))
+                let offsetGap = tableList.filter(colIndex > (fromIndex + oneBillion))
+                try db.run(offsetGap.update(colIndex <- colIndex - (oneBillion - gapOffset)))
             }
             return NSNumber(longLong: rowId)
         }

@@ -107,7 +107,12 @@ public class SwimListTableViewController: UITableViewController, SwimListViewHel
 
     override public func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
         precondition(fromIndexPath.section == swimObjectSection && toIndexPath.section == swimObjectSection)
-        swimDownlink!.moveFromIndex(fromIndexPath.row, toIndex: toIndexPath.row)
+        let from = fromIndexPath.row
+        let to = toIndexPath.row
+        if from == to {
+            return
+        }
+        swimDownlink!.moveFromIndex(from, toIndex: to)
     }
 
     override public func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
