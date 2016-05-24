@@ -22,6 +22,9 @@ class TodoListViewController: SwimListViewController, ListDownlinkDelegate, MapD
     @IBOutlet private weak var presenceContainerTopConstraint: NSLayoutConstraint!
     @IBOutlet private weak var tableView: UITableView!
 
+    private var editButton: UIBarButtonItem!
+    private var doneButton: UIBarButtonItem!
+
     private let pinchRecognizer = UIPinchGestureRecognizer()
 
     private let presenceListHelper = SwimMapCollectionViewHelper() { (x, y) in x.swimId < y.swimId }
@@ -65,8 +68,10 @@ class TodoListViewController: SwimListViewController, ListDownlinkDelegate, MapD
         configureTodoListView()
         configurePresenceView()
 
-        setToolbarItems([UIBarButtonItem(barButtonSystemItem: .Trash, target: self, action: #selector(trashButtonTapped))], animated: false)
+        editButton = UIBarButtonItem(barButtonSystemItem: .Edit, target: self, action: #selector(editButtonTapped))
+        doneButton = UIBarButtonItem(barButtonSystemItem: .Done, target: self, action: #selector(doneButtonTapped))
 
+        configureToolbar()
         configureView()
 
         let nc = NSNotificationCenter.defaultCenter()
@@ -126,12 +131,22 @@ class TodoListViewController: SwimListViewController, ListDownlinkDelegate, MapD
         title? = detailItem?.nodeUri.path.description ?? ""
     }
 
+    private func configureToolbar() {
+        let editDoneButton = (tableView.editing ? doneButton : editButton)
+        setToolbarItems([
+            editDoneButton,
+            UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil),
+            UIBarButtonItem(barButtonSystemItem: .Trash, target: self, action: #selector(trashButtonTapped))
+            ], animated: false)
+    }
+
 
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
 
         presenceMapManager.startSynching()
 
+        configureToolbar()
         navigationController?.toolbarHidden = false
     }
 
@@ -140,6 +155,13 @@ class TodoListViewController: SwimListViewController, ListDownlinkDelegate, MapD
         super.viewWillDisappear(animated)
 
         presenceMapManager.stopSynching()
+    }
+
+
+    override func viewDidDisappear(animated: Bool) {
+        super.viewDidDisappear(animated)
+
+        setToolbarItems([], animated: false)
     }
 
 
@@ -353,7 +375,11 @@ class TodoListViewController: SwimListViewController, ListDownlinkDelegate, MapD
 
     override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
         // The cell has its own swipe handling, so we don't want to allow the native one.
-        return false
+        return tableView.editing
+    }
+
+    func tableView(tableView: UITableView, editingStyleForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCellEditingStyle {
+        return .None
     }
 
 
@@ -383,6 +409,16 @@ class TodoListViewController: SwimListViewController, ListDownlinkDelegate, MapD
 
 
     // MARK: - Toolbar
+
+    @objc func editButtonTapped() {
+        tableView.setEditing(true, animated: true)
+        configureToolbar()
+    }
+
+    @objc func doneButtonTapped() {
+        tableView.setEditing(false, animated: true)
+        configureToolbar()
+    }
 
     @objc func trashButtonTapped() {
         let alert = UIAlertController(title: "Delete Entire List?", message: "Are you sure you want to delete this entire list?", preferredStyle: .Alert)
