@@ -18,7 +18,11 @@ extension SwimLatLongModel {
 
 
 class VehicleModel: SwimLatLongModel {
+    var agencyId: String?
+    var dirId: String?
     var routeId: String?
+    var onRoute: Bool?
+    var secsSinceReport: Int?
     var speedKph: Int?
 
     var speedMph: Int? {
@@ -34,7 +38,13 @@ class VehicleModel: SwimLatLongModel {
         super.swim_updateWithJSON(json)
 
         swimId = json["id"] as? String ?? "MissingID"
+        agencyId = json["agencyId"] as? String
+        dirId = json["dirId"] as? String
         routeId = json["routeId"] as? String
+        onRoute = json["onRoute"] as? Bool
+        if let secsStr = json["secsSinceReport"] as? String {
+            secsSinceReport = Int(secsStr)
+        }
         if let speedStr = json["speed"] as? String {
             speedKph = Int(speedStr)
         }
@@ -44,7 +54,19 @@ class VehicleModel: SwimLatLongModel {
     override func swim_toJSON() -> [String: AnyObject] {
         var json = super.swim_toJSON()
         json["id"] = swimId
-        json["routeId"] = routeId
+        if agencyId != nil {
+            json["agencyId"] = agencyId!
+        }
+        if dirId != nil {
+            json["dirId"] = dirId!
+        }
+        if routeId != nil {
+            json["routeId"] = routeId!
+        }
+        json["onRoute"] = onRoute
+        if secsSinceReport != nil {
+            json["secsSinceReport"] = String(secsSinceReport!)
+        }
         if speedKph != nil {
             json["speed"] = String(speedKph!)
         }

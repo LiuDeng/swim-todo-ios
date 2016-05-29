@@ -42,6 +42,9 @@
 		40EDB0B21CE3B3B900D996AF /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40EDB0B11CE3B3B900D996AF /* Images.xcassets */; };
 		40EDB0B41CE3B76A00D996AF /* MapAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EDB0B31CE3B76A00D996AF /* MapAnnotationView.swift */; };
 		40F583C21CBCDCAF001BCDCC /* UserPresenceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F583C11CBCDCAF001BCDCC /* UserPresenceModel.swift */; };
+		40F7777A1CFA62AC00248688 /* RouteDetailModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F777791CFA62AC00248688 /* RouteDetailModel.swift */; };
+		40F7777C1CFA688200248688 /* RouteStopModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F7777B1CFA688200248688 /* RouteStopModel.swift */; };
+		40F7777E1CFA94BF00248688 /* UIColor+SwimTodo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F7777D1CFA94BF00248688 /* UIColor+SwimTodo.swift */; };
 		85553D421C6B31BA005D613B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85553D381C6B31BA005D613B /* AppDelegate.swift */; };
 		85553D431C6B31BA005D613B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85553D391C6B31BA005D613B /* Assets.xcassets */; };
 		85553D441C6B31BA005D613B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 85553D3A1C6B31BA005D613B /* LaunchScreen.storyboard */; };
@@ -113,6 +116,9 @@
 		40EDB0B11CE3B3B900D996AF /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		40EDB0B31CE3B76A00D996AF /* MapAnnotationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapAnnotationView.swift; sourceTree = "<group>"; };
 		40F583C11CBCDCAF001BCDCC /* UserPresenceModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserPresenceModel.swift; sourceTree = "<group>"; };
+		40F777791CFA62AC00248688 /* RouteDetailModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteDetailModel.swift; sourceTree = "<group>"; };
+		40F7777B1CFA688200248688 /* RouteStopModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RouteStopModel.swift; sourceTree = "<group>"; };
+		40F7777D1CFA94BF00248688 /* UIColor+SwimTodo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIColor+SwimTodo.swift"; sourceTree = "<group>"; };
 		84508E0E112F7E6A77F1CF05 /* Pods-SwimTodo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwimTodo.release.xcconfig"; path = "Pods/Target Support Files/Pods-SwimTodo/Pods-SwimTodo.release.xcconfig"; sourceTree = "<group>"; };
 		85553D381C6B31BA005D613B /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		85553D391C6B31BA005D613B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -158,6 +164,8 @@
 				40A8F2AB1CE51330000C8AE0 /* ATMModel.swift */,
 				40A8F2A91CE5121C000C8AE0 /* BankModel.swift */,
 				40B073371CE2A39200DFB732 /* RouteModel.swift */,
+				40F777791CFA62AC00248688 /* RouteDetailModel.swift */,
+				40F7777B1CFA688200248688 /* RouteStopModel.swift */,
 				400648E41C7268DB00701533 /* TodoEntry.swift */,
 				40F583C11CBCDCAF001BCDCC /* UserPresenceModel.swift */,
 				40B073391CE2A43E00DFB732 /* VehicleModel.swift */,
@@ -178,6 +186,7 @@
 			children = (
 				4048D7BC1C73D844002B490C /* CollectionType+Misc.swift */,
 				40C975EF1CADE0C700407B67 /* RTLLayout.swift */,
+				40F7777D1CFA94BF00248688 /* UIColor+SwimTodo.swift */,
 				40C975FB1CB19B0200407B67 /* UINib+Misc.swift */,
 				409DD2481CC6E7980000D366 /* UITableViewCell+Misc.swift */,
 				40C975F71CAE113800407B67 /* UIView+Misc.swift */,
@@ -522,9 +531,11 @@
 				40A0B3C61CA1FE5800F17BEA /* LoginManager.swift in Sources */,
 				40B0732D1CE2951900DFB732 /* MapViewController.swift in Sources */,
 				40AE52EB1CA1FAD000A878F3 /* SwimTodoGlobals.swift in Sources */,
+				40F7777E1CFA94BF00248688 /* UIColor+SwimTodo.swift in Sources */,
 				40C975FC1CB19B0200407B67 /* UINib+Misc.swift in Sources */,
 				4026EC9F1CD3CEAF006BB352 /* SwimGoogleSignIn.swift in Sources */,
 				40B0733A1CE2A43E00DFB732 /* VehicleModel.swift in Sources */,
+				40F7777A1CFA62AC00248688 /* RouteDetailModel.swift in Sources */,
 				85553D461C6B31BA005D613B /* TodoListViewController.swift in Sources */,
 				400648E21C72680000701533 /* TodoEntryTableViewCell.swift in Sources */,
 				4048D7BD1C73D844002B490C /* CollectionType+Misc.swift in Sources */,
@@ -533,6 +544,7 @@
 				40C975F31CADE79600407B67 /* PersonImageCollectionViewCell.swift in Sources */,
 				40EDB0B41CE3B76A00D996AF /* MapAnnotationView.swift in Sources */,
 				40A8F2B41CE8122B000C8AE0 /* MapAnnotation.swift in Sources */,
+				40F7777C1CFA688200248688 /* RouteStopModel.swift in Sources */,
 				40C975F81CAE113800407B67 /* UIView+Misc.swift in Sources */,
 				40A8F2AA1CE5121C000C8AE0 /* BankModel.swift in Sources */,
 				409DD2451CC6E5A30000D366 /* DetailTableViewCell.swift in Sources */,

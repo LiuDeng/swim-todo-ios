@@ -20,6 +20,7 @@ private let atmsLaneUri: SwimUri = "bank/atms"
 private let atmInfoLaneUri: SwimUri = "atm/info"
 private let routesLaneUri: SwimUri = "agency/routes"
 private let vehiclesLaneUri: SwimUri = "route/vehicles"
+private let routeConfigLaneUri: SwimUri = "route/config"
 
 private func agencyUri(agency: AgencyModel) -> SwimUri {
     return SwimUri("agency/\(agency.swimId)")!
@@ -48,6 +49,10 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
     private var mapAnnotations = [String: MapAnnotation]()
 
+    private var mapRoutes = [String: MKPolyline]()
+    private var selectedRoute: String?
+    private var visibleRouteOverlay: MKPolyline?
+
     private var changesInProgress = 0
     private var pendingChanges = [MapAnnotation]()
     private var pendingAdds = [MapAnnotation]()
@@ -58,9 +63,12 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     private var bankDownlinks = [String: MapDownlink]()
     private var atmInfoDownlinks = [String: ValueDownlink]()
     private var routeDownlinks = [String: MapDownlink]()
+    private var routeConfigDownlinks = [String: ValueDownlink]()
     private var vehicleDownlinks = [String: MapDownlink]()
 
     private var atms = [String: ATMModel]()
+    private var routes = [String: RouteModel]()
+    private var routeDetail = [String: RouteDetailModel]()
 
     private let laneProperties = LaneProperties()
 
@@ -159,6 +167,12 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
 
     private func linkRoute(route: RouteModel) {
+        routes[route.swimId] = route
+
+        linkRouteVehicles(route)
+    }
+
+    private func linkRouteVehicles(route: RouteModel) {
         let scope = swimClient.scope(node: routeUri(route), lane: vehiclesLaneUri)
         let downlink = scope.syncMap(properties: laneProperties, objectMaker: {
             return VehicleModel(swimValue: $0)
@@ -166,6 +180,19 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         downlink.addDelegate(self)
 
         vehicleDownlinks[route.swimId] = downlink
+    }
+
+
+    private func linkRouteConfig(route: RouteModel) {
+        log.verbose("Linking to \(route.swimId) config")
+
+        let scope = swimClient.scope(node: routeUri(route), lane: routeConfigLaneUri)
+        let downlink = scope.syncValue(properties: laneProperties, objectMaker: {
+            return RouteDetailModel(swimValue: $0)
+        })
+        downlink.addDelegate(self)
+
+        routeConfigDownlinks[route.swimId] = downlink
     }
 
 
@@ -252,6 +279,59 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
 
+    private func toggleVisibleRoute(route: RouteModel) {
+        let routeId = route.swimId
+
+        if selectedRoute == routeId {
+            if visibleRouteOverlay == nil {
+                // Second tap on the same route before we've managed to
+                // load the data.  Ignore.
+            }
+            else {
+                // Toggle the visible overlay off.
+
+                mapView.removeOverlay(visibleRouteOverlay!)
+                selectedRoute = nil
+                visibleRouteOverlay = nil
+            }
+        }
+        else {
+            // Switching from one route to another, or selecting one
+            // for the first time.
+
+            selectedRoute = routeId
+
+            if let _ = routeConfigDownlinks[routeId] {
+                // We're linked, we just need to show the line if we already
+                // have the data.  Otherwise, it's coming any moment now.
+                if let detail = routeDetail[routeId] {
+                    setRouteOverlay(detail)
+                }
+            }
+            else {
+                // We're not linked, so link.
+                linkRouteConfig(route)
+            }
+        }
+    }
+
+
+    private func setRouteOverlay(route: RouteDetailModel) {
+        if visibleRouteOverlay != nil {
+            mapView.removeOverlay(visibleRouteOverlay!)
+            visibleRouteOverlay = nil
+        }
+
+        if route.stops.count == 0 {
+            return
+        }
+        var points = route.stops.map { return $0.coordinate }
+        let poly = MKPolyline(coordinates: &points, count: points.count)
+        mapView.addOverlay(poly)
+        visibleRouteOverlay = poly
+    }
+
+
     // MARK: - MapDownlinkDelegate
 
     func swimMapDownlinkWillChange(downlink: MapDownlink) {
@@ -311,7 +391,22 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     // MARK: - ValueDownlinkDelegate
 
     func swimValueDownlink(downlink: ValueDownlink, didUpdate object: SwimModelProtocolBase) {
-        updateMapMarker(object as! SwimLatLongModel)
+        if let route = object as? RouteDetailModel {
+            log.verbose("Received route detail \(route.swimId)")
+
+            routeDetail[route.swimId] = route
+
+            let routeId = String(downlink.nodeUri).componentsSeparatedByString("/").last!
+            if selectedRoute == routeId {
+                setRouteOverlay(route)
+            }
+        }
+        else if let obj = object as? SwimLatLongModel {
+            updateMapMarker(obj)
+        }
+        else {
+            preconditionFailure()
+        }
     }
 
 
@@ -385,6 +480,26 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
                 preconditionFailure()
             }
         }
+    }
 
+
+    func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
+        guard let view = view as? MapAnnotationView else {
+            preconditionFailure()
+        }
+
+        guard let vehicle = view.vehicle else {
+            return
+        }
+
+        let fullRouteId = "\(vehicle.agencyId!)-\(vehicle.routeId!)"
+        toggleVisibleRoute(routes[fullRouteId]!)
+    }
+
+
+    func mapView(mapView: MKMapView, rendererForOverlay overlay: MKOverlay) -> MKOverlayRenderer {
+        let renderer = MKPolylineRenderer(overlay: overlay)
+        renderer.strokeColor = UIColor.st_route()
+        return renderer
     }
 }
