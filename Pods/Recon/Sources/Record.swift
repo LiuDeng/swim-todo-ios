@@ -400,6 +400,15 @@ public class Record: CollectionType, ArrayLiteralConvertible, CustomStringConver
       else if let key = item.key?.text {
         result[key] = item.value.json
       }
+      else if let number = item.number {
+        result["number"] = number
+      }
+      else if let text = item.text {
+        result["text"] = text
+      }
+      else if let uri = item.uri {
+        result["uri"] = String(uri)
+      }
       else {
         preconditionFailure("Cannot convert ReconValue to JSON key: \(item)")
       }

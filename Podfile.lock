@@ -39,7 +39,7 @@ PODS:
     - GoogleSymbolUtilities (~> 1.0)
   - JLToast (1.4.1)
   - ReachabilitySwift (2.3.3)
-  - Recon (0.3.2)
+  - Recon (0.3.3)
   - SQLite.swift (0.10.1)
   - SwiftWebSocket (2.6.2)
   - SwiftyBeaver (0.5.4)
@@ -90,7 +90,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 56c5ac05b7aa5dc417a1bb85221a9516e04d7032
   JLToast: f2ccfdb8726e562e6c0154fa3658cd432021b1cc
   ReachabilitySwift: e0f6b6f280effb47731acfaaa2d5ffe223703793
-  Recon: 6db64de714b3967a1ff1a434e54630cd55cc216e
+  Recon: ce0dc3343cccf9de5c4221b385213fdae113f761
   SQLite.swift: 6a6e4b034efc317ce4e203b6af2d3024fee2b570
   SwiftWebSocket: 2bb9dda75c87f64eaf9768131141857ca8611aac
   SwiftyBeaver: 1f4ddee4a4fc266b9da99ebbd379df723d5c4241
