@@ -127,7 +127,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
             return BankModel(swimValue: $0)
         })
         downlink.addDelegate(self)
-        agenciesDownlink = downlink
+        banksDownlink = downlink
     }
 
 
