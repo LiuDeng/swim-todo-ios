@@ -163,12 +163,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
     private func recalcKPIs() {
         var sumSpeed = 0
-        var countRoutes = 0
         var countVehicles = 0
         var countOffRoute = 0
-        for downlink in routeDownlinks.values {
-            countRoutes += downlink.count
-        }
         for downlink in vehicleDownlinks.values {
             for obj in downlink.objects.values {
                 let vehicle = obj as! VehicleModel
@@ -181,7 +177,7 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         }
         let avgSpeed = Float(sumSpeed) / Float(countVehicles)
 
-        routesKPI.value = String(countRoutes)
+        routesKPI.value = String(routes.count)
         routesKPI.detail = "\(countOffRoute) vehicles off route"
         onlineKPI.value = String(countVehicles)
         regionsKPI.value = String(2)
