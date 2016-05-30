@@ -498,8 +498,16 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
 
     func mapView(mapView: MKMapView, rendererForOverlay overlay: MKOverlay) -> MKOverlayRenderer {
-        let renderer = MKPolylineRenderer(overlay: overlay)
+        let renderer = MyPolylineRenderer(overlay: overlay)
         renderer.strokeColor = UIColor.st_route()
         return renderer
+    }
+}
+
+
+class MyPolylineRenderer: MKPolylineRenderer {
+    override func applyStrokePropertiesToContext(context: CGContext, atZoomScale zoomScale: MKZoomScale) {
+        super.applyStrokePropertiesToContext(context, atZoomScale: zoomScale)
+        CGContextSetLineWidth(context, MKRoadWidthAtZoomScale(zoomScale) / 2.0)
     }
 }

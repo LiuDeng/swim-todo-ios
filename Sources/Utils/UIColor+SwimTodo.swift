@@ -15,6 +15,6 @@ extension UIColor {
     }
 
     static func st_route() -> UIColor {
-        return UIColor.fk_rgb(255, 190, 51, 0.9)
+        return UIColor.fk_rgb(236, 88, 64, 0.9)
     }
 }
