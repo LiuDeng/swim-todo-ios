@@ -45,6 +45,23 @@ private let log = SwiftyBeaver.self
 class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegate, ValueDownlinkDelegate, CCHMapClusterControllerDelegate {
     static let kpisDidRefreshNotification = "kpisDidRefreshNotification"
 
+    private let embarcaderoBoundary = [
+        CLLocationCoordinate2D(latitude: 37.796858, longitude: -122.395543),
+        CLLocationCoordinate2D(latitude: 37.794273, longitude: -122.393076),
+        CLLocationCoordinate2D(latitude: 37.793739, longitude: -122.393988),
+        CLLocationCoordinate2D(latitude: 37.795146, longitude: -122.395833),
+        CLLocationCoordinate2D(latitude: 37.795536, longitude: -122.395930),
+        CLLocationCoordinate2D(latitude: 37.795290, longitude: -122.398118),
+        CLLocationCoordinate2D(latitude: 37.796299, longitude: -122.398322),
+    ]
+
+    private let attBoundary = [
+        CLLocationCoordinate2D(latitude: 37.780267, longitude: -122.389562),
+        CLLocationCoordinate2D(latitude: 37.778385, longitude: -122.386858),
+        CLLocationCoordinate2D(latitude: 37.776960, longitude: -122.390742),
+        CLLocationCoordinate2D(latitude: 37.778215, longitude: -122.392266),
+    ]
+
     @IBOutlet private weak var mapView: MKMapView!
 
     private var mapClusterController: CCHMapClusterController!
@@ -113,6 +130,16 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
         linkAgencies()
         linkBanks()
+
+        addFence(embarcaderoBoundary)
+        addFence(attBoundary)
+    }
+
+
+    private func addFence(boundary_: [CLLocationCoordinate2D]) {
+        var boundary = boundary_
+        let polygon = MKPolygon(coordinates: &boundary, count: boundary.count)
+        mapView.addOverlay(polygon)
     }
 
 
@@ -578,9 +605,26 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
 
     func mapView(mapView: MKMapView, rendererForOverlay overlay: MKOverlay) -> MKOverlayRenderer {
-        let renderer = MyPolylineRenderer(overlay: overlay)
-        renderer.strokeColor = UIColor.st_route()
-        return renderer
+        if overlay is MKPolyline {
+            let renderer = MyPolylineRenderer(overlay: overlay)
+            renderer.strokeColor = UIColor.st_route()
+            return renderer
+        }
+        else {
+            precondition(overlay is MKPolygon)
+            let renderer = MyPolygonRenderer(overlay: overlay)
+            renderer.fillColor = UIColor.st_fenceFill()
+            renderer.strokeColor = UIColor.st_fenceStroke()
+            return renderer
+        }
+    }
+}
+
+
+class MyPolygonRenderer: MKPolygonRenderer {
+    override func applyStrokePropertiesToContext(context: CGContext, atZoomScale zoomScale: MKZoomScale) {
+        super.applyStrokePropertiesToContext(context, atZoomScale: zoomScale)
+        CGContextSetLineWidth(context, MKRoadWidthAtZoomScale(zoomScale) / 2.0)
     }
 }
 
