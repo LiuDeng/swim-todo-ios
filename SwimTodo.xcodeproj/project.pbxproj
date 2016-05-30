@@ -39,6 +39,11 @@
 		40C975F41CADE79600407B67 /* PersonImageCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40C975F21CADE79600407B67 /* PersonImageCollectionViewCell.xib */; };
 		40C975F81CAE113800407B67 /* UIView+Misc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C975F71CAE113800407B67 /* UIView+Misc.swift */; };
 		40C975FC1CB19B0200407B67 /* UINib+Misc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C975FB1CB19B0200407B67 /* UINib+Misc.swift */; };
+		40E969221CFBDFCA00475693 /* KPIsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40E969211CFBDFCA00475693 /* KPIsViewController.swift */; };
+		40E969241CFBE02800475693 /* KPIsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40E969231CFBE02800475693 /* KPIsViewController.xib */; };
+		40E969261CFBE87300475693 /* KPITableCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40E969251CFBE87300475693 /* KPITableCell.xib */; };
+		40E969281CFBE88200475693 /* KPITableCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40E969271CFBE88200475693 /* KPITableCell.swift */; };
+		40E9692A1CFBEB4800475693 /* KPIModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40E969291CFBEB4800475693 /* KPIModel.swift */; };
 		40EDB0B21CE3B3B900D996AF /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40EDB0B11CE3B3B900D996AF /* Images.xcassets */; };
 		40EDB0B41CE3B76A00D996AF /* MapAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EDB0B31CE3B76A00D996AF /* MapAnnotationView.swift */; };
 		40F583C21CBCDCAF001BCDCC /* UserPresenceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F583C11CBCDCAF001BCDCC /* UserPresenceModel.swift */; };
@@ -112,6 +117,11 @@
 		40C975F21CADE79600407B67 /* PersonImageCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PersonImageCollectionViewCell.xib; sourceTree = "<group>"; };
 		40C975F71CAE113800407B67 /* UIView+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIView+Misc.swift"; sourceTree = "<group>"; };
 		40C975FB1CB19B0200407B67 /* UINib+Misc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UINib+Misc.swift"; sourceTree = "<group>"; };
+		40E969211CFBDFCA00475693 /* KPIsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KPIsViewController.swift; sourceTree = "<group>"; };
+		40E969231CFBE02800475693 /* KPIsViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = KPIsViewController.xib; sourceTree = "<group>"; };
+		40E969251CFBE87300475693 /* KPITableCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = KPITableCell.xib; sourceTree = "<group>"; };
+		40E969271CFBE88200475693 /* KPITableCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KPITableCell.swift; sourceTree = "<group>"; };
+		40E969291CFBEB4800475693 /* KPIModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KPIModel.swift; sourceTree = "<group>"; };
 		40EDB0AC1CE3B15600D996AF /* SwimTodo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SwimTodo-Bridging-Header.h"; sourceTree = "<group>"; };
 		40EDB0B11CE3B3B900D996AF /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		40EDB0B31CE3B76A00D996AF /* MapAnnotationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapAnnotationView.swift; sourceTree = "<group>"; };
@@ -163,6 +173,7 @@
 				40B073351CE29EE400DFB732 /* AgencyModel.swift */,
 				40A8F2AB1CE51330000C8AE0 /* ATMModel.swift */,
 				40A8F2A91CE5121C000C8AE0 /* BankModel.swift */,
+				40E969291CFBEB4800475693 /* KPIModel.swift */,
 				40B073371CE2A39200DFB732 /* RouteModel.swift */,
 				40F777791CFA62AC00248688 /* RouteDetailModel.swift */,
 				40F7777B1CFA688200248688 /* RouteStopModel.swift */,
@@ -238,6 +249,10 @@
 				409DD2441CC6E5A30000D366 /* DetailTableViewCell.swift */,
 				409DD2461CC6E5CE0000D366 /* DetailTableViewCell.xib */,
 				409DD2401CC6E3F10000D366 /* GuruModeViewController.swift */,
+				40E969271CFBE88200475693 /* KPITableCell.swift */,
+				40E969251CFBE87300475693 /* KPITableCell.xib */,
+				40E969211CFBDFCA00475693 /* KPIsViewController.swift */,
+				40E969231CFBE02800475693 /* KPIsViewController.xib */,
 				40A0B3C51CA1FE5800F17BEA /* LoginManager.swift */,
 				4022030F1CA1FD0200D6B5E1 /* LoginViewController.swift */,
 				402203111CA1FD1200D6B5E1 /* LoginViewController.xib */,
@@ -416,11 +431,13 @@
 				85553D441C6B31BA005D613B /* LaunchScreen.storyboard in Resources */,
 				85553D431C6B31BA005D613B /* Assets.xcassets in Resources */,
 				40C975EE1CAD9F7200407B67 /* TodoListViewController.xib in Resources */,
+				40E969241CFBE02800475693 /* KPIsViewController.xib in Resources */,
 				40C975F41CADE79600407B67 /* PersonImageCollectionViewCell.xib in Resources */,
 				409DD2471CC6E5CE0000D366 /* DetailTableViewCell.xib in Resources */,
 				400648E31C72680000701533 /* TodoEntryTableViewCell.xib in Resources */,
 				85553D451C6B31BA005D613B /* Main.storyboard in Resources */,
 				40EDB0B21CE3B3B900D996AF /* Images.xcassets in Resources */,
+				40E969261CFBE87300475693 /* KPITableCell.xib in Resources */,
 				40B0732F1CE2964A00DFB732 /* MapViewController.xib in Resources */,
 				400268241CA20F6200335AC7 /* GoogleService-Info.plist in Resources */,
 			);
@@ -517,8 +534,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				40A8F2AC1CE51330000C8AE0 /* ATMModel.swift in Sources */,
+				40E9692A1CFBEB4800475693 /* KPIModel.swift in Sources */,
 				402203101CA1FD0200D6B5E1 /* LoginViewController.swift in Sources */,
 				40C975C51CAD94A900407B67 /* PersonImageView.swift in Sources */,
+				40E969281CFBE88200475693 /* KPITableCell.swift in Sources */,
 				400648E51C7268DB00701533 /* TodoEntry.swift in Sources */,
 				40B073381CE2A39200DFB732 /* RouteModel.swift in Sources */,
 				85553D481C6B31BA005D613B /* MasterViewController.swift in Sources */,
@@ -537,6 +556,7 @@
 				40B0733A1CE2A43E00DFB732 /* VehicleModel.swift in Sources */,
 				40F7777A1CFA62AC00248688 /* RouteDetailModel.swift in Sources */,
 				85553D461C6B31BA005D613B /* TodoListViewController.swift in Sources */,
+				40E969221CFBDFCA00475693 /* KPIsViewController.swift in Sources */,
 				400648E21C72680000701533 /* TodoEntryTableViewCell.swift in Sources */,
 				4048D7BD1C73D844002B490C /* CollectionType+Misc.swift in Sources */,
 				40B073361CE29EE400DFB732 /* AgencyModel.swift in Sources */,

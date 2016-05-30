@@ -43,6 +43,8 @@ private let log = SwiftyBeaver.self
 
 
 class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegate, ValueDownlinkDelegate, CCHMapClusterControllerDelegate {
+    static let kpisDidRefreshNotification = "kpisDidRefreshNotification"
+
     @IBOutlet private weak var mapView: MKMapView!
 
     private var mapClusterController: CCHMapClusterController!
@@ -76,6 +78,12 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
         return SwimTodoGlobals.instance.cityClient
     }
 
+    private var routesKPI = KPIModel()
+    private var onlineKPI = KPIModel()
+    private var regionsKPI = KPIModel()
+    private var performanceKPI = KPIModel()
+    private var kpis = [KPIModel]()
+
     init() {
         super.init(nibName: nil, bundle: nil)
     }
@@ -87,6 +95,10 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        configureToolbar()
+
+        setupKPIs()
 
         mapClusterController = CCHMapClusterController(mapView: mapView)
         mapClusterController.delegate = self
@@ -104,10 +116,76 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
     }
 
 
+    private func setupKPIs() {
+        routesKPI.title = "Routes"
+        routesKPI.subtitle = "active"
+        onlineKPI.title = "Vehicles"
+        onlineKPI.subtitle = "online"
+        regionsKPI.title = "Regions"
+        regionsKPI.subtitle = "monitored"
+        performanceKPI.title = "Performance"
+        performanceKPI.subtitle = "average speed"
+        kpis = [
+            routesKPI,
+            onlineKPI,
+            regionsKPI,
+            performanceKPI,
+        ]
+    }
+
+
+    private func recalcKPIs() {
+        var sumSpeed = 0
+        var countRoutes = 0
+        var countVehicles = 0
+        var countOffRoute = 0
+        for downlink in routeDownlinks.values {
+            countRoutes += downlink.count
+        }
+        for downlink in vehicleDownlinks.values {
+            for obj in downlink.objects.values {
+                let vehicle = obj as! VehicleModel
+                sumSpeed += vehicle.speedMph ?? 0
+                if !(vehicle.onRoute ?? true) {
+                    countOffRoute += 1
+                }
+            }
+            countVehicles += downlink.count
+        }
+        let avgSpeed = Float(sumSpeed) / Float(countVehicles)
+
+        routesKPI.value = String(countRoutes)
+        routesKPI.detail = "\(countOffRoute) vehicles off route"
+        onlineKPI.value = String(countVehicles)
+        regionsKPI.value = String(2)
+        performanceKPI.value = (countVehicles == 0 ? "---" : String(format: "%.01f", avgSpeed))
+
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.postNotificationName(MapViewController.kpisDidRefreshNotification, object: self)
+    }
+
+
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
 
         navigationController?.navigationBarHidden = false
+        navigationController?.toolbarHidden = false
+    }
+
+
+    private func configureToolbar() {
+        setToolbarItems([
+            UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil),
+            UIBarButtonItem(title: "KPIs", style: .Plain, target: self, action: #selector(kpisTapped))
+            ], animated: false)
+    }
+
+
+    @objc private func kpisTapped() {
+        let vc = KPIsViewController()
+        vc.kpis = kpis
+        vc.modalPresentationStyle = .OverFullScreen
+        presentViewController(vc, animated: true, completion: nil)
     }
 
 
@@ -276,6 +354,8 @@ class MapViewController: UIViewController, MKMapViewDelegate, MapDownlinkDelegat
                 }
             }
         }
+
+        recalcKPIs()
     }
 
 

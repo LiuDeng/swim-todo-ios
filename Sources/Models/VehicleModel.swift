@@ -41,7 +41,7 @@ class VehicleModel: SwimLatLongModel {
         agencyId = json["agencyId"] as? String
         dirId = json["dirId"] as? String
         routeId = json["routeId"] as? String
-        onRoute = json["onRoute"] as? Bool
+        onRoute = (json["onRoute"] as? String) == "true"
         if let secsStr = json["secsSinceReport"] as? String {
             secsSinceReport = Int(secsStr)
         }
@@ -63,7 +63,7 @@ class VehicleModel: SwimLatLongModel {
         if routeId != nil {
             json["routeId"] = routeId!
         }
-        json["onRoute"] = onRoute
+        json["onRoute"] = (onRoute ?? true ? "true" : "false")
         if secsSinceReport != nil {
             json["secsSinceReport"] = String(secsSinceReport!)
         }
