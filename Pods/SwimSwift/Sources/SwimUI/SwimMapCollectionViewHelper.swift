@@ -28,26 +28,12 @@ public class SwimMapCollectionViewHelper: MapDownlinkDelegate {
 
 
     public func swimMapDownlink(downlink: MapDownlink, didSet object: SwimModelProtocolBase, forKey key: SwimValue) {
-        guard let objectSection = delegate?.swimObjectSection, collectionView = collectionView else {
-            return
-        }
-
         resortObjects()
-        let index = indexOf(object)!
-        let indexPath = NSIndexPath(forItem: index, inSection: objectSection)
-        collectionView.insertItemsAtIndexPaths([indexPath])
     }
 
 
     public func swimMapDownlink(downlink: MapDownlink, didRemove object: SwimModelProtocolBase, forKey key: SwimValue) {
-        guard let objectSection = delegate?.swimObjectSection else {
-            return
-        }
-
         resortObjects()
-        let index = indexOf(object)!
-        let indexPath = NSIndexPath(forItem: index, inSection: objectSection)
-        collectionView?.deleteItemsAtIndexPaths([indexPath])
     }
 
 
@@ -90,6 +76,22 @@ public class SwimMapCollectionViewHelper: MapDownlinkDelegate {
 
 
     private func resortObjects() {
-        sortedObjects = mapManager.downlink!.objects.values.sort(comparator)
+        guard let objectSection = delegate?.swimObjectSection, collectionView = collectionView else {
+            return
+        }
+
+        let newSortedObjects = mapManager.downlink!.objects.values.sort(comparator)
+
+        let diff = Dwifft.diff(sortedObjects, newSortedObjects)
+
+        sortedObjects = newSortedObjects
+
+        let inserts = diff.insertions.map { NSIndexPath(forItem: $0.idx, inSection: objectSection) }
+        let deletes = diff.deletions.map { NSIndexPath(forItem: $0.idx, inSection: objectSection) }
+
+        collectionView.performBatchUpdates({ () -> Void in
+            collectionView.insertItemsAtIndexPaths(inserts)
+            collectionView.deleteItemsAtIndexPaths(deletes)
+        }, completion: nil)
     }
 }
